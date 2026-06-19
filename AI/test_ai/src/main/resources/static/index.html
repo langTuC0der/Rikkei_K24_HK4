@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spring AI & Ollama (Qwen) Test Client</title>
+    <!-- Modern Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(20, 26, 46, 0.6);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --accent-color: #7c3aed;
+            --accent-glow: rgba(124, 58, 237, 0.4);
+            --secondary-color: #10b981;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --font-family: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(124, 58, 237, 0.12) 0, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.08) 0, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            font-family: var(--font-family);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.05em;
+            background: linear-gradient(to right, #a78bfa, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+
+        .badge-container {
+            display: flex;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-spring {
+            background-color: rgba(52, 211, 153, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(52, 211, 153, 0.3);
+        }
+
+        .badge-gemini {
+            background-color: rgba(167, 139, 250, 0.15);
+            color: #a78bfa;
+            border: 1px solid rgba(167, 139, 250, 0.3);
+        }
+
+        /* Tabs Interface */
+        .tabs {
+            display: flex;
+            background: rgba(20, 26, 46, 0.4);
+            border: 1px solid var(--card-border);
+            padding: 0.35rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            gap: 0.25rem;
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 0.75rem 1rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .tab-btn.active {
+            color: var(--text-main);
+            background: rgba(124, 58, 237, 0.2);
+            border: 1px solid rgba(124, 58, 237, 0.4);
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15);
+        }
+
+        /* Card styles */
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .input-control {
+            width: 100%;
+            background: rgba(11, 15, 25, 0.8);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 0.85rem 1rem;
+            color: var(--text-main);
+            font-family: var(--font-family);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-control:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        textarea.input-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--accent-color) 0%, #6d28d9 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 0.85rem 1.75rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 14px rgba(124, 58, 237, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(124, 58, 237, 0.45);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background: #374151;
+            color: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            box-shadow: none;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: none;
+            border-color: var(--text-muted);
+        }
+
+        /* Output Viewports */
+        .output-container {
+            margin-top: 2rem;
+            border-top: 1px solid var(--card-border);
+            padding-top: 1.5rem;
+        }
+
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .output-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .output-box {
+            background-color: rgba(11, 15, 25, 0.9);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            min-height: 80px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #e5e7eb;
+            position: relative;
+        }
+
+        .output-box.streaming::after {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 15px;
+            background-color: var(--accent-color);
+            margin-left: 4px;
+            animation: blink 0.8s infinite;
+            vertical-align: middle;
+        }
+
+        /* Token stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat-card {
+            background: rgba(11, 15, 25, 0.5);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 0.75rem;
+            text-align: center;
+        }
+
+        .stat-val {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+        }
+
+        .stat-lbl {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Grid layouts */
+        .flex-row {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .flex-child {
+            flex: 1;
+        }
+
+        /* Booking Visuals */
+        .booking-status {
+            display: inline-block;
+            padding: 0.35rem 1rem;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        .status-confirmed {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+
+        .status-incomplete {
+            background-color: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }
+
+        .booking-details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .booking-details-table th, .booking-details-table td {
+            padding: 0.6rem 0.8rem;
+            text-align: left;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .booking-details-table th {
+            color: var(--text-muted);
+            font-weight: 600;
+            width: 40%;
+        }
+
+        .booking-details-table td {
+            color: var(--text-main);
+        }
+
+        footer {
+            margin-top: auto;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            padding: 2rem 0;
+        }
+
+        /* Suggestions UI */
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .suggestion-chip {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--card-border);
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .suggestion-chip:hover {
+            background: rgba(124, 58, 237, 0.15);
+            border-color: var(--accent-color);
+            color: var(--text-main);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Spring AI integrated Client</h1>
+            <p>Kiểm thử trực quan các bài học của Session 02: Tích hợp LLM & ETL</p>
+            <div class="badge-container">
+                <span class="badge badge-spring">Spring Boot 3.4</span>
+                <span class="badge badge-gemini">Ollama (Qwen2.5-Coder)</span>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="tabs">
+            <button class="tab-btn active" onclick="switchTab('simple-chat')">💬 Simple Chat</button>
+            <button class="tab-btn" onclick="switchTab('streaming-chat')">🌊 Streaming Chat</button>
+            <button class="tab-btn" onclick="switchTab('structured-output')">📋 Structured Output</button>
+            <button class="tab-btn" onclick="switchTab('booking-etl')">🏨 Booking ETL</button>
+        </nav>
+
+        <!-- Tab 1: Simple Chat -->
+        <div id="simple-chat" class="tab-content active">
+            <div class="card">
+                <h2>Lesson 01 — Simple Chat & Token Usage</h2>
+                <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    Giao tiếp đồng bộ (Synchronous). Hệ thống sẽ gửi câu hỏi đến LLM và đợi trả về toàn bộ câu trả lời, đồng thời thống kê dung lượng token sử dụng.
+                </p>
+
+                <div class="form-group">
+                    <label for="chat-message">Message của bạn</label>
+                    <textarea id="chat-message" class="input-control" placeholder="Nhập câu hỏi của bạn..."></textarea>
+                    <div class="suggestions">
+                        <span class="suggestion-chip" onclick="setPrompt('chat-message', 'Giải thích Token trong AI là gì và cách hoạt động?')">Token là gì?</span>
+                        <span class="suggestion-chip" onclick="setPrompt('chat-message', 'Tại sao tiếng Việt tốn nhiều token hơn tiếng Anh khi gọi LLM?')">Tại sao tiếng Việt tốn token?</span>
+                    </div>
+                </div>
+
+                <button id="chat-btn" class="btn" onclick="runSimpleChat()">Gửi Request</button>
+
+                <div class="output-container" id="chat-output-panel" style="display: none;">
+                    <div class="output-header">
+                        <span class="output-title">AI Response</span>
+                        <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="copyText('chat-output')">Copy</button>
+                    </div>
+                    <div id="chat-output" class="output-box">Đang xử lý...</div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-val" id="stat-input-tokens">0</div>
+                            <div class="stat-lbl">Input Tokens</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-val" id="stat-output-tokens">0</div>
+                            <div class="stat-lbl">Output Tokens</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-val" id="stat-total-tokens">0</div>
+                            <div class="stat-lbl">Total Tokens</div>
+                        </div>
+                        <div class="stat-card" style="border-color: rgba(124, 58, 237, 0.3);">
+                            <div class="stat-val" id="stat-chat-time" style="color: #a78bfa;">0.00s</div>
+                            <div class="stat-lbl">Thinking Time</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Streaming Chat -->
+        <div id="streaming-chat" class="tab-content">
+            <div class="card">
+                <h2>Lesson 02 — SSE Streaming Chat</h2>
+                <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    Sử dụng Server-Sent Events (SSE). Server sẽ đẩy từng chunk từ LLM ngay khi có về client, giúp tạo hiệu ứng gõ phím mượt mà như ChatGPT.
+                </p>
+
+                <div class="form-group">
+                    <label for="stream-message">Message của bạn</label>
+                    <textarea id="stream-message" class="input-control" placeholder="Nhập câu hỏi cần trả lời dài..."></textarea>
+                    <div class="suggestions">
+                        <span class="suggestion-chip" onclick="setPrompt('stream-message', 'Viết một bài thơ ngắn 4 câu ca ngợi lập trình viên Java và Spring Boot.')">Viết bài thơ Java</span>
+                        <span class="suggestion-chip" onclick="setPrompt('stream-message', 'Giải thích thuật ngữ Server-Sent Events (SSE) theo cách dễ hiểu nhất.')">Giải thích SSE</span>
+                    </div>
+                </div>
+
+                <div class="flex-row">
+                    <div class="form-group flex-child">
+                        <label for="stream-temperature">Temperature</label>
+                        <input type="number" id="stream-temperature" class="input-control" value="0.7" min="0" max="2.0" step="0.1">
+                    </div>
+                    <div class="form-group flex-child">
+                        <label for="stream-system">System Prompt (Optional)</label>
+                        <input type="text" id="stream-system" class="input-control" placeholder="Bạn là trợ lý ảo...">
+                    </div>
+                </div>
+
+                <button id="stream-btn" class="btn" onclick="runStreamChat()">Bắt đầu Stream</button>
+
+                <div class="output-container" id="stream-output-panel" style="display: none;">
+                    <div class="output-header">
+                        <span class="output-title">Streaming Output (SSE)</span>
+                        <div style="font-size: 0.8rem; color: var(--text-muted); display: flex; gap: 1rem;">
+                            <span>Thinking (TTFT): <strong id="stream-ttft" style="color: #34d399;">0.00s</strong></span>
+                            <span>Total Time: <strong id="stream-total-time" style="color: #a78bfa;">0.00s</strong></span>
+                        </div>
+                        <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="copyText('stream-output')">Copy</button>
+                    </div>
+                    <div id="stream-output" class="output-box">Mở luồng kết nối...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: Structured Output -->
+        <div id="structured-output" class="tab-content">
+            <div class="card">
+                <h2>Lesson 03 — Structured Output API</h2>
+                <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    Bắt buộc AI trả về JSON theo đúng định dạng được định nghĩa bởi Java Record/POJO. Hệ thống tự tạo schema, gửi lên AI, nhận JSON và parse tự động sang Object.
+                </p>
+
+                <div class="form-group">
+                    <label>Chọn chế độ trích xuất</label>
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                        <label style="display: inline-flex; align-items: center; text-transform: none; font-size: 0.9rem; font-weight: normal; cursor: pointer;">
+                            <input type="radio" name="extraction-type" value="person" checked style="margin-right: 0.5rem;" onclick="toggleExtractionPlaceholder('person')">
+                            Thông tin Cá nhân (PersonInfo Record)
+                        </label>
+                        <label style="display: inline-flex; align-items: center; text-transform: none; font-size: 0.9rem; font-weight: normal; cursor: pointer;">
+                            <input type="radio" name="extraction-type" value="products" style="margin-right: 0.5rem;" onclick="toggleExtractionPlaceholder('products')">
+                            Danh sách sản phẩm (List&lt;ProductExtraction&gt;)
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="extract-text">Văn bản thô (Natural Text)</label>
+                    <textarea id="extract-text" class="input-control" placeholder="Nhập văn bản thô tại đây..."></textarea>
+                    <div class="suggestions" id="extract-suggestions">
+                        <!-- Dynamic based on selected type -->
+                    </div>
+                </div>
+
+                <button id="extract-btn" class="btn" onclick="runExtraction()">Extract Data</button>
+
+                <div class="output-container" id="extract-output-panel" style="display: none;">
+                    <div class="output-header">
+                        <span class="output-title">Extracted JSON (Type-safe Java Object)</span>
+                        <span style="font-size: 0.8rem; color: var(--text-muted); margin-right: 1rem;">Extraction Time: <strong id="extract-time" style="color: #a78bfa;">0.00s</strong></span>
+                        <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="copyText('extract-output')">Copy</button>
+                    </div>
+                    <div id="extract-output" class="output-box">Đang trích xuất...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 4: Booking ETL -->
+        <div id="booking-etl" class="tab-content">
+            <div class="card">
+                <h2>Lesson 04 — capstone: Booking ETL Pipeline</h2>
+                <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    Mô phỏng quy trình ETL hoàn chỉnh: Đọc tin nhắn tự nhiên của khách hàng đặt phòng, trích xuất cấu trúc dữ liệu qua AI (đặt Temp = 0.0), kiểm tra tính đầy đủ và trả về kết quả DB-ready.
+                </p>
+
+                <div class="form-group">
+                    <label for="booking-message">Tin nhắn đặt phòng của khách</label>
+                    <textarea id="booking-message" class="input-control" placeholder="Khách hàng nhắn gì..."></textarea>
+                    <div class="suggestions">
+                        <span class="suggestion-chip" onclick="setPrompt('booking-message', 'Chào bạn, tôi là Lê Thị Hoa. Tôi muốn đặt 1 phòng đôi cho 2 người lớn, từ ngày 15 tháng 8 đến 18 tháng 8 năm 2026. Tôi cần phòng có điều hòa và minibar nhé.')">Đặt phòng ĐẦY ĐỦ</span>
+                        <span class="suggestion-chip" onclick="setPrompt('booking-message', 'Tôi muốn đặt một phòng suite hạng sang cho tôi là Trần Minh Khôi, tôi sẽ tới vào ngày 01/09/2026 và đi vào 05/09/2026. Hãy chuẩn bị bồn tắm.')">Đặt phòng thiếu số người</span>
+                        <span class="suggestion-chip" onclick="setPrompt('booking-message', 'Tôi muốn đặt phòng đơn, tên tôi là Phạm Văn C.')">Đặt phòng THIẾU NHIỀU thứ</span>
+                    </div>
+                </div>
+
+                <button id="booking-btn" class="btn" onclick="runBookingEtl()">Chạy ETL Pipeline</button>
+
+                <div class="output-container" id="booking-output-panel" style="display: none;">
+                    <div class="output-header">
+                        <span class="output-title">ETL Pipeline Status & Details</span>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">Pipeline Time: <strong id="booking-time" style="color: #a78bfa;">0.00s</strong></span>
+                            <span id="booking-status-badge" class="booking-status">UNKNOWN</span>
+                        </div>
+                    </div>
+                    
+                    <div id="booking-msg-banner" style="padding: 0.85rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.95rem; font-weight: 500;">
+                        Thông tin hiển thị ở đây
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div class="flex-child">
+                            <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem;">Thông tin trích xuất:</h4>
+                            <table class="booking-details-table">
+                                <tbody>
+                                    <tr>
+                                        <th>Tên khách hàng</th>
+                                        <td id="td-guest-name">-</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Loại phòng</th>
+                                        <td id="td-room-type">-</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Số người</th>
+                                        <td id="td-guests">-</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Ngày nhận phòng (Check-in)</th>
+                                        <td id="td-check-in">-</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Ngày trả phòng (Check-out)</th>
+                                        <td id="td-check-out">-</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Số đêm ở</th>
+                                        <td id="td-nights">-</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Tiện nghi (Amenities)</th>
+                                        <td id="td-amenities">-</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Yêu cầu đặc biệt</th>
+                                        <td id="td-special">-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="flex-child" style="margin-top: 1rem;">
+                            <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem;">Raw JSON Response:</h4>
+                            <div id="booking-raw-json" class="output-box" style="max-height: 150px; font-size: 0.8rem;">{}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2026 AI Integrated in Action | Rikkei Education. Built with Spring AI.</p>
+        </footer>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080';
+
+        // Suggestion items placeholders
+        const suggestionsData = {
+            person: [
+                { text: "Chào bạn, tôi tên là Nguyễn Văn An, năm nay 31 tuổi. Có gì liên hệ tôi qua email an.nguyen@company.com nhé.", label: "Người đầy đủ thông tin" },
+                { text: "Thông tin liên hệ của chị Trần Thị Bình: email binh.tran@outlook.com và số điện thoại 0901234567.", label: "Thiếu tuổi" }
+            ],
+            products: [
+                { text: "Tôi mua 5 hộp bút màu đỏ hết tổng cộng 75000 VND, còn 1 cái thước kẻ xanh lá giá 10000 VND hiện đang hết hàng.", label: "Đơn mua văn phòng phẩm" },
+                { text: "Cho tôi order 2 ly trà sữa matcha giá 4.5 USD một cốc, thêm 1 cái bánh ngọt sô-cô-la giá 3.2 USD nhé, tất cả đều sẵn hàng.", label: "Order đồ uống" }
+            ]
+        };
+
+        function setPrompt(inputId, val) {
+            document.getElementById(inputId).value = val;
+        }
+
+        function toggleExtractionPlaceholder(type) {
+            const textarea = document.getElementById('extract-text');
+            const suggestionsDiv = document.getElementById('extract-suggestions');
+            
+            // Set suggestions
+            suggestionsDiv.innerHTML = '';
+            suggestionsData[type].forEach(item => {
+                const chip = document.createElement('span');
+                chip.className = 'suggestion-chip';
+                chip.textContent = item.label;
+                chip.onclick = () => setPrompt('extract-text', item.text);
+                suggestionsDiv.appendChild(chip);
+            });
+
+            if (type === 'person') {
+                textarea.placeholder = "Nhập văn bản giới thiệu bản thân hoặc liên hệ để trích xuất...";
+                if (suggestionsData.person.length > 0) {
+                    textarea.value = suggestionsData.person[0].text;
+                }
+            } else {
+                textarea.placeholder = "Nhập nội dung đơn hàng (ví dụ: 'Tôi mua 3 quyển sách giá 25000 VNĐ...')";
+                if (suggestionsData.products.length > 0) {
+                    textarea.value = suggestionsData.products[0].text;
+                }
+            }
+        }
+
+        // Initialize extraction tab defaults
+        toggleExtractionPlaceholder('person');
+
+        // Tab Switcher
+        function switchTab(tabId) {
+            // Remove active from all tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            // Find clicked index or target
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            if (tabId === 'simple-chat') tabBtns[0].classList.add('active');
+            else if (tabId === 'streaming-chat') tabBtns[1].classList.add('active');
+            else if (tabId === 'structured-output') tabBtns[2].classList.add('active');
+            else if (tabId === 'booking-etl') tabBtns[3].classList.add('active');
+
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // Copy content helper
+        function copyText(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+            });
+        }
+
+        // 1. Simple Chat Call
+        async function runSimpleChat() {
+            const message = document.getElementById('chat-message').value;
+            const btn = document.getElementById('chat-btn');
+            const outputPanel = document.getElementById('chat-output-panel');
+            const outputBox = document.getElementById('chat-output');
+
+            if (!message.trim()) {
+                alert('Vui lòng nhập tin nhắn!');
+                return;
+            }
+
+            btn.disabled = true;
+            outputPanel.style.display = 'block';
+            outputBox.textContent = 'Đang gọi AI Model...';
+            outputBox.className = 'output-box';
+            document.getElementById('stat-chat-time').textContent = 'Calculating...';
+
+            const startTime = performance.now();
+
+            try {
+                const response = await fetch(`${API_BASE}/api/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+
+                const data = await response.json();
+                const duration = ((performance.now() - startTime) / 1000).toFixed(2);
+
+                if (response.ok) {
+                    outputBox.textContent = data.content;
+                    document.getElementById('stat-input-tokens').textContent = data.inputTokens;
+                    document.getElementById('stat-output-tokens').textContent = data.outputTokens;
+                    document.getElementById('stat-total-tokens').textContent = data.totalTokens;
+                    document.getElementById('stat-chat-time').textContent = `${duration}s`;
+                } else {
+                    outputBox.textContent = `Error: ${data.error || 'Yêu cầu thất bại'}`;
+                    document.getElementById('stat-chat-time').textContent = 'Error';
+                }
+            } catch (err) {
+                outputBox.textContent = `Error: Không thể kết nối backend (${err.message}). Hãy chắc chắn Spring Boot app đang chạy trên cổng 8080.`;
+                document.getElementById('stat-chat-time').textContent = 'Error';
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // 2. Streaming Chat Call (SSE)
+        let eventSource = null;
+        function runStreamChat() {
+            const message = document.getElementById('stream-message').value;
+            const systemPrompt = document.getElementById('stream-system').value;
+            const temperature = parseFloat(document.getElementById('stream-temperature').value);
+            const btn = document.getElementById('stream-btn');
+            const outputPanel = document.getElementById('stream-output-panel');
+            const outputBox = document.getElementById('stream-output');
+
+            if (!message.trim()) {
+                alert('Vui lòng nhập tin nhắn!');
+                return;
+            }
+
+            if (eventSource) {
+                eventSource.close();
+            }
+
+            outputPanel.style.display = 'block';
+            outputBox.textContent = '';
+            outputBox.classList.add('streaming');
+            btn.disabled = true;
+
+            document.getElementById('stream-ttft').textContent = 'Thinking...';
+            document.getElementById('stream-total-time').textContent = 'Streaming...';
+
+            const startTime = performance.now();
+            let firstTokenReceived = false;
+
+            const queryParams = new URLSearchParams({ message });
+            const sseUrl = `${API_BASE}/api/chat/stream?${queryParams.toString()}`;
+
+            eventSource = new EventSource(sseUrl);
+
+            eventSource.onmessage = (event) => {
+                if (!firstTokenReceived) {
+                    const ttft = ((performance.now() - startTime) / 1000).toFixed(2);
+                    document.getElementById('stream-ttft').textContent = `${ttft}s`;
+                    firstTokenReceived = true;
+                }
+                outputBox.textContent += event.data;
+                outputBox.scrollTop = outputBox.scrollHeight;
+            };
+
+            eventSource.onerror = (err) => {
+                eventSource.close();
+                outputBox.classList.remove('streaming');
+                btn.disabled = false;
+                
+                const totalTime = ((performance.now() - startTime) / 1000).toFixed(2);
+                document.getElementById('stream-total-time').textContent = `${totalTime}s`;
+                if (!firstTokenReceived) {
+                    document.getElementById('stream-ttft').textContent = 'N/A';
+                }
+                console.log('Stream ended or error occurred', err);
+            };
+        }
+
+        // 3. Structured Output Call
+        async function runExtraction() {
+            const text = document.getElementById('extract-text').value;
+            const type = document.querySelector('input[name="extraction-type"]:checked').value;
+            const btn = document.getElementById('extract-btn');
+            const outputPanel = document.getElementById('extract-output-panel');
+            const outputBox = document.getElementById('extract-output');
+
+            if (!text.trim()) {
+                alert('Vui lòng nhập văn bản thô!');
+                return;
+            }
+
+            btn.disabled = true;
+            outputPanel.style.display = 'block';
+            outputBox.textContent = 'Đang trích xuất dữ liệu có cấu trúc...';
+            document.getElementById('extract-time').textContent = 'Calculating...';
+
+            const startTime = performance.now();
+
+            try {
+                const endpoint = `/api/extract/${type}`;
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+
+                const duration = ((performance.now() - startTime) / 1000).toFixed(2);
+                document.getElementById('extract-time').textContent = `${duration}s`;
+
+                if (response.ok) {
+                    const data = await response.json();
+                    outputBox.textContent = JSON.stringify(data, null, 2);
+                } else {
+                    const errText = await response.text();
+                    outputBox.textContent = `Error: Trích xuất thất bại.\nChi tiết:\n${errText}`;
+                }
+            } catch (err) {
+                outputBox.textContent = `Error: Không thể kết nối backend (${err.message}).`;
+                document.getElementById('extract-time').textContent = 'Error';
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // 4. Booking ETL Call
+        async function runBookingEtl() {
+            const message = document.getElementById('booking-message').value;
+            const btn = document.getElementById('booking-btn');
+            const outputPanel = document.getElementById('booking-output-panel');
+
+            if (!message.trim()) {
+                alert('Vui lòng nhập tin nhắn của khách!');
+                return;
+            }
+
+            btn.disabled = true;
+            outputPanel.style.display = 'block';
+
+            // Reset table details
+            document.getElementById('td-guest-name').textContent = 'Loading...';
+            document.getElementById('td-room-type').textContent = 'Loading...';
+            document.getElementById('td-guests').textContent = 'Loading...';
+            document.getElementById('td-check-in').textContent = 'Loading...';
+            document.getElementById('td-check-out').textContent = 'Loading...';
+            document.getElementById('td-nights').textContent = 'Loading...';
+            document.getElementById('td-amenities').textContent = 'Loading...';
+            document.getElementById('td-special').textContent = 'Loading...';
+            document.getElementById('booking-raw-json').textContent = 'Loading...';
+            document.getElementById('booking-time').textContent = 'Calculating...';
+            
+            const badge = document.getElementById('booking-status-badge');
+            badge.className = 'booking-status';
+            badge.textContent = 'PROCESSING';
+
+            const banner = document.getElementById('booking-msg-banner');
+            banner.style.backgroundColor = 'rgba(255,255,255,0.05)';
+            banner.style.color = 'var(--text-main)';
+            banner.textContent = 'AI ETL Pipeline is transforming text...';
+
+            const startTime = performance.now();
+
+            try {
+                const response = await fetch(`${API_BASE}/api/booking/extract`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+
+                const data = await response.json();
+                const duration = ((performance.now() - startTime) / 1000).toFixed(2);
+                document.getElementById('booking-time').textContent = `${duration}s`;
+
+                if (response.ok) {
+                    // Update status badge
+                    badge.textContent = data.status;
+                    if (data.status === 'CONFIRMED') {
+                        badge.classList.add('status-confirmed');
+                        banner.style.backgroundColor = 'rgba(16, 185, 129, 0.15)';
+                        banner.style.color = '#34d399';
+                    } else {
+                        badge.classList.add('status-incomplete');
+                        banner.style.backgroundColor = 'rgba(245, 158, 11, 0.15)';
+                        banner.style.color = '#f59e0b';
+                    }
+                    banner.textContent = data.message;
+
+                    // Extracted values
+                    const ext = data.booking || data.extracted;
+                    if (ext) {
+                        document.getElementById('td-guest-name').textContent = ext.guestName || '(Trống)';
+                        document.getElementById('td-room-type').textContent = ext.roomType || '(Trống)';
+                        document.getElementById('td-guests').textContent = ext.numberOfGuests || '(Trống)';
+                        document.getElementById('td-check-in').textContent = ext.checkInDate || '(Trống)';
+                        document.getElementById('td-check-out').textContent = ext.checkOutDate || '(Trống)';
+                        document.getElementById('td-nights').textContent = data.nights || ext.numberOfNights || 0;
+                        document.getElementById('td-amenities').textContent = ext.amenities && ext.amenities.length > 0 ? ext.amenities.join(', ') : '(Không có)';
+                        document.getElementById('td-special').textContent = ext.specialRequest || '(Không có)';
+                    }
+                    document.getElementById('booking-raw-json').textContent = JSON.stringify(data, null, 2);
+
+                } else {
+                    banner.textContent = `Lỗi hệ thống: ${data.error || 'Trích xuất thất bại'}`;
+                    banner.style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
+                    banner.style.color = '#ef4444';
+                    badge.textContent = 'FAILED';
+                }
+            } catch (err) {
+                banner.textContent = `Error: Không kết nối được đến server (${err.message}).`;
+                banner.style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
+                banner.style.color = '#ef4444';
+                badge.textContent = 'FAILED';
+                document.getElementById('booking-time').textContent = 'Error';
+            } finally {
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
