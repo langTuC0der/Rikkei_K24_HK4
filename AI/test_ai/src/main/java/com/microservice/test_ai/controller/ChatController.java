@@ -38,6 +38,34 @@ public class ChatController {
     }
 
     /**
+     * POST /api/chat/memory
+     * Request body: { "conversationId": "...", "message": "follow-up question" }
+     * Keeps a short in-memory history for natural follow-up conversations.
+     */
+    @PostMapping("/memory")
+    public ResponseEntity<Map<String, Object>> chatWithMemory(@RequestBody Map<String, String> request) {
+        String userMessage = request.get("message");
+        String conversationId = request.get("conversationId");
+
+        if (userMessage == null || userMessage.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Message không được trống"));
+        }
+
+        Map<String, Object> result = chatService.chatWithMemory(conversationId, userMessage);
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * DELETE /api/chat/memory/{conversationId}
+     * Clears backend memory for one conversation.
+     */
+    @DeleteMapping("/memory/{conversationId}")
+    public ResponseEntity<Map<String, Object>> clearMemory(@PathVariable String conversationId) {
+        chatService.clearConversation(conversationId);
+        return ResponseEntity.ok(Map.of("status", "cleared", "conversationId", conversationId));
+    }
+
+    /**
      * POST /api/chat/custom
      * Allows custom role settings.
      */

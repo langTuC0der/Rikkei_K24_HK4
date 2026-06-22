@@ -1,5 +1,6 @@
 package com.microservice.test_ai.controller;
 
+import com.microservice.test_ai.config.TeacherStylePrompt;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.ChatOptions;
@@ -35,7 +36,11 @@ public class StreamingChatController {
             .temperature(0.7)
             .build();
 
-        Prompt prompt = new Prompt(message, options);
+        var messages = new ArrayList<Message>();
+        messages.add(new org.springframework.ai.chat.messages.SystemMessage(TeacherStylePrompt.VIETNAMESE_AI_LECTURER));
+        messages.add(new org.springframework.ai.chat.messages.UserMessage(message));
+
+        Prompt prompt = new Prompt(messages, options);
 
         return chatModel.stream(prompt)
             .map(response -> {
@@ -62,6 +67,8 @@ public class StreamingChatController {
         var messages = new ArrayList<Message>();
         if (request.systemPrompt() != null && !request.systemPrompt().isBlank()) {
             messages.add(new org.springframework.ai.chat.messages.SystemMessage(request.systemPrompt()));
+        } else {
+            messages.add(new org.springframework.ai.chat.messages.SystemMessage(TeacherStylePrompt.VIETNAMESE_AI_LECTURER));
         }
         messages.add(new org.springframework.ai.chat.messages.UserMessage(request.message()));
 
