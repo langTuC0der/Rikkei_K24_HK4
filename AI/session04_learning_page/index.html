@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session 04: Xây dựng AI Agent & Function Calling - Rikkei Academy</title>
+  <meta name="description" content="Trang bài giảng trực quan, tương tác cao về kiến trúc AI Agent, Chat Memory, Function Calling và đóng gói Spring Service thành Tool thực chiến bằng Spring AI.">
+  <!-- Google Fonts & Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- --- SIDEBAR NAVIGATION --- -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <h2>Rikkei AI <span>S04</span></h2>
+      </div>
+      <nav class="sidebar-menu">
+        <span class="menu-label">Bài học lý thuyết</span>
+        <a class="menu-item active" data-target="overview">
+          <i class="fas fa-compass"></i>
+          <span>Tổng quan Session</span>
+        </a>
+        <a class="menu-item" data-target="lesson1">
+          <i class="fas fa-brain"></i>
+          <span>L1: AI Agent & Memory</span>
+        </a>
+        <a class="menu-item" data-target="lesson2">
+          <i class="fas fa-network-wired"></i>
+          <span>L2: Function Calling</span>
+        </a>
+        <a class="menu-item" data-target="lesson3">
+          <i class="fas fa-box-open"></i>
+          <span>L3: Đóng gói Service</span>
+        </a>
+        <a class="menu-item" data-target="lesson4">
+          <i class="fas fa-concierge-bell"></i>
+          <span>L4: Booking Agent Thực chiến</span>
+        </a>
+        
+        <span class="menu-label">Thực hành tương tác</span>
+        <a class="menu-item" data-target="simulator">
+          <i class="fas fa-laptop-code"></i>
+          <span>Agent Brain Simulator</span>
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <p>© 2026 Rikkei Education</p>
+        <p>AI Integrated in Action</p>
+      </div>
+    </aside>
+
+    <!-- --- MAIN CONTENT AREA --- -->
+    <main class="main-content">
+      
+      <!-- --- HEADER --- -->
+      <header class="header">
+        <div class="header-title">
+          <i class="fas fa-compass"></i> Tổng quan Session
+        </div>
+        <div class="header-meta">
+          <div class="progress-container">
+            <span class="progress-text">20% Hoàn thành</span>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill"></div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- --- HERO & CONTENT WRAPPER --- -->
+      <div class="content-wrapper">
+
+        <!-- ================= OVERVIEW SECTION ================= -->
+        <section id="overview" class="lesson-section active">
+          <div class="hero-section">
+            <div class="hero-glow"></div>
+            <span class="hero-subtitle">Môn học: AI Integrated in Action</span>
+            <h1 class="hero-title">Xây dựng <span>AI Agent</span> & <span>Function Calling</span></h1>
+            <p class="hero-desc">
+              Học cách thiết kế hệ thống AI có trạng thái (Stateful) biết ghi nhớ cuộc đối thoại, tự động ra quyết định và kích hoạt các phương thức Java trên Server để thực hiện nghiệp vụ đặt phòng khách sạn thực tế.
+            </p>
+            <div class="hero-badges">
+              <div class="badge"><i class="fas fa-user-graduate"></i> Dành cho Java Dev (Spring Boot)</div>
+              <div class="badge"><i class="fas fa-microchip"></i> Spring AI 1.1.5</div>
+              <div class="badge"><i class="fas fa-cogs"></i> ReAct Architecture</div>
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <div class="card-header-main">
+              <h2 class="card-title">Mục tiêu Session 04</h2>
+            </div>
+            <div class="theory-block">
+              <p>Session này sẽ trang bị cho bạn kiến thức và kỹ năng thực tế để biến một mô hình ngôn ngữ lớn (LLM) tĩnh thành một tác nhân thông minh có khả năng hành động:</p>
+              <ul>
+                <li><strong>Hiểu sâu kiến trúc AI Agent:</strong> Chu trình tư duy (Reasoning) - Hành động (Acting) - Quan sát (Observing) dựa trên mô hình ReAct.</li>
+                <li><strong>Quản lý Chat Memory:</strong> Thiết lập cơ chế ghi nhớ lịch sử hội thoại dạng InMemory và Persistent (Redis, JDBC) để duy trì ngữ cảnh.</li>
+                <li><strong>Làm chủ cơ chế Function Calling:</strong> Cách LLM ánh xạ ngôn ngữ tự nhiên sang cấu trúc dữ liệu JSON để gửi yêu cầu kích hoạt các phương thức Java.</li>
+                <li><strong>Đóng gói Spring Service thành Tool:</strong> Sử dụng annotation mới <code>@Tool</code> trong Spring AI 1.1.5 để biến các lớp nghiệp vụ sẵn có thành các siêu công cụ cho AI gọi tự động.</li>
+                <li><strong>Dự án thực chiến:</strong> Xây dựng một AI Booking Agent đặt phòng khách sạn hoàn chỉnh có khả năng kiểm tra phòng trống, báo giá và lưu trữ booking vào database.</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ================= LESSON 01: AGENT & MEMORY ================= -->
+        <section id="lesson1" class="lesson-section">
+          <div class="glass-card">
+            <div class="card-header-main">
+              <div class="lesson-num">Lesson 01</div>
+              <h2 class="card-title">Kiến trúc AI Agent & Chat Memory</h2>
+            </div>
+
+            <!-- Tabs Navigation -->
+            <div class="tab-container">
+              <div class="tab-nav">
+                <button class="tab-btn active" data-tab="l1-theory" data-group="l1">Lý thuyết</button>
+                <button class="tab-btn" data-tab="l1-flow" data-group="l1">Sơ đồ luồng</button>
+                <button class="tab-btn" data-tab="l1-code" data-group="l1">Mã nguồn</button>
+                <button class="tab-btn" data-tab="l1-lab" data-group="l1">Lab kiểm thử</button>
+                <button class="tab-btn" data-tab="l1-slides" data-group="l1">Slide trình chiếu</button>
+              </div>
+            </div>
+
+            <!-- Tab Content: Theory -->
+            <div class="tab-content active" data-tab-id="l1-theory" data-content-group="l1">
+              <div class="theory-block">
+                <h3>1. AI Agent là gì?</h3>
+                <p>Khác với mô hình ngôn ngữ (LLM) thông thường chỉ nhận Input và tạo ra Output (dạng Stateless), <strong>AI Agent</strong> là một hệ thống có khả năng tự động thực hiện các hành động phức tạp bằng cách lặp lại chu kỳ: <strong>Reasoning (Tư duy) -> Acting (Hành động) -> Observing (Quan sát)</strong>.</p>
+                
+                <div class="alert-box note">
+                  <i class="fas fa-info-circle"></i>
+                  <div>
+                    <div class="alert-title">So sánh trực quan</div>
+                    <strong>LLM thông thường:</strong> Giống như một nhà thông thái chỉ biết trả lời câu hỏi dựa trên kiến thức tĩnh có sẵn.<br>
+                    <strong>AI Agent:</strong> Giống như một nhân viên có máy tính, có quyền truy cập Internet, database và có thể tự thao tác thay bạn để xử lý công việc từ A-Z.
+                  </div>
+                </div>
+
+                <h3>2. Mô hình ReAct (Reason + Act)</h3>
+                <p>ReAct là framework kết hợp khả năng lập luận lý thuyết của LLM với khả năng tương tác thế giới ngoài thông qua các công cụ (Tools). Nếu không có vòng lặp ReAct, LLM sẽ cố gắng "đoán mò" và dẫn đến hiện tượng ảo tưởng (hallucination) khi gặp dữ liệu động.</p>
+
+                <div class="diagram-flow-container">
+                  <div class="flow-node-title">Chu trình hoạt động của ReAct</div>
+                  <div class="horizontal-flow">
+                    <div class="flow-node">
+                      <div class="flow-node-title">Thought</div>
+                      <div class="flow-node-desc">LLM lập luận phương án</div>
+                    </div>
+                    <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+                    <div class="flow-node highlight">
+                      <div class="flow-node-title">Action</div>
+                      <div class="flow-node-desc">Gọi API / Database</div>
+                    </div>
+                    <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+                    <div class="flow-node">
+                      <div class="flow-node-title">Observation</div>
+                      <div class="flow-node-desc">Nhận & đánh giá kết quả</div>
+                    </div>
+                  </div>
+                </div>
+
+                <h3>3. Chat Memory — Trí nhớ hội thoại</h3>
+                <p>Mặc định các cuộc gọi API đến LLM đều là Stateless. Để tạo trải nghiệm chat tự nhiên, ta cần gửi kèm toàn bộ lịch sử trò chuyện. Spring AI cung cấp interface <code>ChatMemory</code> để quản lý lịch sử này.</p>
+
+                <div class="comparison-table-wrapper">
+                  <table class="comparison-table">
+                    <thead>
+                      <tr>
+                        <th>Đặc tính</th>
+                        <th class="table-header-col">InMemoryChatMemory</th>
+                        <th class="table-header-col">Persistent Chat Memory</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Vị trí lưu trữ</td>
+                        <td>Bộ nhớ RAM của JVM (Java Virtual Machine)</td>
+                        <td>Cơ sở dữ liệu bên ngoài (Redis, JDBC, VectorDB)</td>
+                      </tr>
+                      <tr>
+                        <td>Độ bền vững</td>
+                        <td>Mất sạch dữ liệu khi restart ứng dụng</td>
+                        <td>Bền vững lâu dài, phù hợp môi trường Production</td>
+                      </tr>
+                      <tr>
+                        <td>Hiệu năng & Quy mô</td>
+                        <td>Cực kỳ nhanh nhưng giới hạn bởi bộ nhớ RAM</td>
+                        <td>Hỗ trợ lưu trữ hàng triệu session chat song song</td>
+                      </tr>
+                      <tr>
+                        <td>Ứng dụng</td>
+                        <td>Môi trường Test, phát triển nhanh (Demo)</td>
+                        <td>Dự án thương mại thực tế sản xuất</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <h3>4. Quản lý Context Window (Cắt tỉa bộ nhớ)</h3>
+                <p>Khi hội thoại quá dài, số lượng token sẽ vượt giới hạn (Context Window). Chúng ta cần các chiến lược quản lý:</p>
+                <ul>
+                  <li><strong>Sliding Window:</strong> Chỉ giữ lại N tin nhắn gần nhất và loại bỏ các tin nhắn cũ hơn.</li>
+                  <li><strong>Token-based Truncation:</strong> Tự động loại bỏ tin nhắn cũ nhất khi tổng số token đạt ngưỡng 80%.</li>
+                  <li><strong>Summarization:</strong> Gọi một LLM phụ để tóm tắt các hội thoại cũ thành một đoạn văn ngắn cô đọng.</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Tab Content: Flow -->
+            <div class="tab-content" data-tab-id="l1-flow" data-content-group="l1">
+              <div class="theory-block">
+                <h3>Luồng dữ liệu với Chat Memory</h3>
+                <p>Dưới đây là sơ đồ tương tác tuần tự mô tả cách <code>MessageChatMemoryAdvisor</code> tự động hóa việc lưu trữ và đọc lịch sử trước khi gửi yêu cầu đến LLM.</p>
+                
+                <div class="diagram-flow-container" style="align-items: stretch;">
+                  <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <div class="flow-node" style="min-width: unset; text-align: left; border-left: 4px solid var(--secondary);">
+                      <strong>Bước 1: Client gửi tin nhắn</strong>
+                      <p style="font-size: 0.8rem; margin: 5px 0 0 0; color: var(--text-secondary);">User gửi tin nhắn kèm <code>chatId</code> ("Tôi muốn đặt phòng").</p>
+                    </div>
+                    <div class="flow-node" style="min-width: unset; text-align: left; border-left: 4px solid var(--primary);">
+                      <strong>Bước 2: Advisor truy vấn Lịch sử</strong>
+                      <p style="font-size: 0.8rem; margin: 5px 0 0 0; color: var(--text-secondary);">Spring AI tự động đọc danh sách tin nhắn cũ trong <code>ChatMemoryRepository</code> theo <code>chatId</code>.</p>
+                    </div>
+                    <div class="flow-node" style="min-width: unset; text-align: left; border-left: 4px solid var(--warning);">
+                      <strong>Bước 3: Tổng hợp Prompt & Gửi LLM</strong>
+                      <p style="font-size: 0.8rem; margin: 5px 0 0 0; color: var(--text-secondary);">Tạo Prompt chứa System Message + History + Tin nhắn mới rồi gửi tới Ollama/OpenAI.</p>
+                    </div>
+                    <div class="flow-node" style="min-width: unset; text-align: left; border-left: 4px solid var(--success);">
+                      <strong>Bước 4: Nhận phản hồi & Tự động lưu</strong>
+                      <p style="font-size: 0.8rem; margin: 5px 0 0 0; color: var(--text-secondary);">LLM trả về câu trả lời. Advisor tự động ghi cả tin nhắn gửi đi và phản hồi vào <code>ChatMemory</code> trước khi trả về Client.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab Content: Code -->
+            <div class="tab-content" data-tab-id="l1-code" data-content-group="l1">
+              <div class="code-hub">
+                <div class="code-header">
+                  <div class="code-tabs">
+                    <button class="code-tab-btn active" data-code-group="lesson1">AgentConfig.java</button>
+                    <button class="code-tab-btn" data-code-group="lesson1">AgentChatService.java</button>
+                    <button class="code-tab-btn" data-code-group="lesson1">AgentChatController.java</button>
+                  </div>
+                  <div class="code-actions">
+                    <button class="copy-btn" data-code-target="lesson1-code-block"><i class="fas fa-copy"></i> Sao chép</button>
+                  </div>
+                </div>
+                <div class="code-body">
+                  <pre><code id="lesson1-code-block"></code></pre>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab Content: Lab -->
+            <div class="tab-content" data-tab-id="l1-lab" data-content-group="l1">
+              <div class="theory-block">
+                <h3>🧪 Phòng thực hành Lab: Kiểm thử Chat Memory</h3>
+                <p>Để xác minh Agent có hoạt động ghi nhớ đúng hay không, chúng ta sẽ thực hiện 2 lượt gọi HTTP liên tiếp. Ở lượt 2, chúng ta sẽ hỏi về thông tin đã cung cấp ở lượt 1.</p>
+                
+                <div class="terminal-container">
+                  <div class="terminal-header">
+                    <div class="terminal-buttons">
+                      <span class="terminal-dot dot-red"></span>
+                      <span class="terminal-dot dot-yellow"></span>
+                      <span class="terminal-dot dot-green"></span>
+                    </div>
+                    <div class="terminal-title">bash - testing memory</div>
+                  </div>
+                  <div class="terminal-body" id="term-l1">
+                    <div class="terminal-line">
+                      <span class="terminal-prompt">$ </span><span class="terminal-command-text">Nhấn nút chạy bên dưới để giả lập gửi request curl...</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div style="display: flex; gap: 12px; margin-top: 16px;">
+                  <button class="run-cmd-btn" data-term-target="term-l1" data-cmd="curl -X POST http://localhost:8080/api/v1/agent/chat -H 'Content-Type: application/json' -d '{&quot;chatId&quot;: &quot;session-1&quot;, &quot;message&quot;: &quot;Chào bạn, tôi tên là Minh Chinh, tôi muốn đặt một phòng Deluxe&quot;}'" data-output="{
+  &quot;chatId&quot;: &quot;session-1&quot;,
+  &quot;response&quot;: &quot;Chào anh Minh Chinh! Em rất vui được hỗ trợ anh. Em đã ghi nhận anh muốn đặt phòng loại Deluxe. Anh dự kiến sẽ lưu trú bao nhiêu đêm và bắt đầu từ ngày nào ạ?&quot;
+}">1. Gửi Lượt 1: Giới thiệu thông tin</button>
+                  
+                  <button class="run-cmd-btn" data-term-target="term-l1" data-cmd="curl -X POST http://localhost:8080/api/v1/agent/chat -H 'Content-Type: application/json' -d '{&quot;chatId&quot;: &quot;session-1&quot;, &quot;message&quot;: &quot;Tôi vừa nói tôi tên là gì và muốn đặt loại phòng nào ấy nhỉ?&quot;}'" data-output="{
+  &quot;chatId&quot;: &quot;session-1&quot;,
+  &quot;response&quot;: &quot;Anh vừa giới thiệu mình tên là Minh Chinh và có nguyện vọng đặt một phòng Deluxe tại khách sạn Rikkei Luxury Hotel của chúng em ạ!&quot;
+}">2. Gửi Lượt 2: Kiểm tra trí nhớ</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab Content: Slides -->
+            <div class="tab-content" data-tab-id="l1-slides" data-content-group="l1">
+              <div class="slides-deck" data-lesson="lesson1">
+                <div class="slide-content-area">
+                  <div class="slide-theme"></div>
+                  <h3 class="slide-title-main"></h3>
+                  <div class="slide-body-bullets"></div>
+                </div>
+                <div class="slides-nav">
+                  <button class="slide-btn slide-prev"><i class="fas fa-chevron-left"></i> Slide trước</button>
+                  <span class="slide-counter"></span>
+                  <button class="slide-btn slide-next">Slide sau <i class="fas fa-chevron-right"></i></button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+
+        <!-- ================= LESSON 02: FUNCTION CALLING ================= -->
+        <section id="lesson2" class="lesson-section">
+          <div class="glass-card">
+            <div class="card-header-main">
+              <div class="lesson-num">Lesson 02</div>
+              <h2 class="card-title">Cơ chế Function Calling trong Spring AI</h2>
+            </div>
+
+            <!-- Tabs Navigation -->
+            <div class="tab-container">
+              <div class="tab-nav">
+                <button class="tab-btn active" data-tab="l2-theory" data-group="l2">Lý thuyết</button>
+                <button class="tab-btn" data-tab="l2-flow" data-group="l2">Sơ đồ luồng</button>
+                <button class="tab-btn" data-tab="l2-code" data-group="l2">Mã nguồn</button>
+                <button class="tab-btn" data-tab="l2-lab" data-group="l2">Lab kiểm thử</button>
+                <button class="tab-btn" data-tab="l2-slides" data-group="l2">Slide trình chiếu</button>
+              </div>
+            </div>
+
+            <!-- Tab Content: Theory -->
+            <div class="tab-content active" data-tab-id="l2-theory" data-content-group="l2">
+              <div class="theory-block">
+                <h3>1. Function Calling là gì?</h3>
+                <p><strong>Function Calling (Gọi hàm)</strong> là cơ chế cho phép các mô hình ngôn ngữ lớn (như GPT-4, Gemini, Qwen) kết nối trực tiếp với các API bên ngoài hoặc chạy các đoạn mã lập trình nội bộ của bạn.</p>
+                
+                <div class="alert-box important">
+                  <i class="fas fa-exclamation-triangle"></i>
+                  <div>
+                    <div class="alert-title">Sự thật quan trọng</div>
+                    LLM <strong>không trực tiếp chạy code Java trên server của bạn</strong>. Thay vào đó, nó nhận diện ý định của người dùng, tự động xuất ra một đối tượng cấu trúc dữ liệu JSON chứa tên hàm và tham số đầu vào cần thiết. Spring AI sẽ nhận JSON này, tìm và kích hoạt method Java tương ứng, rồi gửi trả lại kết quả thực thi về cho LLM.
+                  </div>
+                </div>
+
+                <h3>2. Cơ chế định nghĩa Tool qua Functional Interface</h3>
+                <p>Spring AI sử dụng các functional interface tiêu chuẩn của Java để định nghĩa công cụ, phổ biến nhất là <code>java.util.function.Function&lt;Request, Response&gt;</code>:</p>
+                <ul>
+                  <li><strong>Tạo JSON Schema tự động:</strong> Spring AI tự động đọc cấu trúc của lớp Request (dùng Jackson và JSON Schema generator) để đặc tả cấu trúc tham số gửi đến LLM.</li>
+                  <li><strong>Mô tả tham số:</strong> Sử dụng annotation <code>@JsonPropertyDescription</code> là cực kỳ quan trọng để giải thích cho LLM biết biến đó có mục đích gì.</li>
+                  <li><strong>Ngữ cảnh kích hoạt:</strong> Sử dụng annotation <code>@Description</code> trên Bean để hướng dẫn AI khi nào thì nên sử dụng công cụ này.</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Tab Content: Flow -->
+            <div class="tab-content" data-tab-id="l2-flow" data-content-group="l2">
+              <div class="theory-block">
+                <h3>Sơ đồ tuần tự của Function Calling</h3>
+                <p>Mô phỏng luồng di chuyển dữ liệu 3 bên khi thực hiện yêu cầu gọi hàm:</p>
+                
+                <div class="diagram-flow-container">
+                  <div class="horizontal-flow" style="font-size: 0.85rem;">
+                    <div class="flow-node">
+                      <div class="flow-node-title">1. User hỏi</div>
+                      <div class="flow-node-desc">"Đổi 100 USD sang VND"</div>
+                    </div>
+                    <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+                    <div class="flow-node highlight">
+                      <div class="flow-node-title">2. LLM chọn Tool</div>
+                      <div class="flow-node-desc">Sinh tham số JSON: {amount:100}</div>
+                    </div>
+                    <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+                    <div class="flow-node">
+                      <div class="flow-node-title">3. Java Exec</div>
+                      <div class="flow-node-desc">Chạy hàm đổi tiền -> 2.54M VND</div>
+                    </div>
+                    <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+                    <div class="flow-node highlight">
+                      <div class="flow-node-title">4. AI Answer</div>
+                      <div class="flow-node-desc">"100 USD bằng 2,540,000 VND"</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab Content: Code -->
+            <div class="tab-content" data-tab-id="l2-code" data-content-group="l2">
+              <div class="code-hub">
+                <div class="code-header">
+                  <div class="code-tabs">
+                    <button class="code-tab-btn active" data-code-group="lesson2">CurrencyModel.java</button>
+                    <button class="code-tab-btn" data-code-group="lesson2">CurrencyExchangeFunction.java</button>
+                    <button class="code-tab-btn" data-code-group="lesson2">CurrencyChatService.java</button>
+                  </div>
+                  <div class="code-actions">
+                    <button class="copy-btn" data-code-target="lesson2-code-block"><i class="fas fa-copy"></i> Sao chép</button>
+                  </div>
+                </div>
+                <div class="code-body">
+                  <pre><code id="lesson2-code-block"></code></pre>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab Content: Lab -->
+            <div class="tab-content" data-tab-id="l2-lab" data-content-group="l2">
+              <div class="theory-block">
+                <h3>🧪 Phòng thực hành Lab: Gọi hàm tự động</h3>
+                <p>Chạy ứng dụng Spring Boot và gọi thử API chuyển đổi tiền tệ. Bạn sẽ quan sát thấy AI tự động nhận biết yêu cầu đổi tiền để kích hoạt phương thức Java tương ứng.</p>
+                
+                <div class="terminal-container">
+                  <div class="terminal-header">
+                    <div class="terminal-buttons">
+                      <span class="terminal-dot dot-red"></span>
+                      <span class="terminal-dot dot-yellow"></span>
+                      <span class="terminal-dot dot-green"></span>
+                    </div>
+                    <div class="terminal-title">bash - testing function calling</div>
+                  </div>
+                  <div class="terminal-body" id="term-l2">
+                    <div class="terminal-line">
+                      <span class="terminal-prompt">$ </span><span class="terminal-command-text">Nhấn nút chạy bên dưới để giả lập gửi request curl...</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div style="display: flex; gap: 12px; margin-top: 16px;">
+                  <button class="run-cmd-btn" data-term-target="term-l2" data-cmd="curl &quot;http://localhost:8080/api/v1/currency/chat?message=Tôi+có+250+USD+muốn+đổi+sang+VND+thì+được+bao+nhiêu&quot;" data-output="🎯 Console Log trên Server:
+[exchangeCurrency] được gọi bởi AI với tham số: 250.0 từ USD sang VND
+
+Phản hồi từ AI:
+Với 250 USD, sau khi chuyển đổi sang tiền Việt Nam (VND) với tỷ giá thực tế hiện tại là 25,450.0 VND/USD, bạn sẽ nhận được tổng cộng 6,362,500 VND.">Chạy lệnh curl test Đổi ngoại tệ</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab Content: Slides -->
+            <div class="tab-content" data-tab-id="l2-slides" data-content-group="l2">
+              <div class="slides-deck" data-lesson="lesson2">
+                <div class="slide-content-area">
+                  <div class="slide-theme"></div>
+                  <h3 class="slide-title-main"></h3>
+                  <div class="slide-body-bullets"></div>
+                </div>
+                <div class="slides-nav">
+                  <button class="slide-btn slide-prev"><i class="fas fa-chevron-left"></i> Slide trước</button>
+                  <span class="slide-counter"></span>
+                  <button class="slide-btn slide-next">Slide sau <i class="fas fa-chevron-right"></i></button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+
+        <!-- ================= LESSON 03: PACKING SERVICE ================= -->
+        <section id="lesson3" class="lesson-section">
+          <div class="glass-card">
+            <div class="card-header-main">
+              <div class="lesson-num">Lesson 03</div>
+              <h2 class="card-title">Đóng gói Spring Boot Service thành Tool</h2>
+            </div>
+
+            <!-- Tabs Navigation -->
+            <div class="tab-container">
+              <div class="tab-nav">
+                <button class="tab-btn active" data-tab="l3-theory" data-group="l3">Lý thuyết</button>
+                <button class="tab-btn" data-tab="l3-code" data-group="l3">Mã nguồn</button>
+                <button class="tab-btn" data-tab="l3-lab" data-group="l3">Lab kiểm thử</button>
+                <button class="tab-btn" data-tab="l3-slides" data-group="l3">Slide trình chiếu</button>
+              </div>
+            </div>
+
+            <!-- Tab Content: Theory -->
+            <div class="tab-content active" data-tab-id="l3-theory" data-content-group="l3">
+              <div class="theory-block">
+                <h3>1. Khái niệm Tool trong Spring AI 1.1.5</h3>
+                <p>Trong các phiên bản Spring AI gần đây (phiên bản 1.1.5 trở đi, giới thiệu từ bản 1.0.0.M1), một cơ chế đóng gói mới đã được giới thiệu giúp đơn giản hóa việc chuyển đổi các Service hiện có thành công cụ cho AI, đó là sử dụng annotation <strong><code>@Tool</code></strong>.</p>
+                <p>Trước đây, chúng ta phải khai báo thủ công từng Bean Functional Interface gây rườm rà và khó tái sử dụng code. Với <code>@Tool</code>, ta có thể trực tiếp đánh dấu một method trong `@Service` hoặc `@Component` để biến nó thành công cụ cho AI gọi.</p>
+
+                <h3>2. Ưu điểm của Annotation <code>@Tool</code></h3>
+                <ul>
+                  <li><strong>Dễ tích hợp:</strong> Không cần cấu hình lại các method dưới dạng Functional Interface. Một Service có thể chứa nhiều phương thức <code>@Tool</code> khác nhau.</li>
+                  <li><strong>Hỗ trợ tự động tạo Schema từ Javadoc:</strong> Spring AI tự động đọc Javadoc và các tên biến của phương thức để sinh ra bản đặc tả gửi đến LLM, giảm tải việc cấu hình thủ công.</li>
+                  <li><strong>Hỗ trợ <code>@ToolContext</code>:</strong> Cho phép truyền dữ liệu trạng thái (state) hoặc thông tin bảo mật (như JWT token, User ID) xuyên suốt cuộc gọi của Agent mà LLM không được phép nhìn thấy.</li>
+                </ul>
+
+                <div class="alert-box tip">
+                  <i class="fas fa-lightbulb"></i>
+                  <div>
+                    <div class="alert-title">Mẹo viết Tool tối ưu</div>
+                    Khi sử dụng <code>@Tool</code>, hãy luôn cung cấp thuộc tính <code>description</code> thật rõ ràng hoặc viết Javadoc đầy đủ cho phương thức và các tham số. AI sẽ dựa vào mô tả này để quyết định có chọn gọi hàm này hay không.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab Content: Code -->
+            <div class="tab-content" data-tab-id="l3-code" data-content-group="l3">
+              <div class="code-hub">
+                <div class="code-header">
+                  <div class="code-tabs">
+                    <button class="code-tab-btn active" data-code-group="lesson3">CustomerSupportService.java</button>
+                    <button class="code-tab-btn" data-code-group="lesson3">CustomerAgentService.java</button>
+                  </div>
+                  <div class="code-actions">
+                    <button class="copy-btn" data-code-target="lesson3-code-block"><i class="fas fa-copy"></i> Sao chép</button>
+                  </div>
+                </div>
+                <div class="code-body">
+                  <pre><code id="lesson3-code-block"></code></pre>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab Content: Lab -->
+            <div class="tab-content" data-tab-id="l3-lab" data-content-group="l3">
+              <div class="theory-block">
+                <h3>🧪 Phòng thực hành Lab: Kiểm thử Đóng gói Service</h3>
+                <p>Chúng ta sẽ gọi API hỗ trợ khách hàng để kiểm tra xem Agent có tự động kích hoạt Service nghiệp vụ đã đóng gói bằng `@Tool` để thực hiện tính toán nâng hạng thành viên hay không.</p>
+                
+                <div class="terminal-container">
+                  <div class="terminal-header">
+                    <div class="terminal-buttons">
+                      <span class="terminal-dot dot-red"></span>
+                      <span class="terminal-dot dot-yellow"></span>
+                      <span class="terminal-dot dot-green"></span>
+                    </div>
+                    <div class="terminal-title">bash - testing @Tool annotation</div>
+                  </div>
+                  <div class="terminal-body" id="term-l3">
+                    <div class="terminal-line">
+                      <span class="terminal-prompt">$ </span><span class="terminal-command-text">Nhấn nút chạy bên dưới để giả lập gửi request curl...</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div style="display: flex; gap: 12px; margin-top: 16px;">
+                  <button class="run-cmd-btn" data-term-target="term-l3" data-cmd="curl &quot;http://localhost:8080/api/v1/customer/chat?message=Khách+hàng+C002+còn+thiếu+bao+nhiêu+điểm+để+lên+hạng&quot;" data-output="🎯 Console Log trên Server:
+[calculatePointsToUpgrade] được gọi cho ID: C002
+
+Phản hồi từ AI:
+Chào bạn! Theo thông tin mình tra cứu được, khách hàng có mã số C002 (Trần Quốc Anh) hiện đang ở hạng thành viên Gold. Để có thể nâng cấp lên hạng VIP (hạng cao nhất), anh Quốc Anh cần tích lũy thêm 550 điểm nữa ạ.">Chạy lệnh curl test Service Tool</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab Content: Slides -->
+            <div class="tab-content" data-tab-id="l3-slides" data-content-group="l3">
+              <div class="slides-deck" data-lesson="lesson3">
+                <div class="slide-content-area">
+                  <div class="slide-theme"></div>
+                  <h3 class="slide-title-main"></h3>
+                  <div class="slide-body-bullets"></div>
+                </div>
+                <div class="slides-nav">
+                  <button class="slide-btn slide-prev"><i class="fas fa-chevron-left"></i> Slide trước</button>
+                  <span class="slide-counter"></span>
+                  <button class="slide-btn slide-next">Slide sau <i class="fas fa-chevron-right"></i></button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+
+        <!-- ================= LESSON 04: BOOKING AGENT ================= -->
+        <section id="lesson4" class="lesson-section">
+          <div class="glass-card">
+            <div class="card-header-main">
+              <div class="lesson-num">Lesson 04</div>
+              <h2 class="card-title">Dự án thực chiến: Hotel Booking Agent</h2>
+            </div>
+
+            <!-- Tabs Navigation -->
+            <div class="tab-container">
+              <div class="tab-nav">
+                <button class="tab-btn active" data-tab="l4-theory" data-group="l4">Lý thuyết</button>
+                <button class="tab-btn" data-tab="l4-code" data-group="l4">Mã nguồn</button>
+                <button class="tab-btn" data-tab="l4-lab" data-group="l4">Lab kiểm thử</button>
+                <button class="tab-btn" data-tab="l4-slides" data-group="l4">Slide trình chiếu</button>
+              </div>
+            </div>
+
+            <!-- Tab Content: Theory -->
+            <div class="tab-content active" data-tab-id="l4-theory" data-content-group="l4">
+              <div class="theory-block">
+                <h3>1. Thiết kế Đa công cụ (Multi-Tool Agent)</h3>
+                <p>Trong thực tế, một yêu cầu đặt phòng khách sạn của khách hàng không thể giải quyết bằng một công cụ đơn lẻ. AI Agent cần có khả năng tự động lập kế hoạch và kết hợp nhiều công cụ theo chuỗi để hoàn thành mục tiêu.</p>
+                <p>Ví dụ: Kiểm tra phòng trống -> Báo giá cho khách hàng -> Nhận xác nhận -> Thực hiện đặt chỗ.</p>
+
+                <h3>2. Tầm quan trọng của sự kết hợp: Chat Memory + Tool Calling</h3>
+                <p>Để Agent hoạt động chính xác trong cuộc đối thoại dài, nó cần sự phối hợp nhịp nhàng giữa:</p>
+                <ul>
+                  <li><strong>Chat Memory:</strong> Nhớ các chi tiết người dùng đã cung cấp ở các câu trước (loại phòng, số đêm, ngày nhận phòng).</li>
+                  <li><strong>Tool Calling:</strong> Lấy dữ liệu thực tế tại thời điểm gọi hàm để đưa ra quyết định hoặc thực hiện ghi nhận giao dịch vào database.</li>
+                </ul>
+
+                <h3>3. An toàn giao dịch và tính toàn vẹn dữ liệu</h3>
+                <p>Khi Agent gọi các hàm làm thay đổi trạng thái hệ thống (ghi/xóa database), chúng ta cần áp dụng các biện pháp bảo vệ:</p>
+                <ul>
+                  <li><strong>Idempotency (Tính khả định):</strong> Đảm bảo việc gọi lại Tool đặt phòng không tạo ra các bản ghi trùng lặp (ví dụ: dùng ID giao dịch hoặc kiểm tra trạng thái trước khi lưu).</li>
+                  <li><strong>Xác nhận rõ ràng (Explicit Confirmation):</strong> Quy định rõ trong System Prompt rằng AI Agent bắt buộc phải hỏi lại và nhận được sự đồng ý rõ ràng từ khách hàng trước khi gọi Tool tạo đặt phòng (<code>createBooking</code>).</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Tab Content: Code -->
+            <div class="tab-content" data-tab-id="l4-code" data-content-group="l4">
+              <div class="code-hub">
+                <div class="code-header">
+                  <div class="code-tabs">
+                    <button class="code-tab-btn active" data-code-group="lesson4">Booking.java</button>
+                    <button class="code-tab-btn" data-code-group="lesson4">HotelBookingService.java</button>
+                    <button class="code-tab-btn" data-code-group="lesson4">HotelAgentService.java</button>
+                    <button class="code-tab-btn" data-code-group="lesson4">HotelAgentController.java</button>
+                  </div>
+                  <div class="code-actions">
+                    <button class="copy-btn" data-code-target="lesson4-code-block"><i class="fas fa-copy"></i> Sao chép</button>
+                  </div>
+                </div>
+                <div class="code-body">
+                  <pre><code id="lesson4-code-block"></code></pre>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab Content: Lab -->
+            <div class="tab-content" data-tab-id="l4-lab" data-content-group="l4">
+              <div class="theory-block">
+                <h3>🧪 Phòng thực hành Lab: Đặt phòng Liên hoàn</h3>
+                <p>Chúng ta sẽ thực hiện chuỗi hội thoại đa lượt để giả lập quá trình đặt phòng. Theo dõi console log để thấy AI Agent gọi lần lượt các Tool kiểm tra phòng, tính tiền rồi mới đặt phòng chính thức.</p>
+                
+                <div class="terminal-container">
+                  <div class="terminal-header">
+                    <div class="terminal-buttons">
+                      <span class="terminal-dot dot-red"></span>
+                      <span class="terminal-dot dot-yellow"></span>
+                      <span class="terminal-dot dot-green"></span>
+                    </div>
+                    <div class="terminal-title">bash - multi-tool booking agent</div>
+                  </div>
+                  <div class="terminal-body" id="term-l4">
+                    <div class="terminal-line">
+                      <span class="terminal-prompt">$ </span><span class="terminal-command-text">Nhấn nút chạy bên dưới để giả lập gửi request curl...</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px;">
+                  <button class="run-cmd-btn" data-term-target="term-l4" data-cmd="curl -X POST http://localhost:8080/api/v1/hotel/chat -H 'Content-Type: application/json' -d '{&quot;chatId&quot;: &quot;booking-101&quot;, &quot;message&quot;: &quot;Chào bạn, tôi muốn đặt một phòng Deluxe 2 đêm từ ngày 2026-07-01&quot;}'" data-output="🎯 Console Logs:
+- [checkRoomAvailability] chạy cho loại phòng: DELUXE
+- [calculateTotalPrice] chạy cho loại phòng: DELUXE, số đêm: 2
+
+Phản hồi từ AI:
+Chào anh/chị! Hiện tại phòng loại Deluxe bên em vẫn còn trống ạ. Tổng chi phí cho 2 đêm lưu trú từ ngày 2026-07-01 là 3,000,000 VND. Anh/chị vui lòng cho em xin họ tên và xác nhận đồng ý mức giá trên để em tạo đơn đặt phòng cho mình nhé!">1. Gửi Lượt 1: Yêu cầu đặt phòng & Báo giá</button>
+                  
+                  <button class="run-cmd-btn" data-term-target="term-l4" data-cmd="curl -X POST http://localhost:8080/api/v1/hotel/chat -H 'Content-Type: application/json' -d '{&quot;chatId&quot;: &quot;booking-101&quot;, &quot;message&quot;: &quot;Tôi đồng ý mức giá đó, tôi tên là Nguyễn Minh Chinh&quot;}'" data-output="🎯 Console Logs:
+- [createBooking] chạy cho: Khách hàng=Nguyễn Minh Chinh, Phòng=DELUXE, Ngày=2026-07-01, Số đêm=2
+- Đặt phòng thành công! ID Đặt chỗ: BK-8849
+
+Phản hồi từ AI:
+Cảm ơn anh Chinh! Đơn đặt phòng Deluxe 2 đêm từ ngày 2026-07-01 của anh đã được hoàn tất thành công. Mã đặt chỗ của anh là: BK-8849. Tổng số tiền thanh toán là 3,000,000 VND. Khách sạn Rikkei Luxury rất hân hạnh được đón tiếp anh!">2. Gửi Lượt 2: Xác nhận đặt phòng thành công</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab Content: Slides -->
+            <div class="tab-content" data-tab-id="l4-slides" data-content-group="l4">
+              <div class="slides-deck" data-lesson="lesson4">
+                <div class="slide-content-area">
+                  <div class="slide-theme"></div>
+                  <h3 class="slide-title-main"></h3>
+                  <div class="slide-body-bullets"></div>
+                </div>
+                <div class="slides-nav">
+                  <button class="slide-btn slide-prev"><i class="fas fa-chevron-left"></i> Slide trước</button>
+                  <span class="slide-counter"></span>
+                  <button class="slide-btn slide-next">Slide sau <i class="fas fa-chevron-right"></i></button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+
+        <!-- ================= AGENT BRAIN SIMULATOR ================= -->
+        <section id="simulator" class="lesson-section">
+          <div class="glass-card" style="padding: 24px;">
+            <div class="card-header-main" style="margin-bottom: 20px; padding-bottom: 12px;">
+              <div class="lesson-num">Tương tác trực quan</div>
+              <h2 class="card-title">Agent Brain Simulator (Mô phỏng chu trình ReAct)</h2>
+            </div>
+            
+            <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 20px;">
+              Tận mắt quan sát chu trình xử lý của AI Agent: Nhận yêu cầu -> Tư duy (Thought) -> Gọi hàm Java trên Server (Action) -> Nhận kết quả từ DB (Observation) -> Phản hồi người dùng.
+            </p>
+
+            <div class="simulator-layout">
+              
+              <!-- Left: The Visualizer Canvas -->
+              <div class="sim-visualizer">
+                <!-- SVG Connections -->
+                <svg class="sim-svg-connections">
+                  <path id="path-user-spring" class="sim-connection-path" d="M 140 240 L 400 240" />
+                  <path id="path-spring-llm" class="sim-connection-path" d="M 400 240 L 660 110" />
+                  <path id="path-spring-db" class="sim-connection-path" d="M 400 240 L 660 370" />
+                </svg>
+
+                <!-- Data Packet -->
+                <div class="sim-packet" id="sim-packet-element"></div>
+
+                <!-- Nodes -->
+                <div class="sim-nodes-container">
+                  <!-- User Node -->
+                  <div class="sim-node node-user">
+                    <i class="fas fa-user-circle"></i>
+                    <span class="sim-node-title">Client</span>
+                  </div>
+
+                  <!-- Spring Boot Application Node -->
+                  <div class="sim-node node-spring">
+                    <i class="fas fa-leaf"></i>
+                    <span class="sim-node-title">Spring Boot App</span>
+                  </div>
+
+                  <!-- LLM Provider Node -->
+                  <div class="sim-node node-llm">
+                    <i class="fas fa-cloud"></i>
+                    <span class="sim-node-title">LLM Model</span>
+                  </div>
+
+                  <!-- Database / Java Tool Node -->
+                  <div class="sim-node node-db">
+                    <i class="fas fa-database"></i>
+                    <span class="sim-node-title">Java Services</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right: The Chat/Log Interface -->
+              <div class="sim-interface">
+                <div class="sim-interface-header">
+                  <div class="sim-title">
+                    <i class="fas fa-terminal"></i> Agent Logs & Chat
+                  </div>
+                  <div class="sim-status">
+                    <span class="sim-status-dot"></span>
+                    <span class="sim-status-text">Ready</span>
+                  </div>
+                </div>
+
+                <div class="sim-scenarios">
+                  <span class="scenario-label">Chọn kịch bản mô phỏng:</span>
+                  <select id="sim-scenario-select" class="scenario-select">
+                    <option value="booking">Kịch bản 1: Đặt phòng khách sạn (Multi-tool + Memory)</option>
+                    <option value="currency">Kịch bản 2: Đổi ngoại tệ (Function calling Bean)</option>
+                    <option value="customer">Kịch bản 3: Thành viên VIP (Annotation @Tool)</option>
+                  </select>
+                </div>
+
+                <div class="sim-chat-area" id="sim-chat-box">
+                  <!-- Content populated by JS -->
+                </div>
+
+                <div class="sim-input-area">
+                  <input type="text" id="sim-input-field" class="sim-input" readonly>
+                  <button id="sim-send-btn" class="sim-send-btn" title="Chạy mô phỏng">
+                    <i class="fas fa-play"></i>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- --- FOOTER --- -->
+      <footer class="credits-footer">
+        Thiết kế bằng <i class="fas fa-heart"></i> bởi Antigravity dành cho Rikkei Academy | 2026
+      </footer>
+
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

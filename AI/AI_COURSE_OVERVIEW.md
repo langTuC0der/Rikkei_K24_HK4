@@ -20,10 +20,10 @@
 | S07 | Hackathon | Project | - |
 | S08 | Giám sát AI với Langfuse (LLMOps) | Lý thuyết + Demo | - |
 | S09 | Thực hành: Langfuse Monitoring | Thực hành | - |
-| S10 | Voice AI & Xử lý âm thanh | Lý thuyết + Demo | - |
-| S11 | Thực hành: Voice AI với Whisper | Thực hành | - |
-| S12 | Computer Vision & Nhận diện khuôn mặt | Lý thuyết + Demo | - |
-| S13 | Thực hành: Face Detection & Image Generation | Thực hành | - |
+| S10 | Kiến trúc MCP (Model Context Protocol) | Lý thuyết + Demo | - |
+| S11 | Thực hành cấu hình MCP | Thực hành | - |
+| S12 | Xây dựng AI Email Automation Agent | Lý thuyết + Demo | - |
+| S13 | Thực hành xây dựng AI Email Automation Agent | Thực hành | - |
 
 ---
 
@@ -156,53 +156,50 @@
 
 ---
 
-### 🎤 Session 10 — Voice AI & Xử lý âm thanh
+### 🔌 Session 10 — Kiến trúc MCP (Model Context Protocol)
 
-> 💰 Chi phí $0 với self-hosted Whisper
+#### Lesson 01 — Tổng quan Kiến trúc MCP & Cấu hình Client
+- Hiểu giao thức MCP, 3 thành phần cốt lõi (Prompts, Resources, Tools)
+- Thực hành cấu hình các MCP Server mã nguồn mở có sẵn (GitHub, Postgres, FileSystem) vào các AI Client thực chiến như Antigravity IDE
 
-#### Lesson 01 — Speech-to-Text (STT) với Whisper + Spring AI
-- OpenAI Whisper qua Spring AI
-- Chuyển file âm thanh (.mp3/.wav) → Text
+#### Lesson 02 — Xây dựng MCP Server kết nối Hệ thống Nội bộ
+- Sử dụng SDK (Java, Spring Boot) viết một MCP Server chạy qua giao thức chuẩn Stdio
+- Khai báo các Resources để AI đọc dữ liệu trực tiếp từ Database nội bộ (PostgreSQL) hoặc file cấu hình hệ thống một cách an toàn
 
-#### Lesson 02 — Text-to-Speech (TTS) với OpenAI + Spring AI
-- Chuyển Text response từ AI → File âm thanh (.mp3)
-- Client nhận file → phát trực tiếp
+#### Lesson 03 — Tích hợp MCP Server với Spring AI (Java Ecosystem)
+- Kết nối ứng dụng Spring Boot hiện tại với hệ sinh thái MCP Server
+- Cơ chế định tuyến và chuyển đổi dữ liệu từ giao thức MCP sang cấu trúc ChatModel và ChatOptions của Spring AI
 
-#### Lesson 03 — Xử lý đa phương tiện trong Java
-- `MultipartFile` để nhận file upload từ client
-- Stream processing, File management (lưu/xóa file tạm)
-
-#### Lesson 04 — AI Voice Agent (End-to-End)
-- Luồng: User upload ghi âm → STT (Whisper) → AI Agent xử lý → TTS → Client phát audio
-
----
-
-### 💻 Session 11 — Thực hành: Voice AI với Whisper
+#### Lesson 04 — Xây dựng AI Data Analyst Agent qua MCP Tools
+- Khai báo Tools trên MCP Server cho phép AI thực thi các câu lệnh chỉnh sửa dữ liệu hoặc kích hoạt API bên thứ ba
+- Xây dựng một Agent tự đọc dữ liệu DB qua Resource → Tự phân tích → Tự dùng Tool xuất file báo cáo định dạng Markdown/Excel trả về hệ thống
 
 ---
 
-### 👁️ Session 12 — Computer Vision & Nhận diện khuôn mặt
-
-> 💰 Chi phí $0 — YOLO + OpenCV (chỉ tốn hardware: GTX 1650/RTX 3050 là đủ)
-
-#### Lesson 01 — Multimodal LLMs & Vision API
-- Truyền hình ảnh (Base64/Binary) + prompt qua Spring AI
-- LLM phân tích ảnh: OCR nâng cao, mô tả ảnh, trích xuất thông tin
-
-#### Lesson 02 — Object Detection với OpenCV & YOLO
-- YOLO Model qua Java wrapper
-- Output: Bounding Boxes, Labels, Confidence Score
-
-#### Lesson 03 — Face Detection & Recognition
-- OpenCV Java wrapper (local, free, offline)
-- Cloud option: AWS Rekognition / Google Vision (chính xác cao, tính phí)
-
-#### Lesson 04 — Module Chấm công bằng khuôn mặt
-- Luồng: Camera chụp ảnh → API nhận ảnh → Face Detection → So sánh với DB → Trả về Tên/ID/Thời gian → Ghi vào Attendance
+### 💻 Session 11 — Thực hành cấu hình MCP
 
 ---
 
-### 💻 Session 13 — Thực hành: Face Detection & Image Generation
+### 📧 Session 12 — Xây dựng AI Email Automation Agent
+
+#### Lesson 01 — Cấu hình Hạ tầng Gửi Mail & Spring Boot Mail
+- Đăng ký Google App Password, cấu hình giao thức SMTP (spring-boot-starter-mail) trong Spring Boot
+- Viết dịch vụ Java thuần để gửi email định dạng Text và HTML Template (Thymeleaf) đảm bảo hạ tầng chạy thông suốt
+
+#### Lesson 02 — Thiết kế Email Agent Core & Nhận diện Intent
+- Xây dựng AI Agent nhận đầu vào là câu lệnh tự nhiên của User (ví dụ: "Gửi báo cáo doanh thu cho anh Quang")
+- Sử dụng Spring AI Prompt Template để huấn luyện Agent tự bóc tách thông tin: Người nhận (To), Tiêu đề (Subject), và tóm tắt nội dung cần soạn thảo
+
+#### Lesson 03 — Đóng gói SMTP Service thành Tool Call cho AI
+- Sử dụng tính năng Function Calling của Spring AI (hoặc định nghĩa MCP Tool) để đóng gói hàm gửi Email của Java thành một công cụ
+- Huấn luyện Agent biết cách tự động kích hoạt hàm này khi thu thập đủ thông tin từ người dùng
+
+#### Lesson 04 — Xây dựng Hệ thống Trợ lý Thư ký Email Tự động (AI Email Secretary)
+- Xây dựng một quy trình hoàn chỉnh: Agent tiếp nhận yêu cầu → Tự gọi API/Database nội bộ lấy dữ liệu → Tự tổng hợp và soạn thảo văn bản email chuyên nghiệp → Tự động kích hoạt Tool gửi email qua Gmail SMTP → Trả về trạng thái thông báo thành công cho Client
+
+---
+
+### 💻 Session 13 — Thực hành xây dựng AI Email Automation Agent
 
 ---
 
