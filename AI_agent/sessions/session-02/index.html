@@ -1,1715 +1,908 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Session 02 — Prompt Engineering - Cơ bản | Prompt, Context & Harness Engineering</title>
-    <meta name="description" content="Học liệu chi tiết Session 02: Cấu trúc R-C-T-F-C-E, Zero/One/Few-Shot Prompting, Multi-layer System Prompt, Native Structured Output.">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        /* ====================== DESIGN SYSTEM ====================== */
-        :root {
-            --bg-primary: #0a0a1a;
-            --bg-secondary: #111128;
-            --bg-card: #161635;
-            --bg-card-hover: #1c1c45;
-            --bg-code: #1e1e3f;
-            --bg-highlight: rgba(99, 102, 241, 0.08);
-
-            --text-primary: #e8e8f0;
-            --text-secondary: #9ca3bf;
-            --text-muted: #6b7294;
-            --text-accent: #818cf8;
-
-            --accent-primary: #818cf8;
-            --accent-secondary: #6366f1;
-            --accent-gradient: linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa);
-            --accent-glow: rgba(99, 102, 241, 0.3);
-
-            --cyan: #22d3ee;
-            --cyan-glow: rgba(34, 211, 238, 0.2);
-            --magenta: #f472b6;
-            --magenta-glow: rgba(244, 114, 182, 0.2);
-            --gold: #fbbf24;
-            --gold-glow: rgba(251, 191, 36, 0.15);
-            --emerald: #34d399;
-            --emerald-glow: rgba(52, 211, 153, 0.15);
-            --red-soft: #f87171;
-            --orange-soft: #fb923c;
-
-            --border-subtle: rgba(99, 102, 241, 0.12);
-            --border-medium: rgba(99, 102, 241, 0.25);
-
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            --radius-xl: 24px;
-
-            --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
-            --shadow-glow: 0 0 30px var(--accent-glow);
-
-            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-
-            --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-medium: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-slow: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* ====================== RESET & BASE ====================== */
-        *, *::before, *::after {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html {
-            scroll-behavior: smooth;
-            font-size: 16px;
-        }
-
-        body {
-            font-family: var(--font-body);
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            line-height: 1.7;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        ::selection {
-            background: var(--accent-secondary);
-            color: white;
-        }
-
-        /* ====================== BACKGROUND EFFECTS ====================== */
-        .bg-grid {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-image:
-                linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
-            background-size: 60px 60px;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .bg-glow-1 {
-            position: fixed;
-            top: -20%; left: -10%;
-            width: 60vw; height: 60vw;
-            background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, transparent 70%);
-            pointer-events: none;
-            z-index: 0;
-            filter: blur(80px);
-        }
-
-        .bg-glow-2 {
-            position: fixed;
-            bottom: -20%; right: -10%;
-            width: 60vw; height: 60vw;
-            background: radial-gradient(circle, rgba(34, 211, 238, 0.05) 0%, transparent 70%);
-            pointer-events: none;
-            z-index: 0;
-            filter: blur(80px);
-        }
-
-        /* ====================== PROGRESS BAR ====================== */
-        .progress-bar {
-            position: fixed;
-            top: 0; left: 0;
-            height: 3px;
-            background: var(--accent-gradient);
-            z-index: 1001;
-            width: 0%;
-            transition: width 0.1s ease;
-            box-shadow: 0 0 10px var(--accent-primary);
-        }
-
-        /* ====================== NAVIGATION ====================== */
-        .nav {
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            height: 70px;
-            background: rgba(10, 10, 26, 0.8);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border-subtle);
-            z-index: 1000;
-            transition: var(--transition-fast);
-        }
-
-        .nav-inner {
-            max-width: 1200px;
-            height: 100%;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 2rem;
-        }
-
-        .nav-brand {
-            font-size: 1.1rem;
-            font-weight: 800;
-            text-decoration: none;
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            letter-spacing: -0.5px;
-        }
-
-        .nav-brand .badge {
-            background: rgba(99, 102, 241, 0.15);
-            border: 1px solid var(--border-medium);
-            padding: 2px 10px;
-            border-radius: 20px;
-            font-size: 0.72rem;
-            font-weight: 700;
-            color: var(--accent-primary);
-            letter-spacing: 0.5px;
-        }
-
-        .nav-links {
-            display: flex;
-            list-style: none;
-            gap: 8px;
-        }
-
-        .nav-links a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 0.88rem;
-            font-weight: 600;
-            padding: 8px 16px;
-            border-radius: var(--radius-sm);
-            transition: var(--transition-fast);
-        }
-
-        .nav-links a:hover {
-            color: var(--text-primary);
-            background: var(--bg-highlight);
-        }
-
-        .nav-links a.active {
-            color: var(--accent-primary);
-            background: var(--bg-highlight);
-        }
-
-        /* ====================== HERO SECTION ====================== */
-        .hero {
-            position: relative;
-            z-index: 1;
-            padding: 140px 2rem 80px;
-            text-align: center;
-            overflow: hidden;
-        }
-
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 800px; height: 800px;
-            background: radial-gradient(circle, rgba(99, 102, 241, 0.1), transparent 60%);
-            pointer-events: none;
-        }
-
-        .hero-label {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(99, 102, 241, 0.1);
-            border: 1px solid var(--border-medium);
-            padding: 6px 18px;
-            border-radius: 30px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--accent-primary);
-            margin-bottom: 24px;
-            animation: fadeInUp 0.6s ease;
-        }
-
-        .hero-label .dot {
-            width: 8px; height: 8px;
-            background: var(--emerald);
-            border-radius: 50%;
-            animation: pulse-dot 2s ease infinite;
-        }
-
-        @keyframes pulse-dot {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.3); }
-        }
-
-        .hero h1 {
-            font-size: clamp(2.2rem, 5vw, 3.8rem);
-            font-weight: 900;
-            line-height: 1.15;
-            margin-bottom: 16px;
-            letter-spacing: -1.5px;
-            animation: fadeInUp 0.6s ease 0.1s backwards;
-        }
-
-        .hero h1 .gradient-text {
-            background: var(--accent-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .hero .subtitle {
-            font-size: clamp(1rem, 2vw, 1.25rem);
-            color: var(--text-secondary);
-            max-width: 750px;
-            margin: 0 auto 32px;
-            line-height: 1.6;
-            animation: fadeInUp 0.6s ease 0.2s backwards;
-        }
-
-        .hero-stats {
-            display: flex;
-            justify-content: center;
-            gap: 40px;
-            flex-wrap: wrap;
-            animation: fadeInUp 0.6s ease 0.3s backwards;
-        }
-
-        .hero-stat {
-            text-align: center;
-        }
-
-        .hero-stat .number {
-            font-size: 2rem;
-            font-weight: 800;
-            background: var(--accent-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .hero-stat .label {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* ====================== MAIN CONTENT ====================== */
-        .main {
-            position: relative;
-            z-index: 1;
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 0 2rem 80px;
-        }
-
-        /* ====================== LESSON SECTIONS ====================== */
-        .lesson {
-            margin-bottom: 80px;
-            animation: fadeInUp 0.5s ease backwards;
-        }
-
-        .lesson-header {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 32px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--border-subtle);
-        }
-
-        .lesson-number {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 56px; height: 56px;
-            background: var(--accent-gradient);
-            border-radius: var(--radius-md);
-            font-size: 1.1rem;
-            font-weight: 800;
-            color: white;
-            flex-shrink: 0;
-            box-shadow: var(--shadow-glow);
-        }
-
-        .lesson-title-group h2 {
-            font-size: 1.6rem;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            line-height: 1.2;
-        }
-
-        .lesson-title-group .lesson-meta {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-top: 4px;
-            display: flex;
-            gap: 16px;
-        }
-
-        .lesson-title-group .lesson-meta span {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        /* ====================== CONTENT BLOCKS ====================== */
-        .block {
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            padding: 32px;
-            margin-bottom: 24px;
-            transition: var(--transition-medium);
-        }
-
-        .block:hover {
-            border-color: var(--border-medium);
-            box-shadow: var(--shadow-card);
-            transform: translateY(-2px);
-        }
-
-        .block-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .block-icon {
-            font-size: 1.4rem;
-        }
-
-        .block-label {
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            padding: 4px 12px;
-            border-radius: 20px;
-        }
-
-        .block-label.theory {
-            background: rgba(99, 102, 241, 0.15);
-            color: var(--accent-primary);
-        }
-
-        .block-label.practice {
-            background: rgba(34, 211, 238, 0.15);
-            color: var(--cyan);
-        }
-
-        .block-label.exercise {
-            background: rgba(251, 191, 36, 0.15);
-            color: var(--gold);
-        }
-
-        .block-label.insight {
-            background: rgba(52, 211, 153, 0.15);
-            color: var(--emerald);
-        }
-
-        .block-label.warning {
-            background: rgba(248, 113, 113, 0.15);
-            color: var(--red-soft);
-        }
-
-        .block-label.new {
-            background: rgba(244, 114, 182, 0.15);
-            color: var(--magenta);
-        }
-
-        .block h3 {
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin-bottom: 16px;
-        }
-
-        .block p, .block li {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-            line-height: 1.8;
-        }
-
-        .block ul, .block ol {
-            padding-left: 20px;
-            margin: 12px 0;
-        }
-
-        .block li {
-            margin-bottom: 8px;
-        }
-
-        .block li::marker {
-            color: var(--accent-primary);
-        }
-
-        .block strong {
-            color: var(--text-primary);
-            font-weight: 600;
-        }
-
-        /* ====================== IMAGES ====================== */
-        .image-showcase {
-            margin: 24px 0;
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-            border: 1px solid var(--border-subtle);
-            background: var(--bg-secondary);
-            transition: var(--transition-medium);
-        }
-
-        .image-showcase:hover {
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 30px var(--accent-glow);
-        }
-
-        .image-showcase img {
-            width: 100%;
-            display: block;
-            transition: var(--transition-medium);
-        }
-
-        .image-showcase:hover img {
-            transform: scale(1.02);
-        }
-
-        .image-caption {
-            padding: 14px 20px;
-            font-size: 0.82rem;
-            color: var(--text-muted);
-            text-align: center;
-            font-style: italic;
-            border-top: 1px solid var(--border-subtle);
-            background: rgba(0, 0, 0, 0.2);
-        }
-
-        /* ====================== TABLES ====================== */
-        .table-wrapper {
-            overflow-x: auto;
-            margin: 20px 0;
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border-subtle);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.88rem;
-        }
-
-        thead {
-            background: rgba(99, 102, 241, 0.1);
-        }
-
-        th {
-            text-align: left;
-            padding: 14px 18px;
-            font-weight: 700;
-            font-size: 0.78rem;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: var(--accent-primary);
-            border-bottom: 1px solid var(--border-medium);
-            white-space: nowrap;
-        }
-
-        td {
-            padding: 12px 18px;
-            color: var(--text-secondary);
-            border-bottom: 1px solid var(--border-subtle);
-            vertical-align: top;
-        }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        tr:hover td {
-            background: rgba(99, 102, 241, 0.04);
-        }
-
-        td strong {
-            color: var(--text-primary);
-        }
-
-        /* ====================== CODE BLOCKS ====================== */
-        .code-block {
-            background: var(--bg-code);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-md);
-            margin: 16px 0;
-            overflow: hidden;
-        }
-
-        .code-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 16px;
-            background: rgba(0, 0, 0, 0.3);
-            border-bottom: 1px solid var(--border-subtle);
-        }
-
-        .code-lang {
-            font-size: 0.72rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .code-dots {
-            display: flex;
-            gap: 6px;
-        }
-
-        .code-dots span {
-            width: 10px; height: 10px;
-            border-radius: 50%;
-        }
-
-        .code-dots span:nth-child(1) { background: #ff5f56; }
-        .code-dots span:nth-child(2) { background: #ffbd2e; }
-        .code-dots span:nth-child(3) { background: #27c93f; }
-
-        .code-block pre {
-            padding: 20px;
-            overflow-x: auto;
-            font-family: var(--font-mono);
-            font-size: 0.82rem;
-            line-height: 1.7;
-            color: #e0e0f0;
-        }
-
-        .code-block .comment { color: #6b7294; }
-        .code-block .keyword { color: #c792ea; }
-        .code-block .string { color: #c3e88d; }
-        .code-block .function { color: #82aaff; }
-        .code-block .variable { color: #f78c6c; }
-        .code-block .type { color: #ffcb6b; }
-        .code-block .tag { color: #80cbc4; }
-        .code-block .highlight-line { 
-            background: rgba(99, 102, 241, 0.1); 
-            display: block;
-            margin: 0 -20px;
-            padding: 0 20px;
-        }
-
-        /* ====================== CALLOUTS ====================== */
-        .callout {
-            border-radius: var(--radius-md);
-            padding: 20px 24px;
-            margin: 20px 0;
-            display: flex;
-            gap: 14px;
-            align-items: flex-start;
-        }
-
-        .callout-icon {
-            font-size: 1.3rem;
-            flex-shrink: 0;
-            margin-top: 2px;
-        }
-
-        .callout-content {
-            flex: 1;
-        }
-
-        .callout-content strong {
-            display: block;
-            margin-bottom: 4px;
-            font-size: 0.9rem;
-        }
-
-        .callout-content p {
-            font-size: 0.88rem;
-            line-height: 1.6;
-        }
-
-        .callout.insight {
-            background: rgba(52, 211, 153, 0.08);
-            border: 1px solid rgba(52, 211, 153, 0.2);
-        }
-        .callout.insight strong { color: var(--emerald); }
-
-        .callout.warning {
-            background: rgba(248, 113, 113, 0.08);
-            border: 1px solid rgba(248, 113, 113, 0.2);
-        }
-        .callout.warning strong { color: var(--red-soft); }
-
-        .callout.tip {
-            background: rgba(34, 211, 238, 0.08);
-            border: 1px solid rgba(34, 211, 238, 0.2);
-        }
-        .callout.tip strong { color: var(--cyan); }
-
-        .callout.new-tag {
-            background: rgba(244, 114, 182, 0.08);
-            border: 1px solid rgba(244, 114, 182, 0.2);
-        }
-        .callout.new-tag strong { color: var(--magenta); }
-
-        /* ====================== DIAGRAM BOX ====================== */
-        .diagram-box {
-            background: var(--bg-code);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-md);
-            padding: 24px;
-            margin: 20px 0;
-            font-family: var(--font-mono);
-            font-size: 0.78rem;
-            line-height: 1.6;
-            color: var(--text-secondary);
-            overflow-x: auto;
-            white-space: pre;
-        }
-
-        .diagram-box .label { color: var(--accent-primary); font-weight: 600; }
-        .diagram-box .highlight { color: var(--cyan); }
-        .diagram-box .accent { color: var(--magenta); }
-        .diagram-box .gold { color: var(--gold); }
-
-        /* ====================== EXERCISE ITEMS ====================== */
-        .exercise-item {
-            background: rgba(251, 191, 36, 0.05);
-            border: 1px solid rgba(251, 191, 36, 0.15);
-            border-radius: var(--radius-sm);
-            padding: 16px 20px;
-            margin: 10px 0;
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            transition: var(--transition-fast);
-        }
-
-        .exercise-item:hover {
-            background: rgba(251, 191, 36, 0.08);
-            border-color: rgba(251, 191, 36, 0.3);
-        }
-
-        .exercise-num {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 28px; height: 28px;
-            background: rgba(251, 191, 36, 0.15);
-            border-radius: 50%;
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: var(--gold);
-        }
-
-        .exercise-text {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            line-height: 1.6;
-        }
-
-        /* ====================== SEPARATOR ====================== */
-        .separator {
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--border-medium), transparent);
-            margin: 60px 0;
-        }
-
-        /* ====================== QUIZ SECTION ====================== */
-        .quiz-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            padding: 28px;
-            margin: 16px 0;
-        }
-
-        .quiz-question {
-            font-weight: 600;
-            font-size: 0.95rem;
-            margin-bottom: 16px;
-            color: var(--text-primary);
-        }
-
-        .quiz-options {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .quiz-option {
-            background: rgba(99, 102, 241, 0.05);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-sm);
-            padding: 12px 18px;
-            cursor: pointer;
-            font-size: 0.88rem;
-            color: var(--text-secondary);
-            transition: var(--transition-fast);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .quiz-option:hover {
-            background: rgba(99, 102, 241, 0.1);
-            border-color: var(--accent-primary);
-            color: var(--text-primary);
-        }
-
-        .quiz-option.correct {
-            background: rgba(52, 211, 153, 0.1);
-            border-color: var(--emerald);
-            color: var(--emerald);
-        }
-
-        .quiz-option.wrong {
-            background: rgba(248, 113, 113, 0.1);
-            border-color: var(--red-soft);
-            color: var(--red-soft);
-        }
-
-        .quiz-option .radio {
-            width: 18px; height: 18px;
-            border: 2px solid var(--border-medium);
-            border-radius: 50%;
-            flex-shrink: 0;
-            transition: var(--transition-fast);
-        }
-
-        .quiz-option.correct .radio {
-            border-color: var(--emerald);
-            background: var(--emerald);
-            box-shadow: inset 0 0 0 3px var(--bg-card);
-        }
-
-        .quiz-option.wrong .radio {
-            border-color: var(--red-soft);
-            background: var(--red-soft);
-            box-shadow: inset 0 0 0 3px var(--bg-card);
-        }
-
-        .quiz-feedback {
-            margin-top: 12px;
-            padding: 12px 16px;
-            border-radius: var(--radius-sm);
-            font-size: 0.85rem;
-            display: none;
-        }
-
-        .quiz-feedback.show { display: block; }
-
-        .quiz-feedback.correct-feedback {
-            background: rgba(52, 211, 153, 0.1);
-            border: 1px solid rgba(52, 211, 153, 0.2);
-            color: var(--emerald);
-        }
-
-        .quiz-feedback.wrong-feedback {
-            background: rgba(248, 113, 113, 0.1);
-            border: 1px solid rgba(248, 113, 113, 0.2);
-            color: var(--red-soft);
-        }
-
-        /* ====================== FOOTER ====================== */
-        .footer {
-            position: relative;
-            z-index: 1;
-            text-align: center;
-            padding: 40px 2rem;
-            border-top: 1px solid var(--border-subtle);
-            color: var(--text-muted);
-            font-size: 0.8rem;
-        }
-
-        .footer a {
-            color: var(--accent-primary);
-            text-decoration: none;
-        }
-
-        .footer .nav-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 16px;
-            margin-bottom: 20px;
-        }
-
-        .footer .nav-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 24px;
-            border-radius: var(--radius-sm);
-            font-weight: 600;
-            font-size: 0.85rem;
-            text-decoration: none;
-            transition: var(--transition-fast);
-        }
-
-        .footer .nav-btn.prev {
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            color: var(--text-secondary);
-        }
-
-        .footer .nav-btn.next {
-            background: var(--accent-gradient);
-            color: white;
-            border: none;
-        }
-
-        .footer .nav-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-card);
-        }
-
-        /* ====================== SCROLL ANIMATIONS ====================== */
-        .animate-on-scroll {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.6s ease, transform 0.6s ease;
-        }
-
-        .animate-on-scroll.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* ====================== SCROLL TO TOP ====================== */
-        .scroll-top {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 46px; height: 46px;
-            background: var(--accent-gradient);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 999;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: var(--transition-fast);
-            box-shadow: var(--shadow-glow);
-        }
-
-        .scroll-top.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .scroll-top:hover {
-            transform: translateY(-3px) scale(1.05);
-        }
-
-        /* ====================== TOC SIDEBAR ====================== */
-        .toc-toggle {
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            z-index: 998;
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            color: var(--text-secondary);
-            width: 40px; height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            transition: var(--transition-fast);
-        }
-
-        .toc-toggle:hover {
-            background: var(--accent-secondary);
-            color: white;
-        }
-
-        .toc-panel {
-            position: fixed;
-            top: 0; right: -360px;
-            width: 340px;
-            height: 100vh;
-            background: rgba(16, 16, 40, 0.98);
-            backdrop-filter: blur(20px);
-            border-left: 1px solid var(--border-subtle);
-            z-index: 997;
-            padding: 80px 24px 40px;
-            overflow-y: auto;
-            transition: right 0.3s ease;
-        }
-
-        .toc-panel.open {
-            right: 0;
-        }
-
-        .toc-panel h3 {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: var(--text-muted);
-            margin-bottom: 16px;
-        }
-
-        .toc-panel a {
-            display: block;
-            padding: 8px 14px;
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 0.85rem;
-            border-radius: var(--radius-sm);
-            margin-bottom: 2px;
-            transition: var(--transition-fast);
-            border-left: 2px solid transparent;
-        }
-
-        .toc-panel a:hover,
-        .toc-panel a.active {
-            color: var(--accent-primary);
-            background: var(--bg-highlight);
-            border-left-color: var(--accent-primary);
-        }
-
-        .toc-panel .sub-link {
-            padding-left: 28px;
-            font-size: 0.8rem;
-        }
-
-        /* ====================== RESPONSIVE ====================== */
-        @media (max-width: 768px) {
-            .nav-links { display: none; }
-            .hero { padding: 120px 1.5rem 60px; }
-            .hero-stats { gap: 24px; }
-            .main { padding: 0 1.25rem 60px; }
-            .block { padding: 24px; }
-            .lesson-header { flex-direction: column; align-items: flex-start; }
-            .toc-toggle { display: none; }
-            th, td { padding: 10px 12px; font-size: 0.82rem; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session 02 — Prompt Engineering - Cơ bản | Rikkei AI Academy</title>
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Prism Code Highlighting Theme -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+  
+  <!-- Mermaid.js -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'dark',
+      securityLevel: 'loose',
+      themeVariables: {
+        background: '#090d16',
+        primaryColor: '#1e293b',
+        primaryTextColor: '#f3f4f6',
+        lineColor: '#8b5cf6',
+        textColor: '#f3f4f6'
+      }
+    });
+  </script>
 </head>
 <body>
-
-<!-- Background Effects -->
-<div class="bg-grid"></div>
-<div class="bg-glow-1"></div>
-<div class="bg-glow-2"></div>
-
-<!-- Progress Bar -->
-<div class="progress-bar" id="progressBar"></div>
-
-<!-- Navigation -->
-<nav class="nav">
-    <div class="nav-inner">
-        <a class="nav-brand" href="#">
-            📚 PCH Engineering
-            <span class="badge">SESSION 02</span>
-        </a>
-        <ul class="nav-links">
-            <li><a href="#lesson-2-1" class="active">2.1</a></li>
-            <li><a href="#lesson-2-2">2.2</a></li>
-            <li><a href="#lesson-2-3">2.3</a></li>
-            <li><a href="#lesson-2-4">2.4</a></li>
-            <li><a href="#quiz">Quiz</a></li>
-        </ul>
-    </div>
-</nav>
-
-<!-- TOC Toggle -->
-<button class="toc-toggle" id="tocToggle" title="Mục lục">☰</button>
-
-<!-- TOC Panel -->
-<div class="toc-panel" id="tocPanel">
-    <h3>📑 Mục lục Session 02</h3>
-    <a href="#lesson-2-1">Lesson 2.1 — Anatomy of a Good Prompt</a>
-    <a href="#rctfce-anatomy" class="sub-link">Giải phẫu R-C-T-F-C-E</a>
-    <a href="#lesson-2-2">Lesson 2.2 — Zero/One/Few-Shot Prompting</a>
-    <a href="#shot-selection" class="sub-link">Chiến lược Shot Selection 2026</a>
-    <a href="#lesson-2-3">Lesson 2.3 — Role & System Prompt Architecture</a>
-    <a href="#multi-layer-system" class="sub-link">Hệ thống Prompt Đa Tầng</a>
-    <a href="#lesson-2-4">Lesson 2.4 — Schema Enforcement & JSON</a>
-    <a href="#schema-enforcement" class="sub-link">Bản chất Structured Output</a>
-    <a href="#quiz">🧪 Quiz kiểm tra</a>
-</div>
-
-<!-- Hero Section -->
-<header class="hero">
-    <div class="hero-label">
-        <span class="dot"></span>
-        Cập nhật tháng 06/2026
-    </div>
-    <h1>
-        Session 02: <br>
-        <span class="gradient-text">Prompt Engineering — Cơ bản</span>
-    </h1>
-    <p class="subtitle">
-        Làm chủ cấu trúc R-C-T-F-C-E, shots-prompting, thiết kế system prompt đa tầng và cơ chế ép khung đầu ra Schema Enforcement để tích hợp AI vào backend an toàn.
-    </p>
-    <div class="hero-stats">
-        <div class="hero-stat">
-            <div class="number">4</div>
-            <div class="label">Lessons</div>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">
+          <i class="fas fa-brain"></i>
         </div>
-        <div class="hero-stat">
-            <div class="number">3-4h</div>
-            <div class="label">Thời lượng</div>
-        </div>
-        <div class="hero-stat">
-            <div class="number">8</div>
-            <div class="label">Bài tập</div>
-        </div>
-        <div class="hero-stat">
-            <div class="number">4</div>
-            <div class="label">Hình minh họa</div>
-        </div>
-    </div>
-</header>
+        <div class="brand-text">Rikkei AI Academy</div>
+      </div>
 
-<!-- Main Content -->
-<main class="main">
+      <a href="../../index.html" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+        <span>Quay lại cổng chính</span>
+      </a>
+      
+      <!-- Navigation for Session 02 -->
+      <nav class="lesson-navigation" id="s2-nav">
+        <div class="nav-label">Bài học Session 02</div>
+        <button class="lesson-nav-btn active" data-lesson="s2_l1">
+          <i class="fas fa-book-open"></i>
+          <span>Lesson 01 — Anatomy of Prompt (R-C-T-F-C-E)</span>
+        </button>
+        <button class="lesson-nav-btn" data-lesson="s2_l2">
+          <i class="fas fa-bullseye"></i>
+          <span>Lesson 02 — Zero/One/Few-Shot Prompting</span>
+        </button>
+        <button class="lesson-nav-btn" data-lesson="s2_l3">
+          <i class="fas fa-id-card"></i>
+          <span>Lesson 03 — System Prompt Architecture</span>
+        </button>
+        <button class="lesson-nav-btn" data-lesson="s2_l4">
+          <i class="fas fa-file-code"></i>
+          <span>Lesson 04 — Native Structured Output</span>
+        </button>
+        <div class="nav-label">Kiểm tra</div>
+        <button class="lesson-nav-btn" data-lesson="s2_quiz">
+          <i class="fas fa-vial"></i>
+          <span>Quiz kiểm tra Session 02</span>
+        </button>
+      </nav>
+    </aside>
 
-    <!-- ================================================================== -->
-    <!-- LESSON 2.1 -->
-    <!-- ================================================================== -->
-    <section class="lesson animate-on-scroll" id="lesson-2-1">
-        <div class="lesson-header">
-            <div class="lesson-number">2.1</div>
-            <div class="lesson-title-group">
-                <h2>Anatomy of a Good Prompt <span style="color:var(--magenta);">(Giải phẫu Prompt)</span></h2>
-                <div class="lesson-meta">
-                    <span>📖 Lý thuyết + 🛠️ Thực hành + 📝 Bài tập</span>
-                    <span>⏱️ ~45-60 phút</span>
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <header class="header">
+        <div class="header-title">
+          <h1 id="header-session-title">Session 02 — Prompt Engineering - Cơ bản</h1>
+        </div>
+        <div class="header-meta">
+          <span class="tech-pill">Prompt Design</span>
+          <span class="tech-pill">Frontier Models</span>
+        </div>
+      </header>
+
+      <div class="content-wrapper">
+        
+        <!-- ==================== SESSION 02 LESSON 01 ==================== -->
+        <section class="lesson-section active" id="s2_l1">
+          <div class="lesson-banner">
+            <div class="lesson-subtitle">LESSON 01</div>
+            <h2 class="lesson-title">Anatomy of a Good Prompt (R-C-T-F-C-E)</h2>
+          </div>
+
+          <div class="tab-container">
+            <div class="tab-nav">
+              <button class="tab-btn active" data-tab="theory"><i class="fas fa-book"></i> Lý thuyết</button>
+              <button class="tab-btn" data-tab="diagram"><i class="fas fa-project-diagram"></i> Sơ đồ & Minh họa</button>
+              <button class="tab-btn" data-tab="practice"><i class="fas fa-laptop-code"></i> Thực hành & Demo</button>
+              <button class="tab-btn" data-tab="video"><i class="fas fa-video"></i> Video Prompt</button>
+              <button class="tab-btn" data-tab="slide"><i class="fas fa-images"></i> Slides Prompt</button>
+            </div>
+
+            <!-- Tab: Theory -->
+            <div class="tab-pane active" id="s2_l1_pane_theory">
+              <div class="theory-content">
+                <h3>1.1 Cấu trúc Prompt R-C-T-F-C-E</h3>
+                <p>Một câu lệnh chất lượng cao không phải là một câu hỏi ngẫu hứng, mà là một cấu trúc dữ liệu đầu vào được tổ chức chặt chẽ. Cấu trúc chuẩn hóa bao gồm 6 thành phần cốt lõi:</p>
+                <ol>
+                  <li><strong>Role (Vai trò)</strong>: AI đóng vai trò là ai? (Ví dụ: Chuyên gia bảo mật thông tin, Lập trình viên Backend).</li>
+                  <li><strong>Context (Bối cảnh)</strong>: Tình huống thực tế hoặc dữ liệu nền tảng là gì?</li>
+                  <li><strong>Task (Nhiệm vụ)</strong>: Yêu cầu AI phải thực hiện hành động cụ thể nào?</li>
+                  <li><strong>Format (Định dạng)</strong>: Đầu ra là JSON, XML, bảng Markdown, hay mã nguồn?</li>
+                  <li><strong>Constraints (Ràng buộc)</strong>: Những quy tắc nghiêm ngặt AI phải tuân thủ (ví dụ: Không dùng thư viện ngoài, tối đa 3 câu).</li>
+                  <li><strong>Examples (Ví dụ mẫu)</strong>: Cung cấp dữ liệu mẫu để AI bắt chước phong cách/định dạng mong muốn.</li>
+                </ol>
+                
+                <div class="info-card">
+                  <div class="info-card-title"><i class="fas fa-lightbulb"></i> Tư duy Kỹ sư Prompt</div>
+                  <p>Hãy coi prompt giống như tham số truyền vào hàm. Các tham số càng rõ ràng và phân vùng tốt, kết quả trả về từ mô hình AI càng ổn định và chính xác.</p>
                 </div>
-            </div>
-        </div>
 
-        <!-- Theory Block -->
-        <div class="block animate-on-scroll" id="rctfce-anatomy">
-            <div class="block-header">
-                <span class="block-icon">📖</span>
-                <span class="block-label theory">Lý thuyết</span>
-            </div>
-            <h3>Cấu trúc R-C-T-F-C-E & Giải phẫu Prompt</h3>
-
-            <div class="image-showcase">
-                <img src="images/prompt_anatomy.png" alt="Anatomy of a Good Prompt — Cấu trúc R-C-T-F-C-E" loading="lazy">
-                <div class="image-caption">Hình 2.1 — Giải phẫu cấu trúc Prompt: từ Role, Context, Task đến Format, Constraints và Examples</div>
-            </div>
-
-            <p>Một prompt tốt không phải là những câu lệnh ngẫu hứng mà là một cấu trúc đầu vào được tổ chức chặt chẽ. Cấu trúc chuẩn hóa bao gồm 6 thành phần của framework <strong>R-C-T-F-C-E</strong>:</p>
-
-            <ul>
-                <li><strong>Role (Vai trò)</strong> — AI đóng vai trò là ai để kích hoạt cụm tri thức phù hợp. Ví dụ: <code>"Bạn là Senior Backend Engineer"</code>.</li>
-                <li><strong>Context (Bối cảnh)</strong> — Tình huống thực tế hoặc dữ liệu nền tảng. Ví dụ: <code>"Chúng tôi chuẩn bị deploy hệ thống cho 10k người dùng..."</code>.</li>
-                <li><strong>Task (Nhiệm vụ)</strong> — Yêu cầu AI thực hiện hành động gì cụ thể. Ví dụ: <code>"Viết hàm Python để sắp xếp..."</code>.</li>
-                <li><strong>Format (Định dạng)</strong> — Đầu ra mong muốn là JSON, XML, table hay markdown.</li>
-                <li><strong>Constraints (Ràng buộc)</strong> — Những quy tắc bắt buộc. Ví dụ: <code>"KHÔNG dùng eval(), PHẢI có type hints"</code>.</li>
-                <li><strong>Examples (Ví dụ mẫu)</strong> — Cung cấp cặp input-output mẫu để AI bắt chước phong cách và kết cấu.</li>
-            </ul>
-
-            <div class="callout tip">
-                <span class="callout-icon">💡</span>
-                <div class="callout-content">
-                    <strong>Độ Steerability (Khả năng điều hướng)</strong>
-                    <p>Prompt càng rõ ràng, các ràng buộc đầu ra càng chặt chẽ thì mức độ Steerability càng cao, giảm thiểu tối đa các câu trả lời lan man và không đúng định dạng của mô hình.</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Structured System Prompt Block -->
-        <div class="block animate-on-scroll">
-            <div class="block-header">
-                <span class="block-icon">📐</span>
-                <span class="block-label theory">Lý thuyết</span>
-                <span class="block-label new">🆕 2026</span>
-            </div>
-            <h3>Structured System Prompt Architecture</h3>
-
-            <p>Năm 2026, thay vì viết một đoạn văn dài dòng, các kỹ sư sử dụng cấu trúc thẻ (HTML/XML tags) để chia nhỏ các chỉ dẫn trong System Prompt. Cách này cải thiện độ Steerability đáng kể trên Claude Fable 5 và GPT-5.5:</p>
-
-            <div class="table-wrapper">
-                <table>
+                <h3>1.2 Thiết kế Structured System Prompt</h3>
+                <p>Thay vì nhồi nhét mọi thứ vào một đoạn văn tự nhiên dài dòng ở User Prompt, các kỹ sư AI sử dụng cấu trúc thẻ (HTML/XML tags) để phân định rõ ràng các vùng dữ liệu trong <strong>System Prompt</strong>. Cấu trúc này giúp các mô hình lớn phân biệt rạch ròi các vùng chỉ dẫn.</p>
+                
+                <div class="compare-table-wrapper">
+                  <table class="compare-table">
                     <thead>
-                        <tr>
-                            <th>Đặc tính</th>
-                            <th>Cách viết kiểu cũ (2023-2024)</th>
-                            <th>Thiết kế cấu trúc (2025-2026)</th>
-                        </tr>
+                      <tr>
+                        <th>Đặc tính</th>
+                        <th>Cách viết kiểu cũ (2023 - 2024)</th>
+                        <th>Thiết kế có cấu trúc (2025 - 2026)</th>
+                      </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td><strong>Hình thức</strong></td>
-                            <td>Đoạn văn mô tả tự nhiên dài dòng</td>
-                            <td>Phân vùng bằng thẻ XML/HTML hoặc Markdown Headers</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Ràng buộc</strong></td>
-                            <td>Trộn lẫn trong mô tả ("lưu ý đừng làm X")</td>
-                            <td>Tách biệt hoàn toàn trong các thẻ <code>&lt;constraints&gt;</code></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Steerability</strong></td>
-                            <td>Trung bình, dễ bị trôi chỉ dẫn khi chat dài</td>
-                            <td>Rất cao, mô hình tuân thủ tuyệt đối cấu trúc</td>
-                        </tr>
+                      <tr>
+                        <td><strong>Hình thức</strong></td>
+                        <td>Đoạn văn mô tả dài dòng, liên tục.</td>
+                        <td>Phân chia khối dữ liệu bằng thẻ XML hoặc Header Markdown.</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Ràng buộc</strong></td>
+                        <td>Trộn lẫn trong yêu cầu ("lưu ý đừng làm X").</td>
+                        <td>Đứng riêng trong thẻ <code>&lt;constraints&gt;</code> hoặc mục <code>## Constraints</code>.</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Độ Steerability</strong></td>
+                        <td>Trung bình - Dễ bị trôi chỉ dẫn đối với văn bản dài.</td>
+                        <td>Rất cao - AI tuân thủ tuyệt đối nhờ phân vùng rõ ràng.</td>
+                      </tr>
                     </tbody>
-                </table>
-            </div>
-
-            <div class="code-block">
-                <div class="code-header">
-                    <span class="code-lang">xml</span>
-                    <div class="code-dots"><span></span><span></span><span></span></div>
+                  </table>
                 </div>
-                <pre><code><span class="comment">&lt;!-- Ví dụ: Structured System Prompt tối ưu cho Claude Fable 5 --&gt;</span>
-<span class="tag">&lt;system_prompt&gt;</span>
-  <span class="tag">&lt;role&gt;</span>Senior Backend Engineer chuyên về tối ưu hóa Python<span class="tag">&lt;/role&gt;</span>
-  <span class="tag">&lt;constraints&gt;</span>
-    - KHÔNG sử dụng các hàm built-in phức tạp không tối ưu.
-    - PHẢI viết Type Hints cho mọi function.
-    - Chỉ trả về block code chính, không giải thích dài dòng.
-  <span class="tag">&lt;/constraints&gt;</span>
-  <span class="tag">&lt;output_format&gt;</span>Mã nguồn định dạng Python chuẩn PEP8<span class="tag">&lt;/output_format&gt;</span>
-<span class="tag">&lt;/system_prompt&gt;</span></code></pre>
+              </div>
             </div>
-        </div>
 
-        <!-- Practice Block -->
-        <div class="block animate-on-scroll">
-            <div class="block-header">
-                <span class="block-icon">🛠️</span>
-                <span class="block-label practice">Thực hành</span>
-            </div>
-            <h3>Phân tích & Viết lại Prompt</h3>
-            <p>1. Hãy phân tích prompt sau và chỉ ra các thành phần R-C-T-F-C-E còn thiếu:</p>
-            <div class="diagram-box">"Hãy viết một email phản hồi khách hàng phàn nàn về việc giao hàng trễ."</div>
-            <p>2. Viết lại prompt trên thành một <strong>Structured System Prompt</strong> hoàn chỉnh, áp dụng các thẻ XML để AI đóng vai trò Customer Support Specialist, xử lý khiếu nại chuyên nghiệp, cấu trúc email 3 phần, cam kết bồi thường voucher 10%, và xuất kết quả ở định dạng email sạch không chứa lời dẫn.</p>
-        </div>
-
-        <!-- Exercises Block -->
-        <div class="block animate-on-scroll">
-            <div class="block-header">
-                <span class="block-icon">📝</span>
-                <span class="block-label exercise">Bài tập</span>
-            </div>
-            <h3>Bài tập Lesson 2.1</h3>
-            
-            <div class="exercise-item">
-                <div class="exercise-num">1</div>
-                <div class="exercise-text">
-                    <strong>Thiết kế Prompt:</strong> Hãy viết 3 prompt hoàn chỉnh (đáp ứng đủ 6 thành phần R-C-T-F-C-E) cho 3 tác vụ khác nhau: review lỗ hổng bảo mật cho Node.js code; tóm tắt báo cáo tài chính thành bảng so sánh; viết kịch bản video ngắn 30s.
+            <!-- Tab: Diagram & Illustration -->
+            <div class="tab-pane" id="s2_l1_pane_diagram">
+              <div class="diagram-visual-container">
+                <div class="card-container">
+                  <div class="card-title"><i class="fas fa-project-diagram"></i> Workflow Diagram (Mermaid)</div>
+                  <div class="mermaid-wrapper">
+                    <pre class="mermaid">
+graph TD
+    subgraph System Prompt [System Prompt có cấu trúc]
+        Role["&lt;role&gt;<br/>Senior Backend Engineer"]
+        Constraints["&lt;constraints&gt;<br/>- KHÔNG dùng built-in<br/>- PHẢI viết Type Hints"]
+        Format["&lt;output_format&gt;<br/>PEP8 Python Code"]
+    end
+    subgraph User Prompt [User Prompt]
+        InputData["&lt;input_data&gt;<br/>Đoạn code cần tối ưu"]
+    end
+    SystemPrompt & UserPrompt --> LLM["☁️ LLM Model"]
+    LLM --> Output["💻 Type-safe PEP8 Python Code"]
+                    </pre>
+                  </div>
                 </div>
-            </div>
 
-            <div class="exercise-item">
-                <div class="exercise-num">2</div>
-                <div class="exercise-text">
-                    <strong>So sánh mô hình:</strong> Nạp cùng một Structured System Prompt vào <strong>Claude Fable 5</strong> và <strong>GPT-5.5</strong>. Đánh giá mức độ tuân thủ định dạng đầu ra và tính chính xác của kết quả.
+                <div class="card-container">
+                  <div class="card-title"><i class="fas fa-image"></i> Ảnh minh họa 3D Illustration</div>
+                  <div class="illustration-wrapper">
+                    <img class="illustration-img" src="images/prompt_anatomy.png" alt="Anatomy of a Good Prompt">
+                  </div>
+                  <div class="prompt-drawer">
+                    <div class="prompt-drawer-header">
+                      <span>DALL-E Prompt</span>
+                      <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="prompt-drawer-body" style="display: none;">
+                      A futuristic 3D isometric infographic showing the anatomy of a good AI prompt. Glassmorphic layers stack vertically, with neon outlines in cyan, purple, and gold. The layers are labeled in Vietnamese as "VAI TRÒ (ROLE)", "BỐI CẢNH (CONTEXT)", "NHIỆM VỤ (TASK)", "ĐỊNH DẠNG (FORMAT)", "RÀNG BUỘC (CONSTRAINTS)", and "VÍ DỤ (EXAMPLES)" using clean futuristic typography. Neon light rays connect the layers. Dark tech theme background with clean holographic UI components, 8k, highly detailed. The visual language is Vietnamese, with only technical terms retained in English.
+                    </div>
+                  </div>
                 </div>
+              </div>
             </div>
-        </div>
-    </section>
 
-    <div class="separator"></div>
-
-    <!-- ================================================================== -->
-    <!-- LESSON 2.2 -->
-    <!-- ================================================================== -->
-    <section class="lesson animate-on-scroll" id="lesson-2-2">
-        <div class="lesson-header">
-            <div class="lesson-number">2.2</div>
-            <div class="lesson-title-group">
-                <h2>Zero-Shot, One-Shot & Few-Shot Prompting</h2>
-                <div class="lesson-meta">
-                    <span>📖 Lý thuyết + 🛠️ Thực hành + 📝 Bài tập</span>
-                    <span>⏱️ ~45-60 phút</span>
+            <!-- Tab: Practice -->
+            <div class="tab-pane" id="s2_l1_pane_practice">
+              <div class="practice-container">
+                <h3>Thực hành: Phân tích & Viết lại Prompt</h3>
+                <p><strong>Yêu cầu:</strong> Phân tích prompt tự do thiếu cấu trúc dưới đây và viết lại thành dạng Structured System Prompt sử dụng thẻ XML.</p>
+                
+                <div class="code-block-header">
+                  <span class="file-name">Prompt gốc (Tự do)</span>
                 </div>
-            </div>
-        </div>
-
-        <!-- Theory Block -->
-        <div class="block animate-on-scroll" id="shot-selection">
-            <div class="block-header">
-                <span class="block-icon">📖</span>
-                <span class="block-label theory">Lý thuyết</span>
-            </div>
-            <h3>Khái niệm Shots trong Prompting</h3>
-
-            <div class="image-showcase">
-                <img src="images/prompting_shots.png" alt="Zero-Shot, One-Shot & Few-Shot Prompting" loading="lazy">
-                <div class="image-caption">Hình 2.2 — So sánh các kỹ thuật Shot Prompting: từ không ví dụ (Zero-Shot) đến chuỗi ví dụ (Few-Shot)</div>
-            </div>
-
-            <p>Việc cung cấp ví dụ trong prompt được định nghĩa qua số lượng "Shots" (lượt mẫu):</p>
-            <ul>
-                <li><strong>Zero-Shot</strong> — AI nhận lệnh trực tiếp và tự giải quyết dựa trên tri thức có sẵn, không có ví dụ mẫu. Thích hợp cho các task thông dụng, quen thuộc.</li>
-                <li><strong>One-Shot</strong> — Cung cấp duy nhất 1 ví dụ cụ thể (cặp Input - Output). Rất tốt để giúp AI định hình phong cách, tone giọng hoặc định dạng văn bản đặc thù.</li>
-                <li><strong>Few-Shot</strong> — Cung cấp từ 2 đến 5 ví dụ mẫu trở lên. Đây là phương án cứu cánh cho các task cực khó, domain-specific, hoặc đòi hỏi tính nhất quán định dạng tuyệt đối.</li>
-            </ul>
-
-            <div class="diagram-box">
-<span class="label">Ví dụ trực quan về các kỹ thuật Shots:</span>
-
-<span class="gold">Zero-shot:</span> "Phân loại cảm xúc: 'Sản phẩm giao nhanh và đóng gói kỹ' -> ?"
-<span class="gold">One-shot:</span>  "Ví dụ: 'Tệ quá' -> Negative. Phân loại: 'Sản phẩm giao nhanh và đóng gói kỹ' -> ?"
-<span class="gold">Few-shot:</span> "VD1: 'Tệ quá' -> Negative. VD2: 'Cũng thường' -> Neutral. VD3: 'Tuyệt vời' -> Positive.
-           Phân loại: 'Sản phẩm giao nhanh và đóng gói kỹ' -> ?"
-</div>
-        </div>
-
-        <!-- Shot Selection 2026 Block -->
-        <div class="block animate-on-scroll">
-            <div class="block-header">
-                <span class="block-icon">📐</span>
-                <span class="block-label theory">Lý thuyết</span>
-                <span class="block-label new">🆕 2026</span>
-            </div>
-            <h3>Chiến lược Shot Selection năm 2026</h3>
-            <p>Với các frontier models như **Claude Fable 5** và **GPT-5.5**, khả năng Zero-shot đã cực kỳ mạnh. Việc lạm dụng Few-shot không còn được khuyến khích vì:</p>
-            <ul>
-                <li>Làm phình to Context Window không cần thiết, tăng giá cost API.</li>
-                <li>Tăng Latency phản hồi của hệ thống.</li>
-            </ul>
-            <p><strong>Quy tắc 2026:</strong> Luôn thử Zero-shot trước. Chỉ nâng cấp lên Few-shot khi format đầu ra quá phức tạp hoặc cần tính nhất quán qua hàng loạt lượt chạy tự động (batch processing).</p>
-        </div>
-
-        <!-- Practice Block -->
-        <div class="block animate-on-scroll">
-            <div class="block-header">
-                <span class="block-icon">🛠️</span>
-                <span class="block-label practice">Thực hành</span>
-            </div>
-            <h3>Phân loại Email tự động</h3>
-            <p>Chuẩn bị 10 email phản hồi của khách hàng. Hãy:</p>
-            <ol>
-                <li>Viết một Zero-Shot Prompt phân loại chúng thành 3 nhãn: <code>[Complaint, Feedback, Support]</code>.</li>
-                <li>Viết một Few-Shot Prompt cung cấp 3 ví dụ cụ thể cho mỗi nhãn.</li>
-                <li>Đo đạc độ chính xác và tính toán lượng token chênh lệch trên <strong>Gemini 3.5 Flash</strong>.</li>
-            </ol>
-        </div>
-
-        <!-- Exercises Block -->
-        <div class="block animate-on-scroll">
-            <div class="block-header">
-                <span class="block-icon">📝</span>
-                <span class="block-label exercise">Bài tập</span>
-            </div>
-            <h3>Bài tập Lesson 2.2</h3>
-
-            <div class="exercise-item">
-                <div class="exercise-num">1</div>
-                <div class="exercise-text">
-                    <strong>Thiết kế Few-Shot Dataset:</strong> Xây dựng một bộ dữ liệu Few-Shot gồm 5 cặp mẫu để chuyển đổi các câu lệnh truy vấn ngôn ngữ tự nhiên tiếng Anh sang câu lệnh SQL chuẩn cho cơ sở dữ liệu bán hàng.
+                <div class="code-wrapper">
+                  <pre><code class="language-markdown">Hãy viết một email phản hồi khách hàng phàn nàn về việc giao hàng trễ.</code></pre>
                 </div>
-            </div>
 
-            <div class="exercise-item">
-                <div class="exercise-num">2</div>
-                <div class="exercise-text">
-                    <strong>Đánh giá Token Budget:</strong> Sử dụng tokenizer tool đo lượng token tiêu hao khi dùng Few-Shot (5 ví dụ) so với Zero-Shot. Tính toán chi phí chênh lệch cho 100,000 lượt yêu cầu/ngày dựa trên bảng giá API hiện tại của OpenAI GPT-5.5.
+                <div class="code-block-header">
+                  <span class="file-name">Structured System Prompt (Đã tối ưu)</span>
+                  <button class="copy-btn" onclick="copyCode(this, 's2_l1_c1')"><i class="fas fa-copy"></i> Copy</button>
                 </div>
-            </div>
-        </div>
-    </section>
-
-    <div class="separator"></div>
-
-    <!-- ================================================================== -->
-    <!-- LESSON 2.3 -->
-    <!-- ================================================================== -->
-    <section class="lesson animate-on-scroll" id="lesson-2-3">
-        <div class="lesson-header">
-            <div class="lesson-number">2.3</div>
-            <div class="lesson-title-group">
-                <h2>Role Prompting & System Prompt Architecture</h2>
-                <div class="lesson-meta">
-                    <span>📖 Lý thuyết + 🛠️ Thực hành + 📝 Bài tập</span>
-                    <span>⏱️ ~45-60 phút</span>
+                <div class="code-wrapper">
+                  <pre><code class="language-xml" id="s2_l1_c1">&lt;system_prompt&gt;
+  &lt;role&gt;Trợ lý Chăm sóc Khách hàng chuyên nghiệp tại Rikkei Store&lt;/role&gt;
+  &lt;context&gt;Khách hàng phản ánh đơn hàng bị trễ so với cam kết và đang cảm thấy bực bội.&lt;/context&gt;
+  &lt;task&gt;Viết một email xin lỗi, phản hồi rõ nguyên nhân (sự cố vận hành hệ thống) và đưa ra phương án đền bù.&lt;/task&gt;
+  &lt;constraints&gt;
+    - Giọng văn chân thành, lịch sự và cầu thị.
+    - KHÔNG được hứa hẹn mốc thời gian giao hàng cụ thể tiếp theo nếu chưa chắc chắn.
+    - Đưa tặng kèm 1 voucher giảm giá 10% cho đơn hàng kế tiếp như lời đền bù.
+  &lt;/constraints&gt;
+  &lt;output_format&gt;Email văn bản thô đầy đủ Tiêu đề và Nội dung thư&lt;/output_format&gt;
+&lt;/system_prompt&gt;</code></pre>
                 </div>
-            </div>
-        </div>
-
-        <!-- Theory Block -->
-        <div class="block animate-on-scroll" id="multi-layer-system">
-            <div class="block-header">
-                <span class="block-icon">📖</span>
-                <span class="block-label theory">Lý thuyết</span>
-            </div>
-            <h3>Role Prompting & Persona Engineering</h3>
-
-            <p>Gán vai trò (Role/Persona) giúp mô hình giới hạn phạm vi phân bố xác suất của token đầu ra (Knowledge Cluster). Khi AI được bảo <code>"Bạn là bác sĩ tim mạch"</code>, nó sẽ tập trung tìm các từ vựng chuyên ngành y khoa, cách lập luận lâm sàng và văn phong học thuật, thay vì dùng từ ngữ đời thường.</p>
-        </div>
-
-        <!-- Multi-layer System Prompt Architecture Block -->
-        <div class="block animate-on-scroll">
-            <div class="block-header">
-                <span class="block-icon">📐</span>
-                <span class="block-label theory">Lý thuyết</span>
-                <span class="block-label new">🆕 2026</span>
-            </div>
-            <h3>Kiến trúc System Prompt Đa Tầng (Multi-layer System Prompt)</h3>
-
-            <div class="image-showcase">
-                <img src="images/system_prompt_architecture.png" alt="Multi-layer System Prompt Architecture" loading="lazy">
-                <div class="image-caption">Hình 2.3 — Kiến trúc System Prompt đa tầng: từ định danh, ràng buộc hành vi đến khai báo công cụ và định dạng đầu ra</div>
+              </div>
             </div>
 
-            <p>Trong môi trường sản xuất năm 2026, System Prompt được thiết kế theo cấu trúc phân tầng nghiêm ngặt:</p>
-            <ol>
-                <li><strong>Layer 1: Identity & Role</strong> — Khai báo AI là ai, kinh nghiệm bao nhiêu năm, lĩnh vực hoạt động.</li>
-                <li><strong>Layer 2: Behavioral Constraints</strong> — Các ràng buộc hành vi cực kỳ quan trọng (ví dụ: cấm đưa lời khuyên đầu tư tài chính, cấm rò rỉ mã bảo mật).</li>
-                <li><strong>Layer 3: Tool Definitions</strong> — Khai báo các API/Functions mà AI được quyền gọi.</li>
-                <li><strong>Layer 4: Output Specifications</strong> — Ràng buộc định dạng đầu ra là JSON, XML, table...</li>
-                <li><strong>Layer 5: Dynamic Context Slots</strong> — Khe cắm động để nạp dữ liệu người dùng (user_profile, retrieved_docs).</li>
-            </ol>
+            <!-- Tab: Video Prompt -->
+            <div class="tab-pane" id="s2_l1_pane_video">
+              <div class="prompt-container">
+                <div class="prompt-box">
+                  <div class="card-title"><i class="fas fa-film"></i> NotebookLM Video Prompt</div>
+                  <div class="prompt-text" id="s2_l1_video_text">=== STYLE PROMPT ===
+Giọng thuyết trình: Chuyên nghiệp, kỹ sư, dễ hiểu, tốc độ vừa phải.
+Ngôn ngữ: Tiếng Việt, giữ các thuật ngữ (Anatomy, Structured System Prompt, R-C-T-F-C-E, XML, Steerability).
 
-            <div class="callout warning">
-                <span class="callout-icon">⚠️</span>
-                <div class="callout-content">
-                    <strong>Định dạng theo nhà cung cấp (Model-specific formatting)</strong>
-                    <p><strong>Claude Fable 5</strong> hỗ trợ và phản hồi tốt nhất với cấu trúc thẻ XML: <code>&lt;role&gt;...&lt;/role&gt;</code>. Trong khi đó, <strong>GPT-5.5</strong> tối ưu nhất với cấu trúc Markdown Headers: <code>## Identity</code>.</p>
+=== NỘI DUNG AUDIO ===
+"Chào mừng bạn đến với bài học đầu tiên trong Session 02: Giải phẫu Prompt chuẩn R-C-T-F-C-E. Bạn vẫn thường viết prompt như thế nào? Viết một đoạn văn dài mơ hồ theo thói quen cũ? Hôm nay, chúng ta sẽ thay đổi hoàn toàn tư duy đó. Viết prompt chất lượng cao là thiết kế một cấu trúc dữ liệu đầu vào. Bằng cách chia tách rõ ràng các vùng dữ liệu bằng XML tag trong System Prompt như Vai trò, Ràng buộc, Nhiệm vụ, chúng ta sẽ tăng độ Steerability giúp mô hình AI tuân thủ chỉ dẫn tuyệt đối."</div>
+                  <button class="copy-btn" onclick="copyCode(this, 's2_l1_video_text')"><i class="fas fa-copy"></i> Sao chép Prompt</button>
                 </div>
+              </div>
             </div>
-        </div>
 
-        <!-- Practice Block -->
-        <div class="block animate-on-scroll">
-            <div class="block-header">
-                <span class="block-icon">🛠️</span>
-                <span class="block-label practice">Thực hành</span>
-            </div>
-            <h3>Kỹ thuật Role Stacking (Ghép vai trò)</h3>
-            <p>Role Stacking là kỹ thuật tạo ra một siêu vai trò bằng cách kết hợp nhiều lĩnh vực chuyên môn lại với nhau để giải quyết bài toán giao thoa phức tạp.</p>
-            <p>Hãy thiết kế một System Prompt sử dụng kỹ thuật Role Stacking kết hợp chuyên môn của: <strong>"Chuyên gia AI bảo mật"</strong> và <strong>"Luật sư sở hữu trí tuệ thương mại"</strong> để AI đánh giá lỗ hổng pháp lý khi sử dụng thư viện open-source trong dự án thương mại.</p>
-        </div>
+            <!-- Tab: Slides Prompt -->
+            <div class="tab-pane" id="s2_l1_pane_slide">
+              <div class="prompt-container">
+                <div class="prompt-box">
+                  <div class="card-title"><i class="fas fa-file-powerpoint"></i> Google Slides Prompt</div>
+                  <div class="prompt-text" id="s2_l1_slide_text">=== PHONG CÁCH TỔNG THỂ ===
+Theme: Dark minimal tech. Màu chủ đạo: Tím neon.
 
-        <!-- Exercises Block -->
-        <div class="block animate-on-scroll">
-            <div class="block-header">
-                <span class="block-icon">📝</span>
-                <span class="block-label exercise">Bài tập</span>
-            </div>
-            <h3>Bài tập Lesson 2.3</h3>
-
-            <div class="exercise-item">
-                <div class="exercise-num">1</div>
-                <div class="exercise-text">
-                    <strong>Thiết kế System Prompt đa tầng:</strong> Viết một System Prompt đa tầng hoàn chỉnh (gồm đủ 5 lớp) cho một AI Trợ lý Tư vấn Tuyển dụng Nhân sự Fintech.
+=== SLIDES ===
+Slide 1: Tiêu đề lớn: "Anatomy of a Good Prompt & Cấu trúc R-C-T-F-C-E"
+Slide 2: Sự chuyển đổi tư duy: Từ viết prompt tự do sang thiết kế Prompt có cấu trúc.
+Slide 3: Chi tiết 6 thành phần: Role, Context, Task, Format, Constraints, Examples.
+Slide 4: System Prompt vs User Prompt trong thực chiến.
+Slide 5: XML Tag - Vũ khí phân vùng chỉ dẫn tối thượng cho mô hình Frontier.
+Slide 6: Bài tập viết lại Prompt tại lớp.</div>
+                  <button class="copy-btn" onclick="copyCode(this, 's2_l1_slide_text')"><i class="fas fa-copy"></i> Sao chép Prompt</button>
                 </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== SESSION 02 LESSON 02 ==================== -->
+        <section class="lesson-section" id="s2_l2">
+          <div class="lesson-banner">
+            <div class="lesson-subtitle">LESSON 02</div>
+            <h2 class="lesson-title">Zero-Shot, One-Shot & Few-Shot Prompting</h2>
+          </div>
+
+          <div class="tab-container">
+            <div class="tab-nav">
+              <button class="tab-btn active" data-tab="theory"><i class="fas fa-book"></i> Lý thuyết</button>
+              <button class="tab-btn" data-tab="diagram"><i class="fas fa-project-diagram"></i> Sơ đồ & Minh họa</button>
+              <button class="tab-btn" data-tab="practice"><i class="fas fa-laptop-code"></i> Thực hành & Demo</button>
+              <button class="tab-btn" data-tab="video"><i class="fas fa-video"></i> Video Prompt</button>
+              <button class="tab-btn" data-tab="slide"><i class="fas fa-images"></i> Slides Prompt</button>
             </div>
 
-            <div class="exercise-item">
-                <div class="exercise-num">2</div>
-                <div class="exercise-text">
-                    <strong>Tối ưu hóa đa nền tảng:</strong> Chuyển đổi System Prompt vừa viết thành 2 phiên bản: Phiên bản XML tối ưu cho Claude và phiên bản Markdown tối ưu cho GPT. Thử nghiệm trên cả hai mô hình và lập bảng so sánh kết quả.
+            <!-- Tab: Theory -->
+            <div class="tab-pane active" id="s2_l2_pane_theory">
+              <div class="theory-content">
+                <h3>2.1 Khái niệm Shots trong Prompting</h3>
+                <ul>
+                  <li><strong>Zero-Shot Prompting</strong>: Bạn gửi thẳng yêu cầu và dữ liệu đầu vào cho AI mà không đưa ra bất kỳ ví dụ mẫu nào.
+                    <br/><em>Phù hợp</em>: Các tác vụ phổ thông, xử lý văn bản cơ bản mà AI đã học kỹ.
+                  </li>
+                  <li><strong>One-Shot Prompting</strong>: Cung cấp chính xác <strong>1 ví dụ minh họa</strong> đầy đủ về cặp (Đầu vào - Đầu ra mong muốn).
+                    <br/><em>Phù hợp</em>: Định hình phong cách viết, giọng văn, hoặc cấu trúc văn bản đặc thù.
+                  </li>
+                  <li><strong>Few-Shot Prompting</strong>: Cung cấp từ <strong>2 đến 5 ví dụ minh họa</strong> trở lên.
+                    <br/><em>Phù hợp</em>: Các bài toán phân loại nhãn phức tạp, trích xuất dữ liệu chuẩn doanh nghiệp, hoặc viết code theo thư viện đặc thù.
+                  </li>
+                </ul>
+
+                <h3>2.2 Chiến lược Shot Selection</h3>
+                <p>Với các mô hình lớn thế hệ mới, khả năng Zero-Shot đã tiến bộ vượt bậc. Kỹ sư AI cần tuân thủ quy tắc tối ưu hóa bộ nhớ để tiết kiệm chi phí:</p>
+                <ul>
+                  <li><strong>Không lạm dụng Few-Shot</strong>: Việc nhồi nhét quá nhiều ví dụ làm phình to Context Window, làm tăng chi phí API và tăng Latency (độ trễ) phản hồi.</li>
+                  <li><strong>Chỉ dùng Few-Shot khi</strong>: Tác vụ yêu cầu tuân thủ định dạng tự chế độc quyền, hoặc khi bài toán phân loại cần độ nhất quán cực cao qua hàng nghìn lượt chạy tự động.</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Tab: Diagram & Illustration -->
+            <div class="tab-pane" id="s2_l2_pane_diagram">
+              <div class="diagram-visual-container">
+                <div class="card-container">
+                  <div class="card-title"><i class="fas fa-project-diagram"></i> Workflow Diagram (Mermaid)</div>
+                  <div class="mermaid-wrapper">
+                    <pre class="mermaid">
+graph TD
+    subgraph "Zero-Shot (Không ví dụ)"
+        q1["Query: 'Phân loại email: X'"] --> llm1["☁️ LLM Processor"] --> ans1["Phân loại trực tiếp"]
+    end
+    subgraph "One-Shot (Một ví dụ)"
+        q2["Query: 'Phân loại email: X'"] & ex2["1 Ví dụ: [Email A -> Support]"] --> llm2["☁️ LLM Processor"] --> ans2["Phân loại theo mẫu"]
+    end
+    subgraph "Few-Shot (Nhiều ví dụ)"
+        q3["Query: 'Phân loại email: X'"] & ex3["3 Ví dụ: [A -> Support, B -> Complaint...]"] --> llm3["☁️ LLM Processor"] --> ans3["Phân loại nhất quán cao"]
+    end
+                    </pre>
+                  </div>
                 </div>
-            </div>
-        </div>
-    </section>
 
-    <div class="separator"></div>
-
-    <!-- ================================================================== -->
-    <!-- LESSON 2.4 -->
-    <!-- ================================================================== -->
-    <section class="lesson animate-on-scroll" id="lesson-2-4">
-        <div class="lesson-header">
-            <div class="lesson-number">2.4</div>
-            <div class="lesson-title-group">
-                <h2>Output Formatting, Structured Output & Schema Enforcement</h2>
-                <div class="lesson-meta">
-                    <span>📖 Lý thuyết + 🛠️ Thực hành + 📝 Bài tập</span>
-                    <span>⏱️ ~45-60 phút</span>
+                <div class="card-container">
+                  <div class="card-title"><i class="fas fa-image"></i> Ảnh minh họa 3D Illustration</div>
+                  <div class="illustration-wrapper">
+                    <img class="illustration-img" src="images/prompting_shots.png" alt="Shots Prompting comparison">
+                  </div>
+                  <div class="prompt-drawer">
+                    <div class="prompt-drawer-header">
+                      <span>DALL-E Prompt</span>
+                      <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="prompt-drawer-body" style="display: none;">
+                      A futuristic 3D infographic comparing three prompting methods. Three glowing glass portals showing data streams, labeled in Vietnamese with technical terms: "Zero-Shot (Không ví dụ)", "One-Shot (Một ví dụ)", and "Few-Shot (Nhiều ví dụ)" using clean glowing neon text. Left path has a single query node. Middle path has a query node and one example node. Right path has a query node with a chain of 3 example nodes. Cyberpunk dark mode background, 8k, highly detailed. The visual language is Vietnamese, with only technical terms retained in English.
+                    </div>
+                  </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Theory Block -->
-        <div class="block animate-on-scroll" id="schema-enforcement">
-            <div class="block-header">
-                <span class="block-icon">📖</span>
-                <span class="block-label theory">Lý thuyết</span>
-            </div>
-            <h3>Native Structured Output vs. Prompt-based Formatting</h3>
-
-            <div class="image-showcase">
-                <img src="images/schema_enforcement.png" alt="Schema Enforcement & Native Structured Output" loading="lazy">
-                <div class="image-caption">Hình 2.4 — Cơ chế ép khung định dạng đầu ra (Schema Enforcement) từ dòng chảy token thô thô thành cấu trúc dữ liệu JSON sạch</div>
+              </div>
             </div>
 
-            <p>Trong môi trường sản xuất, nếu AI trả về sai định dạng (ví dụ JSON thiếu dấu đóng ngoặc hoặc chứa văn bản rác bên ngoài), các script ở backend sẽ bị lỗi (crash). Có 3 cơ chế xuất dữ liệu cấu trúc:</p>
-            <ul>
-                <li><strong>Prompt-based JSON</strong> — Yêu cầu AI xuất JSON bằng câu lệnh viết trong prompt. Độ tin cậy thấp (85-90%), dễ bị lỗi cú pháp khi dữ liệu lớn.</li>
-                <li><strong>Native JSON Mode</strong> — Bật chế độ JSON của API (ví dụ <code>response_format={"type": "json_object"}</code>). Đảm bảo xuất cú pháp JSON chuẩn nhưng không cam kết đúng cấu trúc các trường bên trong.</li>
-                <li><strong>Schema Enforcement (API level)</strong> — Bạn gửi kèm <strong>JSON Schema</strong> định nghĩa chính xác cấu trúc dữ liệu. API mô hình (GPT-5.5, Gemini 3.5, Claude tool use) can thiệp trực tiếp vào quá trình dự đoán token để đảm bảo 100% kết quả đầu ra khớp tuyệt đối với Schema của bạn.</li>
-            </ul>
-        </div>
+            <!-- Tab: Practice -->
+            <div class="tab-pane" id="s2_l2_pane_practice">
+              <div class="practice-container">
+                <h3>Thực hành: Phân loại Email tự động (Few-Shot)</h3>
+                <p><strong>Yêu cầu:</strong> Viết Prompt phân loại cảm xúc email của khách hàng thành các nhóm: `[Complaint, Support, Feedback]` sử dụng Few-Shot để đảm bảo định dạng và tính ổn định đầu ra.</p>
 
-        <!-- Practice Block -->
-        <div class="block animate-on-scroll">
-            <div class="block-header">
-                <span class="block-icon">🛠️</span>
-                <span class="block-label practice">Thực hành</span>
-            </div>
-            <h3>Cấu hình Schema Enforcement với Pydantic/JSON Schema</h3>
-            <p>Ví dụ cấu hình API call ép cấu trúc JSON bằng JSON Schema trên OpenAI GPT-5.5:</p>
-
-            <div class="code-block">
-                <div class="code-header">
-                    <span class="code-lang">python</span>
-                    <div class="code-dots"><span></span><span></span><span></span></div>
+                <div class="code-block-header">
+                  <span class="file-name">Few-Shot Prompt Template</span>
+                  <button class="copy-btn" onclick="copyCode(this, 's2_l2_c1')"><i class="fas fa-copy"></i> Copy</button>
                 </div>
-                <pre><code><span class="comment"># Cấu hình Schema Enforcement sử dụng API JSON Schema</span>
-response_format = {
-    <span class="string">"type"</span>: <span class="string">"json_schema"</span>,
-    <span class="string">"json_schema"</span>: {
-        <span class="string">"name"</span>: <span class="string">"customer_extraction"</span>,
-        <span class="string">"schema"</span>: {
-            <span class="string">"type"</span>: <span class="string">"object"</span>,
-            <span class="string">"properties"</span>: {
-                <span class="string">"customer_name"</span>: {<span class="string">"type"</span>: <span class="string">"string"</span>},
-                <span class="string">"phone_number"</span>: {<span class="string">"type"</span>: <span class="string">"string"</span>},
-                <span class="string">"sentiment"</span>: {<span class="string">"type"</span>: <span class="string">"string"</span>, <span class="string">"enum"</span>: [<span class="string">"Happy"</span>, <span class="string">"Angry"</span>, <span class="string">"Neutral"</span>]},
-                <span class="string">"issue_summary"</span>: {<span class="string">"type"</span>: <span class="string">"string"</span>}
-            },
-            <span class="string">"required"</span>: [<span class="string">"customer_name"</span>, <span class="string">"sentiment"</span>, <span class="string">"issue_summary"</span>]
-        }
+                <div class="code-wrapper">
+                  <pre><code class="language-markdown" id="s2_l2_c1">Bạn là hệ thống AI phân loại email hỗ trợ. 
+Phân loại email của người dùng bên dưới vào một trong ba nhóm nhãn: [Complaint, Support, Feedback] theo đúng phong cách bên dưới.
+
+## Ví dụ mẫu:
+Ý kiến: "Tôi mua hàng từ tuần trước nhưng nay vẫn chưa thấy giao. Quá tệ!"
+Nhãn: Complaint
+
+Ý kiến: "Vui lòng hướng dẫn tôi cách đổi lại mật khẩu tài khoản."
+Nhãn: Support
+
+Ý kiến: "Sản phẩm dùng rất tốt, tôi hy vọng shop có thêm nhiều màu sắc hơn."
+Nhãn: Feedback
+
+## Yêu cầu xử lý:
+Ý kiến: "Bàn phím của tôi bị hỏng phím cách, shop gửi bộ phím mới thay thế như thế nào?"
+Nhãn:</code></pre>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Video Prompt -->
+            <div class="tab-pane" id="s2_l2_pane_video">
+              <div class="prompt-container">
+                <div class="prompt-box">
+                  <div class="card-title"><i class="fas fa-film"></i> NotebookLM Video Prompt</div>
+                  <div class="prompt-text" id="s2_l2_video_text">=== STYLE PROMPT ===
+Giọng thuyết trình: Hào hứng, nhấn mạnh quy tắc tối ưu hóa chi phí, kỹ sư thực tế.
+Ngôn ngữ: Tiếng Việt, giữ các thuật ngữ (Zero-Shot, One-Shot, Few-Shot, Token Budget, Latency).
+
+=== NỘI DUNG AUDIO ===
+"Chào mừng đến với bài học Zero, One và Few-Shot Prompting. Nhiều người nghĩ rằng cứ nhồi thật nhiều ví dụ là AI sẽ thông minh hơn. Sai lầm! Ở thời đại mô hình ngôn ngữ thế hệ mới, khả năng học một phát ăn ngay đã cực tốt. Lạm dụng Few-Shot chỉ tổ làm cạn kiệt Token Budget của bạn, tăng độ trễ mạng và khiến hóa đơn API tăng vọt. Hôm nay chúng ta sẽ tìm hiểu ranh giới rõ ràng: khi nào Zero-shot là đủ, và khi nào bắt buộc phải dùng Few-shot."</div>
+                  <button class="copy-btn" onclick="copyCode(this, 's2_l2_video_text')"><i class="fas fa-copy"></i> Sao chép Prompt</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Slides Prompt -->
+            <div class="tab-pane" id="s2_l2_pane_slide">
+              <div class="prompt-container">
+                <div class="prompt-box">
+                  <div class="card-title"><i class="fas fa-file-powerpoint"></i> Google Slides Prompt</div>
+                  <div class="prompt-text" id="s2_l2_slide_text">=== PHONG CÁCH TỔNG THỂ ===
+Theme: Tech Minimalist. Màu nhấn: Xanh ngọc.
+
+=== SLIDES ===
+Slide 1: Tiêu đề lớn: "Phân bổ Shots trong Prompting để tối ưu hóa hiệu năng & chi phí"
+Slide 2: Định nghĩa: Zero-shot vs. One-shot vs. Few-shot.
+Slide 3: Khi nào dùng Zero-shot? (Tác vụ cơ bản, mô hình lớn thông minh).
+Slide 4: Khi nào dùng Few-shot? (Định dạng tự chế, bài toán cần độ nhất quán cực cao).
+Slide 5: Pitfall: Lạm dụng Few-shot gây phình token, tăng độ trễ phản hồi.
+Slide 6: Phân tích bài toán thực hành phân loại email.</div>
+                  <button class="copy-btn" onclick="copyCode(this, 's2_l2_slide_text')"><i class="fas fa-copy"></i> Sao chép Prompt</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== SESSION 02 LESSON 03 ==================== -->
+        <section class="lesson-section" id="s2_l3">
+          <div class="lesson-banner">
+            <div class="lesson-subtitle">LESSON 03</div>
+            <h2 class="lesson-title">System Prompt Architecture & Persona Engineering</h2>
+          </div>
+
+          <div class="tab-container">
+            <div class="tab-nav">
+              <button class="tab-btn active" data-tab="theory"><i class="fas fa-book"></i> Lý thuyết</button>
+              <button class="tab-btn" data-tab="diagram"><i class="fas fa-project-diagram"></i> Sơ đồ & Minh họa</button>
+              <button class="tab-btn" data-tab="practice"><i class="fas fa-laptop-code"></i> Thực hành & Demo</button>
+              <button class="tab-btn" data-tab="video"><i class="fas fa-video"></i> Video Prompt</button>
+              <button class="tab-btn" data-tab="slide"><i class="fas fa-images"></i> Slides Prompt</button>
+            </div>
+
+            <!-- Tab: Theory -->
+            <div class="tab-pane active" id="s2_l3_pane_theory">
+              <div class="theory-content">
+                <h3>3.1 Tại sao Role Prompting hoạt động?</h3>
+                <p>Khi bạn định vị vai trò cho AI (ví dụ: *"Bạn là một bác sĩ tim mạch"*), bạn đang hướng mô hình thu hẹp vùng tìm kiếm xác suất của các từ ngữ (Knowledge Cluster). Thay vì tìm từ vựng trong kho tri thức hỗn hợp toàn cầu, AI sẽ ưu tiên sử dụng các thuật ngữ y khoa, cách lập luận lâm sàng và văn phong chuyên nghiệp của ngành y tế.</p>
+                
+                <h3>3.2 Kiến trúc System Prompt Đa Tầng (Multi-layer)</h3>
+                <p>Trong các ứng dụng doanh nghiệp thực tế, System Prompt được chia thành 5 lớp chức năng rõ ràng:</p>
+                <ol>
+                  <li><strong>Layer 1: Identity & Role (Định danh)</strong>: Khai báo AI là ai, kinh nghiệm bao nhiêu năm, lĩnh vực gì.</li>
+                  <li><strong>Layer 2: Behavioral Constraints (Ràng buộc hành vi)</strong>: Những điều cấm kỵ (Ví dụ: Không đưa lời khuyên đầu tư tài chính, không phân biệt chủng tộc).</li>
+                  <li><strong>Layer 3: Tool Definitions (Định nghĩa công cụ)</strong>: Danh sách các API/function mà AI được quyền gọi.</li>
+                  <li><strong>Layer 4: Output Specifications (Định dạng đầu ra)</strong>: Yêu cầu trả về JSON, XML, hay Markdown.</li>
+                  <li><strong>Layer 5: Dynamic Context Slots (Vùng nạp ngữ cảnh động)</strong>: Các vị trí chờ để nạp thông tin người dùng hoặc tài liệu truy vấn vào.</li>
+                </ol>
+
+                <div class="info-card">
+                  <div class="info-card-title"><i class="fas fa-code"></i> Định dạng System Prompt theo nhà cung cấp</div>
+                  <p><strong>Claude Style:</strong> Ưu tiên sử dụng định dạng thẻ XML rõ ràng: <code>&lt;role&gt;...&lt;/role&gt;</code>.</p>
+                  <p><strong>GPT Style:</strong> Ưu tiên sử dụng định dạng Markdown Headers: <code>## Identity</code>, <code>## Constraints</code>.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Diagram & Illustration -->
+            <div class="tab-pane" id="s2_l3_pane_diagram">
+              <div class="diagram-visual-container">
+                <div class="card-container">
+                  <div class="card-title"><i class="fas fa-project-diagram"></i> Workflow Diagram (Mermaid)</div>
+                  <div class="mermaid-wrapper">
+                    <pre class="mermaid">
+graph TD
+    L1["Lớp 1: Identity & Role<br/>(AI là ai?)"] --> L2["Lớp 2: Behavioral Constraints<br/>(Quy tắc an toàn & Ràng buộc)"]
+    L2 --> L3["Lớp 3: Tool Definitions<br/>(Các API/Function được phép gọi)"]
+    L3 --> L4["Lớp 4: Output Specifications<br/>(Định dạng JSON/Markdown)"]
+    L4 --> L5["Lớp 5: Dynamic Context Slots<br/>(Ngữ cảnh động nạp vào)"]
+    L5 --> LLM["☁️ Bộ xử lý LLM"]
+                    </pre>
+                  </div>
+                </div>
+
+                <div class="card-container">
+                  <div class="card-title"><i class="fas fa-image"></i> Ảnh minh họa 3D Illustration</div>
+                  <div class="illustration-wrapper">
+                    <img class="illustration-img" src="images/system_prompt_architecture.png" alt="System Prompt Architecture">
+                  </div>
+                  <div class="prompt-drawer">
+                    <div class="prompt-drawer-header">
+                      <span>DALL-E Prompt</span>
+                      <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="prompt-drawer-body" style="display: none;">
+                      A futuristic 3D architectural diagram representing a Multi-layer System Prompt Architecture. Horizontal glowing glass shelves stacked vertically inside a holographic rack, labeled in Vietnamese: "LỚP 1: ĐỊNH DANH (IDENTITY & ROLE)", "LỚP 2: RÀNG BUỘC (CONSTRAINTS)", "LỚP 3: CÔNG CỤ (TOOL DEFINITIONS)", "LỚP 4: ĐỊNH DẠNG (OUTPUT SPECS)", "LỚP 5: NGỮ CẢNH ĐỘNG (DYNAMIC SLOTS)" with glowing neon text. Neon circuit lines connect them, showing data flow. Sleek dark mode tech theme, 8k, highly detailed. The visual language is Vietnamese, with only technical terms retained in English.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Practice -->
+            <div class="tab-pane" id="s2_l3_pane_practice">
+              <div class="practice-container">
+                <h3>Thực hành: Role Stacking (Ghép vai trò)</h3>
+                <p><strong>Yêu cầu:</strong> Thiết kế một System Prompt kết hợp vai trò (Role Stacking) để AI đóng vai trò là một chuyên gia sở hữu trí tuệ công nghệ.</p>
+
+                <div class="code-block-header">
+                  <span class="file-name">Role Stacking System Prompt (XML Style)</span>
+                  <button class="copy-btn" onclick="copyCode(this, 's2_l3_c1')"><i class="fas fa-copy"></i> Copy</button>
+                </div>
+                <div class="code-wrapper">
+                  <pre><code class="language-xml" id="s2_l3_c1">&lt;system_prompt&gt;
+  &lt;identity&gt;
+    Bạn là một chuyên gia cao cấp kép, sở hữu kiến thức uyên bác về Luật Sở Hữu Trí Tuệ Công Nghệ và có khả năng phân tích, đọc hiểu mã nguồn phần mềm chuyên sâu (Java, Node.js, Python).
+  &lt;/identity&gt;
+  &lt;constraints&gt;
+    - Chỉ tập trung phân tích tính pháp lý và tính bản quyền của mã nguồn dựa trên các chuẩn Open-source License (MIT, Apache 2.0, GPLv3).
+    - KHÔNG được đưa ra lời khuyên pháp lý mang tính chất tố tụng tòa án chính thức. Luôn ghi chú khuyên người dùng tham khảo luật sư.
+  &lt;/constraints&gt;
+  &lt;output_format&gt;
+    Báo cáo phân tích kỹ thuật dạng Markdown gồm các mục: Đánh giá mã nguồn, Xác định License của thư viện liên quan, Rủi ro pháp lý nếu thương mại hóa.
+  &lt;/output_format&gt;
+&lt;/system_prompt&gt;</code></pre>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Video Prompt -->
+            <div class="tab-pane" id="s2_l3_pane_video">
+              <div class="prompt-container">
+                <div class="prompt-box">
+                  <div class="card-title"><i class="fas fa-film"></i> NotebookLM Video Prompt</div>
+                  <div class="prompt-text" id="s2_l3_video_text">=== STYLE PROMPT ===
+Giọng thuyết trình: Bản lĩnh, phong cách kỹ sư hệ thống lớn, nhấn mạnh tính kỷ luật.
+Ngôn ngữ: Tiếng Việt, giữ các thuật ngữ (Role Prompting, Persona Engineering, Stacked Roles, Constraints).
+
+=== NỘI DUNG AUDIO ===
+"Chào mừng các bạn đến với chuyên đề Persona Engineering nâng cao. Tại sao Role Prompting lại hoạt động? Về bản chất toán học, khi bạn chỉ định vai trò cho AI, bạn đang gom cụm tri thức xác suất của mô hình vào một vùng chuyên ngành, loại bỏ các từ ngữ dư thừa. Trong bài học này, chúng ta sẽ học cách thiết kế cấu trúc System Prompt đa tầng từ Định danh, Ràng buộc, Công cụ, cho đến Ngữ cảnh động. Đây là nền tảng sống còn để kiểm soát hành vi AI trong môi trường sản xuất."</div>
+                  <button class="copy-btn" onclick="copyCode(this, 's2_l3_video_text')"><i class="fas fa-copy"></i> Sao chép Prompt</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Slides Prompt -->
+            <div class="tab-pane" id="s2_l3_pane_slide">
+              <div class="prompt-container">
+                <div class="prompt-box">
+                  <div class="card-title"><i class="fas fa-file-powerpoint"></i> Google Slides Prompt</div>
+                  <div class="prompt-text" id="s2_l3_slide_text">=== PHONG CÁCH TỔNG THỂ ===
+Theme: Developer dark theme. Màu chủ đạo: Xanh lá neon.
+
+=== SLIDES ===
+Slide 1: Tiêu đề lớn: "Kiến trúc System Prompt Đa Tầng & Persona Engineering"
+Slide 2: Bản chất xác suất của Role Prompting (Knowledge Cluster).
+Slide 3: Thiết kế 5 lớp System Prompt: Định danh, Ràng buộc, Công cụ, Định dạng, Ngữ cảnh động.
+Slide 4: So sánh phong cách viết System Prompt: XML (Claude) vs Markdown (GPT).
+Slide 5: Kỹ thuật Role Stacking (Ghép vai trò) để xử lý bài toán giao thoa phức tạp.
+Slide 6: Bài tập thiết kế System Prompt đa tầng cho tư vấn nhân sự.</div>
+                  <button class="copy-btn" onclick="copyCode(this, 's2_l3_slide_text')"><i class="fas fa-copy"></i> Sao chép Prompt</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== SESSION 02 LESSON 04 ==================== -->
+        <section class="lesson-section" id="s2_l4">
+          <div class="lesson-banner">
+            <div class="lesson-subtitle">LESSON 04</div>
+            <h2 class="lesson-title">Output Formatting, Structured Output & Schema Enforcement</h2>
+          </div>
+
+          <div class="tab-container">
+            <div class="tab-nav">
+              <button class="tab-btn active" data-tab="theory"><i class="fas fa-book"></i> Lý thuyết</button>
+              <button class="tab-btn" data-tab="diagram"><i class="fas fa-project-diagram"></i> Sơ đồ & Minh họa</button>
+              <button class="tab-btn" data-tab="practice"><i class="fas fa-laptop-code"></i> Thực hành & Demo</button>
+              <button class="tab-btn" data-tab="video"><i class="fas fa-video"></i> Video Prompt</button>
+              <button class="tab-btn" data-tab="slide"><i class="fas fa-images"></i> Slides Prompt</button>
+            </div>
+
+            <!-- Tab: Theory -->
+            <div class="tab-pane active" id="s2_l4_pane_theory">
+              <div class="theory-content">
+                <h3>4.1 Native Structured Output vs. Prompt-based Formatting</h3>
+                <ul>
+                  <li><strong>Prompt-based Formatting</strong>: Bạn yêu cầu AI trả về định dạng mong muốn bằng câu chữ trong prompt (Ví dụ: *"Hãy trả về dạng JSON"*).
+                    <br/><em>⚠️ Rủi ro</em>: Mô hình dễ bị lỗi cú pháp (ví dụ: thiếu dấu phẩy, thừa lời dẫn thoại: `"Dưới đây là JSON của bạn:"`), làm hỏng các script tự động parse dữ liệu ở backend.
+                  </li>
+                  <li><strong>Native Structured Output (Schema Enforcement)</strong>: Đây là tính năng của API thế hệ mới, nơi nhà phát triển định nghĩa một cấu trúc JSON Schema chuẩn và gửi kèm yêu cầu. API của mô hình (như OpenAI GPT-5.5 hay Gemini 3.5) cam kết <strong>100% đầu ra sẽ tuân thủ tuyệt đối cấu trúc Schema</strong> này bằng cách can thiệp trực tiếp vào quá trình dự đoán token (constrained sampling).</li>
+                </ul>
+
+                <h3>4.2 Bảng so sánh các phương thức xuất dữ liệu có cấu trúc</h3>
+                <div class="compare-table-wrapper">
+                  <table class="compare-table">
+                    <thead>
+                      <tr>
+                        <th>Tiêu chí</th>
+                        <th>Prompt-based JSON</th>
+                        <th>Native JSON Mode</th>
+                        <th>Schema Enforcement (API)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><strong>Độ tin cậy cú pháp</strong></td>
+                        <td>85% - 90% (Dễ lỗi)</td>
+                        <td>98% (Vẫn có thể sai schema)</td>
+                        <td>100% (Cam kết bởi API)</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Tốc độ xử lý</strong></td>
+                        <td>Bình thường</td>
+                        <td>Nhanh hơn</td>
+                        <td>Tối ưu nhất</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Độ phức tạp tích hợp</strong></td>
+                        <td>Thấp (chỉ cần viết prompt)</td>
+                        <td>Trung bình</td>
+                        <td>Cao (phải viết code khai báo Schema)</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Diagram & Illustration -->
+            <div class="tab-pane" id="s2_l4_pane_diagram">
+              <div class="diagram-visual-container">
+                <div class="card-container">
+                  <div class="card-title"><i class="fas fa-project-diagram"></i> Workflow Diagram (Mermaid)</div>
+                  <div class="mermaid-wrapper">
+                    <pre class="mermaid">
+graph TD
+    subgraph "Prompt-based Formatting (Dễ lỗi)"
+        p1["Prompt: 'Hãy trả về JSON...'"] --> llm1["☁️ LLM"] --> out1["'Dưới đây là JSON: { ... }' <br/>⚠️ Lỗi cú pháp/Thừa chữ"]
+    end
+    subgraph "Schema Enforcement (Độ tin cậy 100%)"
+        p2["Prompt + JSON Schema Definition"] --> filter["⚙️ Constrained Sampling Filter"]
+        filter --> llm2["☁️ LLM Token Generation"] --> out2["{ 'customer_name': 'Nam', ... } <br/>✅ Chuẩn cấu trúc 100%"]
+      end
+                    </pre>
+                  </div>
+                </div>
+
+                <div class="card-container">
+                  <div class="card-title"><i class="fas fa-image"></i> Ảnh minh họa 3D Illustration</div>
+                  <div class="illustration-wrapper">
+                    <img class="illustration-img" src="images/schema_enforcement.png" alt="Schema Enforcement">
+                  </div>
+                  <div class="prompt-drawer">
+                    <div class="prompt-drawer-header">
+                      <span>DALL-E Prompt</span>
+                      <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="prompt-drawer-body" style="display: none;">
+                      A futuristic 3D visualization representing Schema Enforcement or Native Structured Output. A messy fluid stream of raw text labeled "DÒNG DỮ LIỆU THÔ (RAW DATA)" in glowing green text enters a funnel glowing grid. From the bottom of the funnel, the stream exits as a neat, highly ordered 3D holographic JSON matrix cube labeled "JSON STRUCTURED OUTPUT (ĐẦU RA CẤU TRÚC)" in glowing violet text. Premium tech dark background, 8k, highly detailed. The visual language is Vietnamese, with only technical terms retained in English.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Practice -->
+            <div class="tab-pane" id="s2_l4_pane_practice">
+              <div class="practice-container">
+                <h3>Thực hành: Ép khung đầu ra JSON Schema</h3>
+                <p><strong>Yêu cầu:</strong> Trích xuất thông tin khách hàng từ đoạn chat log thô bằng JSON Schema.</p>
+                
+                <div class="code-block-header">
+                  <span class="file-name">Đoạn Chat Log Thô</span>
+                </div>
+                <div class="code-wrapper">
+                  <pre><code class="language-markdown">"Chào shop, mình là Nam (SĐT: 0905123456). Mình nhận được hàng từ hôm qua nhưng bị bể màn hình rồi. Shop hỗ trợ đổi trả giúp mình gấp!"</code></pre>
+                </div>
+
+                <div class="code-block-header">
+                  <span class="file-name">Cấu hình JSON Schema (Schema Enforcement)</span>
+                  <button class="copy-btn" onclick="copyCode(this, 's2_l4_c1')"><i class="fas fa-copy"></i> Copy</button>
+                </div>
+                <div class="code-wrapper">
+                  <pre><code class="language-json" id="s2_l4_c1">{
+  "type": "json_schema",
+  "json_schema": {
+    "name": "customer_extraction",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "customer_name": {"type": "string"},
+        "phone_number": {"type": "string"},
+        "sentiment": {"type": "string", "enum": ["Happy", "Angry", "Neutral"]},
+        "issue_summary": {"type": "string"}
+      },
+      "required": ["customer_name", "sentiment", "issue_summary"]
     }
+  }
 }</code></pre>
-            </div>
-
-            <p>Hãy viết một script hoặc thiết kế một prompt trích xuất thông tin khách hàng từ nhật ký chat log sau, đảm bảo đầu ra khớp với schema trên:</p>
-            <div class="diagram-box">"Chào shop, mình là Nam (SĐT: 0905123456). Mình nhận được hàng từ hôm qua nhưng bị bể màn hình rồi. Shop hỗ trợ đổi trả giúp mình gấp!"</div>
-        </div>
-
-        <!-- Exercises Block -->
-        <div class="block animate-on-scroll">
-            <div class="block-header">
-                <span class="block-icon">📝</span>
-                <span class="block-label exercise">Bài tập</span>
-            </div>
-            <h3>Bài tập Lesson 2.4</h3>
-
-            <div class="exercise-item">
-                <div class="exercise-num">1</div>
-                <div class="exercise-text">
-                    <strong>Xây dựng Pipeline trích xuất:</strong> Thiết kế hệ thống prompt trích xuất thông tin bệnh án điện tử từ lời thoại ghi âm của bác sĩ. Đầu ra yêu cầu định dạng JSON chứa các trường: <code>[Patient_Name, Age, Symptoms, Diagnosed_Disease, Prescription_List]</code>.
                 </div>
+              </div>
             </div>
 
-            <div class="exercise-item">
-                <div class="exercise-num">2</div>
-                <div class="exercise-text">
-                    <strong>Đánh giá Edge-cases:</strong> Thử nghiệm gửi dữ liệu nhiễu hoặc văn bản không liên quan vào hệ thống trên. Ghi nhận xem cơ chế Schema Enforcement của mô hình xử lý như thế nào (AI có tự động để trống trường hay bị crash cú pháp).
+            <!-- Tab: Video Prompt -->
+            <div class="tab-pane" id="s2_l4_pane_video">
+              <div class="prompt-container">
+                <div class="prompt-box">
+                  <div class="card-title"><i class="fas fa-film"></i> NotebookLM Video Prompt</div>
+                  <div class="prompt-text" id="s2_l4_video_text">=== STYLE PROMPT ===
+Giọng thuyết trình: Chuyên nghiệp, tập trung vào lập trình và tích hợp hệ thống backend.
+Ngôn ngữ: Tiếng Việt, giữ các thuật ngữ (Schema Enforcement, Native Structured Output, JSON Schema, API, Constrained Sampling).
+
+=== NỘI DUNG AUDIO ===
+"Chào mừng các bạn đến với bài học cuối cùng của Session 02: Ép khung cấu trúc đầu ra Schema Enforcement. Khi xây dựng phần mềm tích hợp AI, nỗi sợ lớn nhất của lập trình viên là gì? Đó là mã JSON trả về từ AI bị lỗi cú pháp, làm crash ứng dụng ở Backend. Prompt-based JSON thông thường chỉ đạt độ tin cậy khoảng 85%. Với Schema Enforcement, API can thiệp trực tiếp vào quá trình lấy mẫu xác suất token của mô hình, đảm bảo đầu ra chuẩn 100% cấu trúc Schema đã khai báo. Hãy cùng tìm hiểu cách cấu hình nó."</div>
+                  <button class="copy-btn" onclick="copyCode(this, 's2_l4_video_text')"><i class="fas fa-copy"></i> Sao chép Prompt</button>
                 </div>
+              </div>
             </div>
-        </div>
-    </section>
 
-    <div class="separator"></div>
+            <!-- Tab: Slides Prompt -->
+            <div class="tab-pane" id="s2_l4_pane_slide">
+              <div class="prompt-container">
+                <div class="prompt-box">
+                  <div class="card-title"><i class="fas fa-file-powerpoint"></i> Google Slides Prompt</div>
+                  <div class="prompt-text" id="s2_l4_slide_text">=== PHONG CÁCH TỔNG THỂ ===
+Theme: Tech Minimalist. Màu nhấn: Tím nhạt.
 
-    <!-- ================================================================== -->
-    <!-- QUIZ SECTION -->
-    <!-- ================================================================== -->
-    <section class="lesson animate-on-scroll" id="quiz">
-        <div class="lesson-header">
-            <div class="lesson-number">🧪</div>
-            <div class="lesson-title-group">
-                <h2>Quiz Kiểm tra Session 02</h2>
-                <p class="lesson-meta">Kiểm tra nhanh kiến thức cơ bản về Prompt Engineering</p>
+=== SLIDES ===
+Slide 1: Tiêu đề lớn: "Native Structured Output & Cơ chế Schema Enforcement"
+Slide 2: Nỗi sợ lỗi cú pháp JSON trong tích hợp hệ thống phần mềm.
+Slide 3: Cơ chế hoạt động của Schema Enforcement (Constrained Sampling ở tầng giải mã token).
+Slide 4: Bảng so sánh: Prompt-based JSON vs. JSON Mode vs. Schema Enforcement.
+Slide 5: Định nghĩa JSON Schema và mã cấu hình mẫu.
+Slide 6: Bài tập xây dựng Pipeline trích xuất bệnh án y khoa.</div>
+                  <button class="copy-btn" onclick="copyCode(this, 's2_l4_slide_text')"><i class="fas fa-copy"></i> Sao chép Prompt</button>
+                </div>
+              </div>
             </div>
-        </div>
+          </div>
+        </section>
 
-        <!-- Question 1 -->
-        <div class="quiz-card" data-correct="1">
-            <div class="quiz-question">Câu 1: Thành phần nào trong cấu trúc R-C-T-F-C-E quyết định trực tiếp việc thu hẹp vùng tìm kiếm xác suất từ vựng (Knowledge Cluster) của LLM?</div>
-            <div class="quiz-options">
-                <div class="quiz-option" data-index="0"><div class="radio"></div> A. Constraints (Ràng buộc)</div>
-                <div class="quiz-option" data-index="1"><div class="radio"></div> B. Role (Vai trò)</div>
-                <div class="quiz-option" data-index="2"><div class="radio"></div> C. Format (Định dạng)</div>
-                <div class="quiz-option" data-index="3"><div class="radio"></div> D. Examples (Ví dụ mẫu)</div>
+        <!-- ==================== SESSION 02 QUIZ ==================== -->
+        <section class="lesson-section" id="s2_quiz">
+          <div class="lesson-banner">
+            <div class="lesson-subtitle">TEST LAB</div>
+            <h2 class="lesson-title">Quiz kiểm tra kiến thức Session 02</h2>
+          </div>
+
+          <div class="quiz-container">
+            <!-- Question 1 -->
+            <div class="quiz-card">
+              <div class="quiz-header">
+                <span class="quiz-num">CÂU HỎI 01</span>
+              </div>
+              <div class="quiz-qtext">Thành phần nào trong cấu trúc R-C-T-F-C-E quyết định trực tiếp việc thu hẹp vùng tìm kiếm xác suất từ vựng (Knowledge Cluster) của LLM?</div>
+              <div class="quiz-options">
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>A. Constraints (Ràng buộc).</span>
+                </div>
+                <div class="quiz-option" data-correct="true">
+                  <div class="quiz-radio"></div>
+                  <span>B. Role (Vai trò).</span>
+                </div>
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>C. Format (Định dạng).</span>
+                </div>
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>D. Examples (Ví dụ mẫu).</span>
+                </div>
+              </div>
+              <div class="quiz-explanation">
+                <div class="quiz-explanation-title">Giải thích đáp án:</div>
+                <p>Role (Vai trò) định vị AI vào một nhóm tri thức cụ thể, giúp nó ưu tiên lựa chọn các token liên quan mật thiết đến ngành nghề/chuyên môn đó.</p>
+              </div>
             </div>
-            <div class="quiz-feedback correct-feedback">✅ Chính xác! Role định vị AI vào một nhóm tri thức chuyên môn cụ thể, giúp mô hình ưu tiên lựa chọn các token liên quan mật thiết đến ngành nghề/chuyên môn đó.</div>
-            <div class="quiz-feedback wrong-feedback">❌ Sai rồi! Role (Vai trò) mới là thành phần thu hẹp vùng tìm kiếm xác suất tri thức phù hợp của LLM.</div>
-        </div>
 
-        <!-- Question 2 -->
-        <div class="quiz-card" data-correct="1">
-            <div class="quiz-question">Câu 2: Trong trường hợp nào kỹ sư AI BẮT BUỘC nên sử dụng Few-Shot Prompting thay vì Zero-Shot?</div>
-            <div class="quiz-options">
-                <div class="quiz-option" data-index="0"><div class="radio"></div> A. Khi cần AI viết một bài thơ chúc mừng sinh nhật</div>
-                <div class="quiz-option" data-index="1"><div class="radio"></div> B. Khi cần trích xuất thông tin từ tài liệu theo một định dạng dữ liệu tự chế (Custom Format) đặc thù</div>
-                <div class="quiz-option" data-index="2"><div class="radio"></div> C. Khi sử dụng các mô hình suy luận sâu như GPT-5 Pro</div>
-                <div class="quiz-option" data-index="3"><div class="radio"></div> D. Khi muốn tiết kiệm tối đa chi phí sử dụng API</div>
+            <!-- Question 2 -->
+            <div class="quiz-card">
+              <div class="quiz-header">
+                <span class="quiz-num">CÂU HỎI 02</span>
+              </div>
+              <div class="quiz-qtext">Trong trường hợp nào kỹ sư AI BẮT BUỘC nên sử dụng Few-Shot Prompting thay vì Zero-Shot?</div>
+              <div class="quiz-options">
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>A. Khi cần AI viết một bài thơ chúc mừng sinh nhật.</span>
+                </div>
+                <div class="quiz-option" data-correct="true">
+                  <div class="quiz-radio"></div>
+                  <span>B. Khi cần trích xuất thông tin từ tài liệu theo một định dạng dữ liệu tự chế (Custom Format) đặc thù.</span>
+                </div>
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>C. Khi sử dụng các mô hình suy luận sâu như GPT-5 Pro.</span>
+                </div>
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>D. Khi muốn tiết kiệm tối đa chi phí sử dụng API.</span>
+                </div>
+              </div>
+              <div class="quiz-explanation">
+                <div class="quiz-explanation-title">Giải thích đáp án:</div>
+                <p>Few-Shot đặc biệt hiệu quả khi cần dạy mô hình một mẫu phân loại hoặc định dạng đầu ra độc quyền mà nó chưa từng được huấn luyện trước đó.</p>
+              </div>
             </div>
-            <div class="quiz-feedback correct-feedback">✅ Chính xác! Few-Shot đặc biệt hiệu quả khi cần dạy mô hình một mẫu phân loại hoặc định dạng đầu ra độc quyền mà nó chưa từng được huấn luyện trước đó.</div>
-            <div class="quiz-feedback wrong-feedback">❌ Sai rồi! Zero-shot phù hợp cho tác vụ thông thường. Khi có format tự chế đặc thù, bạn bắt buộc phải dùng Few-Shot.</div>
-        </div>
 
-        <!-- Question 3 -->
-        <div class="quiz-card" data-correct="1">
-            <div class="quiz-question">Câu 3: Điểm khác biệt cốt lõi giữa Native Structured Output (Schema Enforcement) và việc yêu cầu định dạng bằng Prompt thông thường là gì?</div>
-            <div class="quiz-options">
-                <div class="quiz-option" data-index="0"><div class="radio"></div> A. Native Structured Output chỉ hoạt động với ngôn ngữ tiếng Anh</div>
-                <div class="quiz-option" data-index="1"><div class="radio"></div> B. Native Structured Output can thiệp vào quá trình lấy mẫu xác suất token của API để đảm bảo 100% không bao giờ sai cấu trúc JSON</div>
-                <div class="quiz-option" data-index="2"><div class="radio"></div> C. Native Structured Output giúp AI trả lời dài hơn</div>
-                <div class="quiz-option" data-index="3"><div class="radio"></div> D. Không có sự khác biệt nào về độ tin cậy</div>
+            <!-- Question 3 -->
+            <div class="quiz-card">
+              <div class="quiz-header">
+                <span class="quiz-num">CÂU HỎI 03</span>
+              </div>
+              <div class="quiz-qtext">Điểm khác biệt cốt lõi giữa Native Structured Output (Schema Enforcement) và việc yêu cầu định dạng bằng Prompt thông thường là gì?</div>
+              <div class="quiz-options">
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>A. Native Structured Output chỉ hoạt động với ngôn ngữ tiếng Anh.</span>
+                </div>
+                <div class="quiz-option" data-correct="true">
+                  <div class="quiz-radio"></div>
+                  <span>B. Native Structured Output can thiệp vào quá trình lấy mẫu xác suất token của API để đảm bảo 100% không bao giờ sai cấu trúc JSON.</span>
+                </div>
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>C. Native Structured Output giúp AI trả lời dài hơn.</span>
+                </div>
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>D. Không có sự khác biệt nào về độ tin cậy.</span>
+                </div>
+              </div>
+              <div class="quiz-explanation">
+                <div class="quiz-explanation-title">Giải thích đáp án:</div>
+                <p>Schema Enforcement là cơ chế can thiệp trực tiếp vào quá trình giải mã (decoding) của mô hình ở mức độ API, loại bỏ hoàn toàn các token vi phạm cấu trúc Schema đã khai báo.</p>
+              </div>
             </div>
-            <div class="quiz-feedback correct-feedback">✅ Chính xác! Schema Enforcement can thiệp vào decoding level của mô hình ở mức độ API, loại bỏ các token vi phạm cấu trúc Schema đã khai báo.</div>
-            <div class="quiz-feedback wrong-feedback">❌ Sai rồi! Native Structured Output (Schema Enforcement) cam kết 100% cú pháp chuẩn xác nhờ can thiệp trực tiếp vào quá trình sinh token đầu ra.</div>
-        </div>
 
-        <!-- Question 4 -->
-        <div class="quiz-card" data-correct="1">
-            <div class="quiz-question">Câu 4: Việc lạm dụng nạp quá nhiều ví dụ mẫu (n > 10) trong Few-Shot Prompting gây ra pitfall gì?</div>
-            <div class="quiz-options">
-                <div class="quiz-option" data-index="0"><div class="radio"></div> A. Làm mô hình AI bị quá tải nhiệt phần cứng</div>
-                <div class="quiz-option" data-index="1"><div class="radio"></div> B. Tiêu hao quá nhiều token trong Context Window, làm tăng chi phí và tăng Latency phản hồi</div>
-                <div class="quiz-option" data-index="2"><div class="radio"></div> C. Làm mô hình trả lời hoàn toàn ngẫu nhiên</div>
-                <div class="quiz-option" data-index="3"><div class="radio"></div> D. Bắt buộc mô hình phải tự động chuyển sang chế độ suy nghĩ sâu</div>
+            <!-- Question 4 -->
+            <div class="quiz-card">
+              <div class="quiz-header">
+                <span class="quiz-num">CÂU HỎI 04</span>
+              </div>
+              <div class="quiz-qtext">Việc lạm dụng nạp quá nhiều ví dụ mẫu (n > 10) trong Few-Shot Prompting gây ra pitfall gì?</div>
+              <div class="quiz-options">
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>A. Làm mô hình AI bị quá tải nhiệt phần cứng.</span>
+                </div>
+                <div class="quiz-option" data-correct="true">
+                  <div class="quiz-radio"></div>
+                  <span>B. Tiêu hao quá nhiều token trong Context Window, làm tăng chi phí và tăng Latency phản hồi.</span>
+                </div>
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>C. Làm mô hình trả lời hoàn toàn ngẫu nhiên.</span>
+                </div>
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>D. Bắt buộc mô hình phải tự động chuyển sang chế độ suy nghĩ sâu.</span>
+                </div>
+              </div>
+              <div class="quiz-explanation">
+                <div class="quiz-explanation-title">Giải thích đáp án:</div>
+                <p>Mọi token của ví dụ đều chiếm dụng không gian của Context Window. Việc nhồi nhét quá nhiều ví dụ không cần thiết sẽ làm tăng chi phí sử dụng và thời gian xử lý của API.</p>
+              </div>
             </div>
-            <div class="quiz-feedback correct-feedback">✅ Chính xác! Mọi token của ví dụ đều chiếm dụng không gian của Context Window. Việc nhồi nhét quá nhiều ví dụ không cần thiết sẽ làm tăng chi phí sử dụng và thời gian xử lý của API.</div>
-            <div class="quiz-feedback wrong-feedback">❌ Sai rồi! Nhồi nhét quá nhiều ví dụ sẽ làm phình to context window dẫn đến tốn tiền API và tăng độ trễ (latency).</div>
-        </div>
 
-        <!-- Question 5 -->
-        <div class="quiz-card" data-correct="1">
-            <div class="quiz-question">Câu 5: Trong kiến trúc System Prompt Đa Tầng (Multi-layer), phần cấm đoán AI tiết lộ mật khẩu hệ thống sẽ được xếp vào lớp nào?</div>
-            <div class="quiz-options">
-                <div class="quiz-option" data-index="0"><div class="radio"></div> A. Layer 1: Identity & Role</div>
-                <div class="quiz-option" data-index="1"><div class="radio"></div> B. Layer 2: Behavioral Constraints</div>
-                <div class="quiz-option" data-index="2"><div class="radio"></div> C. Layer 3: Tool Definitions</div>
-                <div class="quiz-option" data-index="3"><div class="radio"></div> D. Layer 4: Output Specifications</div>
+            <!-- Question 5 -->
+            <div class="quiz-card">
+              <div class="quiz-header">
+                <span class="quiz-num">CÂU HỎI 05</span>
+              </div>
+              <div class="quiz-qtext">Trong kiến trúc System Prompt Đa Tầng (Multi-layer), phần cấm đoán AI tiết lộ mật khẩu hệ thống sẽ được xếp vào lớp nào?</div>
+              <div class="quiz-options">
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>A. Layer 1: Identity & Role.</span>
+                </div>
+                <div class="quiz-option" data-correct="true">
+                  <div class="quiz-radio"></div>
+                  <span>B. Layer 2: Behavioral Constraints.</span>
+                </div>
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>C. Layer 3: Tool Definitions.</span>
+                </div>
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>D. Layer 4: Output Specifications.</span>
+                </div>
+              </div>
+              <div class="quiz-explanation">
+                <div class="quiz-explanation-title">Giải thích đáp án:</div>
+                <p>Các quy tắc cấm kỵ, điều hướng bảo mật, và giới hạn hoạt động của AI thuộc về lớp Lớp 2: Behavioral Constraints (Ràng buộc hành vi).</p>
+              </div>
             </div>
-            <div class="quiz-feedback correct-feedback">✅ Chính xác! Các quy tắc cấm kỵ, điều hướng bảo mật, và giới hạn hoạt động của AI thuộc về Layer 2: Behavioral Constraints (Ràng buộc hành vi).</div>
-            <div class="quiz-feedback wrong-feedback">❌ Sai rồi! Mọi chỉ dẫn cấm đoán và quy định an toàn bảo mật thuộc về Layer 2: Behavioral Constraints.</div>
-        </div>
-    </section>
+          </div>
+        </section>
 
-</main>
+      </div>
 
-<!-- Footer -->
-<footer class="footer">
-    <div class="nav-buttons">
-        <a href="../session-01/index.html" class="nav-btn prev">← Session 01</a>
-        <a href="#" class="nav-btn next">Session 03: Prompt Engineering - Nâng cao →</a>
-    </div>
-    <p>
-        📚 Prompt, Context & Harness Engineering — Phiên bản 06/2026<br>
-        Tạo bởi AI Giảng viên · Cập nhật lần cuối: 28/06/2026
-    </p>
-</footer>
+      <!-- Footer -->
+      <footer class="credits-footer">
+        Thiết kế và phát triển bởi <i class="fas fa-heart"></i> Antigravity Agent &copy; 2026. Rikkei Academy AI Course.
+      </footer>
+    </main>
+  </div>
 
-<!-- Scroll to Top -->
-<button class="scroll-top" id="scrollTop">↑</button>
-
-<!-- ====================== JAVASCRIPT ====================== -->
-<script>
-    // ===== Progress Bar =====
-    window.addEventListener('scroll', () => {
-        const scrollTop = document.documentElement.scrollTop;
-        const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-        const progress = (scrollTop / scrollHeight) * 100;
-        document.getElementById('progressBar').style.width = progress + '%';
-    });
-
-    // ===== Scroll Animations =====
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
-            }
-        });
-    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
-
-    document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
-
-    // ===== Scroll to Top =====
-    const scrollTopBtn = document.getElementById('scrollTop');
-    window.addEventListener('scroll', () => {
-        scrollTopBtn.classList.toggle('visible', window.scrollY > 500);
-    });
-    scrollTopBtn.addEventListener('click', () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-
-    // ===== TOC Panel =====
-    const tocToggle = document.getElementById('tocToggle');
-    const tocPanel = document.getElementById('tocPanel');
-    tocToggle.addEventListener('click', () => {
-        tocPanel.classList.toggle('open');
-    });
-    document.addEventListener('click', (e) => {
-        if (!tocPanel.contains(e.target) && !tocToggle.contains(e.target)) {
-            tocPanel.classList.remove('open');
-        }
-    });
-    tocPanel.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', () => tocPanel.classList.remove('open'));
-    });
-
-    // ===== Active Nav Link =====
-    const sections = document.querySelectorAll('.lesson');
-    const navLinks = document.querySelectorAll('.nav-links a');
-    window.addEventListener('scroll', () => {
-        let current = '';
-        sections.forEach(section => {
-            const sectionTop = section.offsetTop - 100;
-            if (window.scrollY >= sectionTop) {
-                current = section.getAttribute('id');
-            }
-        });
-        navLinks.forEach(link => {
-            link.classList.remove('active');
-            if (link.getAttribute('href') === '#' + current) {
-                link.classList.add('active');
-            }
-        });
-    });
-
-    // ===== Quiz Logic =====
-    document.querySelectorAll('.quiz-card').forEach(card => {
-        const correctIndex = card.dataset.correct;
-        const options = card.querySelectorAll('.quiz-option');
-        const correctFeedback = card.querySelector('.correct-feedback');
-        const wrongFeedback = card.querySelector('.wrong-feedback');
-        let answered = false;
-
-        options.forEach(option => {
-            option.addEventListener('click', () => {
-                if (answered) return;
-                answered = true;
-                const selectedIndex = option.dataset.index;
-
-                if (selectedIndex === correctIndex) {
-                    option.classList.add('correct');
-                    correctFeedback.classList.add('show');
-                } else {
-                    option.classList.add('wrong');
-                    options[correctIndex].classList.add('correct');
-                    wrongFeedback.classList.add('show');
-                }
-
-                options.forEach(opt => {
-                    opt.style.pointerEvents = 'none';
-                });
-            });
-        });
-    });
-</script>
-
+  <!-- Custom Script logic -->
+  <script src="script.js"></script>
 </body>
 </html>
