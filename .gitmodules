@@ -1,0 +1,15 @@
+[submodule "MicroService/config-server"]
+	path = MicroService/config-server
+	url = https://github.com/langTuC0der/microservice-configs.git
+
+[submodule "MicroService/microservice-configs"]
+	path = MicroService/microservice-configs
+	url = https://github.com/langTuC0der/microservice-configs.git
+
+[submodule "PTIT-K24-AI_Integrated_In_Action"]
+	path = PTIT-K24-AI_Integrated_In_Action
+	url = https://github.com/huongcaoha/PTIT-K24-AI_Integrated_In_Action
+
+[submodule "machine_leaning/ml-yearning-vi"]
+	path = machine_leaning/ml-yearning-vi
+	url = https://github.com/mlbvn/ml-yearning-vi
