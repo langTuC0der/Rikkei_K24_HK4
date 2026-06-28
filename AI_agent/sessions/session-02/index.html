@@ -1,0 +1,1715 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session 02 — Prompt Engineering - Cơ bản | Prompt, Context & Harness Engineering</title>
+    <meta name="description" content="Học liệu chi tiết Session 02: Cấu trúc R-C-T-F-C-E, Zero/One/Few-Shot Prompting, Multi-layer System Prompt, Native Structured Output.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* ====================== DESIGN SYSTEM ====================== */
+        :root {
+            --bg-primary: #0a0a1a;
+            --bg-secondary: #111128;
+            --bg-card: #161635;
+            --bg-card-hover: #1c1c45;
+            --bg-code: #1e1e3f;
+            --bg-highlight: rgba(99, 102, 241, 0.08);
+
+            --text-primary: #e8e8f0;
+            --text-secondary: #9ca3bf;
+            --text-muted: #6b7294;
+            --text-accent: #818cf8;
+
+            --accent-primary: #818cf8;
+            --accent-secondary: #6366f1;
+            --accent-gradient: linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa);
+            --accent-glow: rgba(99, 102, 241, 0.3);
+
+            --cyan: #22d3ee;
+            --cyan-glow: rgba(34, 211, 238, 0.2);
+            --magenta: #f472b6;
+            --magenta-glow: rgba(244, 114, 182, 0.2);
+            --gold: #fbbf24;
+            --gold-glow: rgba(251, 191, 36, 0.15);
+            --emerald: #34d399;
+            --emerald-glow: rgba(52, 211, 153, 0.15);
+            --red-soft: #f87171;
+            --orange-soft: #fb923c;
+
+            --border-subtle: rgba(99, 102, 241, 0.12);
+            --border-medium: rgba(99, 102, 241, 0.25);
+
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+
+            --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+            --shadow-glow: 0 0 30px var(--accent-glow);
+
+            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+            --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-medium: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ====================== RESET & BASE ====================== */
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::selection {
+            background: var(--accent-secondary);
+            color: white;
+        }
+
+        /* ====================== BACKGROUND EFFECTS ====================== */
+        .bg-grid {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image:
+                linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .bg-glow-1 {
+            position: fixed;
+            top: -20%; left: -10%;
+            width: 60vw; height: 60vw;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+            filter: blur(80px);
+        }
+
+        .bg-glow-2 {
+            position: fixed;
+            bottom: -20%; right: -10%;
+            width: 60vw; height: 60vw;
+            background: radial-gradient(circle, rgba(34, 211, 238, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+            filter: blur(80px);
+        }
+
+        /* ====================== PROGRESS BAR ====================== */
+        .progress-bar {
+            position: fixed;
+            top: 0; left: 0;
+            height: 3px;
+            background: var(--accent-gradient);
+            z-index: 1001;
+            width: 0%;
+            transition: width 0.1s ease;
+            box-shadow: 0 0 10px var(--accent-primary);
+        }
+
+        /* ====================== NAVIGATION ====================== */
+        .nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 70px;
+            background: rgba(10, 10, 26, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-subtle);
+            z-index: 1000;
+            transition: var(--transition-fast);
+        }
+
+        .nav-inner {
+            max-width: 1200px;
+            height: 100%;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+        }
+
+        .nav-brand {
+            font-size: 1.1rem;
+            font-weight: 800;
+            text-decoration: none;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-brand .badge {
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid var(--border-medium);
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            letter-spacing: 0.5px;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 8px;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            transition: var(--transition-fast);
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+            background: var(--bg-highlight);
+        }
+
+        .nav-links a.active {
+            color: var(--accent-primary);
+            background: var(--bg-highlight);
+        }
+
+        /* ====================== HERO SECTION ====================== */
+        .hero {
+            position: relative;
+            z-index: 1;
+            padding: 140px 2rem 80px;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 800px; height: 800px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.1), transparent 60%);
+            pointer-events: none;
+        }
+
+        .hero-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid var(--border-medium);
+            padding: 6px 18px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--accent-primary);
+            margin-bottom: 24px;
+            animation: fadeInUp 0.6s ease;
+        }
+
+        .hero-label .dot {
+            width: 8px; height: 8px;
+            background: var(--emerald);
+            border-radius: 50%;
+            animation: pulse-dot 2s ease infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.3); }
+        }
+
+        .hero h1 {
+            font-size: clamp(2.2rem, 5vw, 3.8rem);
+            font-weight: 900;
+            line-height: 1.15;
+            margin-bottom: 16px;
+            letter-spacing: -1.5px;
+            animation: fadeInUp 0.6s ease 0.1s backwards;
+        }
+
+        .hero h1 .gradient-text {
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero .subtitle {
+            font-size: clamp(1rem, 2vw, 1.25rem);
+            color: var(--text-secondary);
+            max-width: 750px;
+            margin: 0 auto 32px;
+            line-height: 1.6;
+            animation: fadeInUp 0.6s ease 0.2s backwards;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.6s ease 0.3s backwards;
+        }
+
+        .hero-stat {
+            text-align: center;
+        }
+
+        .hero-stat .number {
+            font-size: 2rem;
+            font-weight: 800;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-stat .label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ====================== MAIN CONTENT ====================== */
+        .main {
+            position: relative;
+            z-index: 1;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 2rem 80px;
+        }
+
+        /* ====================== LESSON SECTIONS ====================== */
+        .lesson {
+            margin-bottom: 80px;
+            animation: fadeInUp 0.5s ease backwards;
+        }
+
+        .lesson-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 32px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .lesson-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 56px; height: 56px;
+            background: var(--accent-gradient);
+            border-radius: var(--radius-md);
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: white;
+            flex-shrink: 0;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .lesson-title-group h2 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+
+        .lesson-title-group .lesson-meta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+            display: flex;
+            gap: 16px;
+        }
+
+        .lesson-title-group .lesson-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* ====================== CONTENT BLOCKS ====================== */
+        .block {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            margin-bottom: 24px;
+            transition: var(--transition-medium);
+        }
+
+        .block:hover {
+            border-color: var(--border-medium);
+            box-shadow: var(--shadow-card);
+            transform: translateY(-2px);
+        }
+
+        .block-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .block-icon {
+            font-size: 1.4rem;
+        }
+
+        .block-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        .block-label.theory {
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--accent-primary);
+        }
+
+        .block-label.practice {
+            background: rgba(34, 211, 238, 0.15);
+            color: var(--cyan);
+        }
+
+        .block-label.exercise {
+            background: rgba(251, 191, 36, 0.15);
+            color: var(--gold);
+        }
+
+        .block-label.insight {
+            background: rgba(52, 211, 153, 0.15);
+            color: var(--emerald);
+        }
+
+        .block-label.warning {
+            background: rgba(248, 113, 113, 0.15);
+            color: var(--red-soft);
+        }
+
+        .block-label.new {
+            background: rgba(244, 114, 182, 0.15);
+            color: var(--magenta);
+        }
+
+        .block h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .block p, .block li {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.8;
+        }
+
+        .block ul, .block ol {
+            padding-left: 20px;
+            margin: 12px 0;
+        }
+
+        .block li {
+            margin-bottom: 8px;
+        }
+
+        .block li::marker {
+            color: var(--accent-primary);
+        }
+
+        .block strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* ====================== IMAGES ====================== */
+        .image-showcase {
+            margin: 24px 0;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            border: 1px solid var(--border-subtle);
+            background: var(--bg-secondary);
+            transition: var(--transition-medium);
+        }
+
+        .image-showcase:hover {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 30px var(--accent-glow);
+        }
+
+        .image-showcase img {
+            width: 100%;
+            display: block;
+            transition: var(--transition-medium);
+        }
+
+        .image-showcase:hover img {
+            transform: scale(1.02);
+        }
+
+        .image-caption {
+            padding: 14px 20px;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            text-align: center;
+            font-style: italic;
+            border-top: 1px solid var(--border-subtle);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        /* ====================== TABLES ====================== */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 20px 0;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+        }
+
+        thead {
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        th {
+            text-align: left;
+            padding: 14px 18px;
+            font-weight: 700;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--accent-primary);
+            border-bottom: 1px solid var(--border-medium);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 12px 18px;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-subtle);
+            vertical-align: top;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: rgba(99, 102, 241, 0.04);
+        }
+
+        td strong {
+            color: var(--text-primary);
+        }
+
+        /* ====================== CODE BLOCKS ====================== */
+        .code-block {
+            background: var(--bg-code);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            margin: 16px 0;
+            overflow: hidden;
+        }
+
+        .code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .code-lang {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .code-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .code-dots span {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+        }
+
+        .code-dots span:nth-child(1) { background: #ff5f56; }
+        .code-dots span:nth-child(2) { background: #ffbd2e; }
+        .code-dots span:nth-child(3) { background: #27c93f; }
+
+        .code-block pre {
+            padding: 20px;
+            overflow-x: auto;
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            line-height: 1.7;
+            color: #e0e0f0;
+        }
+
+        .code-block .comment { color: #6b7294; }
+        .code-block .keyword { color: #c792ea; }
+        .code-block .string { color: #c3e88d; }
+        .code-block .function { color: #82aaff; }
+        .code-block .variable { color: #f78c6c; }
+        .code-block .type { color: #ffcb6b; }
+        .code-block .tag { color: #80cbc4; }
+        .code-block .highlight-line { 
+            background: rgba(99, 102, 241, 0.1); 
+            display: block;
+            margin: 0 -20px;
+            padding: 0 20px;
+        }
+
+        /* ====================== CALLOUTS ====================== */
+        .callout {
+            border-radius: var(--radius-md);
+            padding: 20px 24px;
+            margin: 20px 0;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+
+        .callout-icon {
+            font-size: 1.3rem;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .callout-content {
+            flex: 1;
+        }
+
+        .callout-content strong {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+        }
+
+        .callout-content p {
+            font-size: 0.88rem;
+            line-height: 1.6;
+        }
+
+        .callout.insight {
+            background: rgba(52, 211, 153, 0.08);
+            border: 1px solid rgba(52, 211, 153, 0.2);
+        }
+        .callout.insight strong { color: var(--emerald); }
+
+        .callout.warning {
+            background: rgba(248, 113, 113, 0.08);
+            border: 1px solid rgba(248, 113, 113, 0.2);
+        }
+        .callout.warning strong { color: var(--red-soft); }
+
+        .callout.tip {
+            background: rgba(34, 211, 238, 0.08);
+            border: 1px solid rgba(34, 211, 238, 0.2);
+        }
+        .callout.tip strong { color: var(--cyan); }
+
+        .callout.new-tag {
+            background: rgba(244, 114, 182, 0.08);
+            border: 1px solid rgba(244, 114, 182, 0.2);
+        }
+        .callout.new-tag strong { color: var(--magenta); }
+
+        /* ====================== DIAGRAM BOX ====================== */
+        .diagram-box {
+            background: var(--bg-code);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            margin: 20px 0;
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            overflow-x: auto;
+            white-space: pre;
+        }
+
+        .diagram-box .label { color: var(--accent-primary); font-weight: 600; }
+        .diagram-box .highlight { color: var(--cyan); }
+        .diagram-box .accent { color: var(--magenta); }
+        .diagram-box .gold { color: var(--gold); }
+
+        /* ====================== EXERCISE ITEMS ====================== */
+        .exercise-item {
+            background: rgba(251, 191, 36, 0.05);
+            border: 1px solid rgba(251, 191, 36, 0.15);
+            border-radius: var(--radius-sm);
+            padding: 16px 20px;
+            margin: 10px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            transition: var(--transition-fast);
+        }
+
+        .exercise-item:hover {
+            background: rgba(251, 191, 36, 0.08);
+            border-color: rgba(251, 191, 36, 0.3);
+        }
+
+        .exercise-num {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 28px; height: 28px;
+            background: rgba(251, 191, 36, 0.15);
+            border-radius: 50%;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        .exercise-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* ====================== SEPARATOR ====================== */
+        .separator {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-medium), transparent);
+            margin: 60px 0;
+        }
+
+        /* ====================== QUIZ SECTION ====================== */
+        .quiz-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            margin: 16px 0;
+        }
+
+        .quiz-question {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .quiz-option {
+            background: rgba(99, 102, 241, 0.05);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            padding: 12px 18px;
+            cursor: pointer;
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            transition: var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .quiz-option:hover {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: var(--accent-primary);
+            color: var(--text-primary);
+        }
+
+        .quiz-option.correct {
+            background: rgba(52, 211, 153, 0.1);
+            border-color: var(--emerald);
+            color: var(--emerald);
+        }
+
+        .quiz-option.wrong {
+            background: rgba(248, 113, 113, 0.1);
+            border-color: var(--red-soft);
+            color: var(--red-soft);
+        }
+
+        .quiz-option .radio {
+            width: 18px; height: 18px;
+            border: 2px solid var(--border-medium);
+            border-radius: 50%;
+            flex-shrink: 0;
+            transition: var(--transition-fast);
+        }
+
+        .quiz-option.correct .radio {
+            border-color: var(--emerald);
+            background: var(--emerald);
+            box-shadow: inset 0 0 0 3px var(--bg-card);
+        }
+
+        .quiz-option.wrong .radio {
+            border-color: var(--red-soft);
+            background: var(--red-soft);
+            box-shadow: inset 0 0 0 3px var(--bg-card);
+        }
+
+        .quiz-feedback {
+            margin-top: 12px;
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            display: none;
+        }
+
+        .quiz-feedback.show { display: block; }
+
+        .quiz-feedback.correct-feedback {
+            background: rgba(52, 211, 153, 0.1);
+            border: 1px solid rgba(52, 211, 153, 0.2);
+            color: var(--emerald);
+        }
+
+        .quiz-feedback.wrong-feedback {
+            background: rgba(248, 113, 113, 0.1);
+            border: 1px solid rgba(248, 113, 113, 0.2);
+            color: var(--red-soft);
+        }
+
+        /* ====================== FOOTER ====================== */
+        .footer {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 40px 2rem;
+            border-top: 1px solid var(--border-subtle);
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .footer a {
+            color: var(--accent-primary);
+            text-decoration: none;
+        }
+
+        .footer .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .footer .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-decoration: none;
+            transition: var(--transition-fast);
+        }
+
+        .footer .nav-btn.prev {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+        }
+
+        .footer .nav-btn.next {
+            background: var(--accent-gradient);
+            color: white;
+            border: none;
+        }
+
+        .footer .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-card);
+        }
+
+        /* ====================== SCROLL ANIMATIONS ====================== */
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .animate-on-scroll.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ====================== SCROLL TO TOP ====================== */
+        .scroll-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 46px; height: 46px;
+            background: var(--accent-gradient);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: var(--transition-fast);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .scroll-top.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .scroll-top:hover {
+            transform: translateY(-3px) scale(1.05);
+        }
+
+        /* ====================== TOC SIDEBAR ====================== */
+        .toc-toggle {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 998;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: var(--transition-fast);
+        }
+
+        .toc-toggle:hover {
+            background: var(--accent-secondary);
+            color: white;
+        }
+
+        .toc-panel {
+            position: fixed;
+            top: 0; right: -360px;
+            width: 340px;
+            height: 100vh;
+            background: rgba(16, 16, 40, 0.98);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid var(--border-subtle);
+            z-index: 997;
+            padding: 80px 24px 40px;
+            overflow-y: auto;
+            transition: right 0.3s ease;
+        }
+
+        .toc-panel.open {
+            right: 0;
+        }
+
+        .toc-panel h3 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .toc-panel a {
+            display: block;
+            padding: 8px 14px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            border-radius: var(--radius-sm);
+            margin-bottom: 2px;
+            transition: var(--transition-fast);
+            border-left: 2px solid transparent;
+        }
+
+        .toc-panel a:hover,
+        .toc-panel a.active {
+            color: var(--accent-primary);
+            background: var(--bg-highlight);
+            border-left-color: var(--accent-primary);
+        }
+
+        .toc-panel .sub-link {
+            padding-left: 28px;
+            font-size: 0.8rem;
+        }
+
+        /* ====================== RESPONSIVE ====================== */
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .hero { padding: 120px 1.5rem 60px; }
+            .hero-stats { gap: 24px; }
+            .main { padding: 0 1.25rem 60px; }
+            .block { padding: 24px; }
+            .lesson-header { flex-direction: column; align-items: flex-start; }
+            .toc-toggle { display: none; }
+            th, td { padding: 10px 12px; font-size: 0.82rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Background Effects -->
+<div class="bg-grid"></div>
+<div class="bg-glow-1"></div>
+<div class="bg-glow-2"></div>
+
+<!-- Progress Bar -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Navigation -->
+<nav class="nav">
+    <div class="nav-inner">
+        <a class="nav-brand" href="#">
+            📚 PCH Engineering
+            <span class="badge">SESSION 02</span>
+        </a>
+        <ul class="nav-links">
+            <li><a href="#lesson-2-1" class="active">2.1</a></li>
+            <li><a href="#lesson-2-2">2.2</a></li>
+            <li><a href="#lesson-2-3">2.3</a></li>
+            <li><a href="#lesson-2-4">2.4</a></li>
+            <li><a href="#quiz">Quiz</a></li>
+        </ul>
+    </div>
+</nav>
+
+<!-- TOC Toggle -->
+<button class="toc-toggle" id="tocToggle" title="Mục lục">☰</button>
+
+<!-- TOC Panel -->
+<div class="toc-panel" id="tocPanel">
+    <h3>📑 Mục lục Session 02</h3>
+    <a href="#lesson-2-1">Lesson 2.1 — Anatomy of a Good Prompt</a>
+    <a href="#rctfce-anatomy" class="sub-link">Giải phẫu R-C-T-F-C-E</a>
+    <a href="#lesson-2-2">Lesson 2.2 — Zero/One/Few-Shot Prompting</a>
+    <a href="#shot-selection" class="sub-link">Chiến lược Shot Selection 2026</a>
+    <a href="#lesson-2-3">Lesson 2.3 — Role & System Prompt Architecture</a>
+    <a href="#multi-layer-system" class="sub-link">Hệ thống Prompt Đa Tầng</a>
+    <a href="#lesson-2-4">Lesson 2.4 — Schema Enforcement & JSON</a>
+    <a href="#schema-enforcement" class="sub-link">Bản chất Structured Output</a>
+    <a href="#quiz">🧪 Quiz kiểm tra</a>
+</div>
+
+<!-- Hero Section -->
+<header class="hero">
+    <div class="hero-label">
+        <span class="dot"></span>
+        Cập nhật tháng 06/2026
+    </div>
+    <h1>
+        Session 02: <br>
+        <span class="gradient-text">Prompt Engineering — Cơ bản</span>
+    </h1>
+    <p class="subtitle">
+        Làm chủ cấu trúc R-C-T-F-C-E, shots-prompting, thiết kế system prompt đa tầng và cơ chế ép khung đầu ra Schema Enforcement để tích hợp AI vào backend an toàn.
+    </p>
+    <div class="hero-stats">
+        <div class="hero-stat">
+            <div class="number">4</div>
+            <div class="label">Lessons</div>
+        </div>
+        <div class="hero-stat">
+            <div class="number">3-4h</div>
+            <div class="label">Thời lượng</div>
+        </div>
+        <div class="hero-stat">
+            <div class="number">8</div>
+            <div class="label">Bài tập</div>
+        </div>
+        <div class="hero-stat">
+            <div class="number">4</div>
+            <div class="label">Hình minh họa</div>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<main class="main">
+
+    <!-- ================================================================== -->
+    <!-- LESSON 2.1 -->
+    <!-- ================================================================== -->
+    <section class="lesson animate-on-scroll" id="lesson-2-1">
+        <div class="lesson-header">
+            <div class="lesson-number">2.1</div>
+            <div class="lesson-title-group">
+                <h2>Anatomy of a Good Prompt <span style="color:var(--magenta);">(Giải phẫu Prompt)</span></h2>
+                <div class="lesson-meta">
+                    <span>📖 Lý thuyết + 🛠️ Thực hành + 📝 Bài tập</span>
+                    <span>⏱️ ~45-60 phút</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Theory Block -->
+        <div class="block animate-on-scroll" id="rctfce-anatomy">
+            <div class="block-header">
+                <span class="block-icon">📖</span>
+                <span class="block-label theory">Lý thuyết</span>
+            </div>
+            <h3>Cấu trúc R-C-T-F-C-E & Giải phẫu Prompt</h3>
+
+            <div class="image-showcase">
+                <img src="images/prompt_anatomy.png" alt="Anatomy of a Good Prompt — Cấu trúc R-C-T-F-C-E" loading="lazy">
+                <div class="image-caption">Hình 2.1 — Giải phẫu cấu trúc Prompt: từ Role, Context, Task đến Format, Constraints và Examples</div>
+            </div>
+
+            <p>Một prompt tốt không phải là những câu lệnh ngẫu hứng mà là một cấu trúc đầu vào được tổ chức chặt chẽ. Cấu trúc chuẩn hóa bao gồm 6 thành phần của framework <strong>R-C-T-F-C-E</strong>:</p>
+
+            <ul>
+                <li><strong>Role (Vai trò)</strong> — AI đóng vai trò là ai để kích hoạt cụm tri thức phù hợp. Ví dụ: <code>"Bạn là Senior Backend Engineer"</code>.</li>
+                <li><strong>Context (Bối cảnh)</strong> — Tình huống thực tế hoặc dữ liệu nền tảng. Ví dụ: <code>"Chúng tôi chuẩn bị deploy hệ thống cho 10k người dùng..."</code>.</li>
+                <li><strong>Task (Nhiệm vụ)</strong> — Yêu cầu AI thực hiện hành động gì cụ thể. Ví dụ: <code>"Viết hàm Python để sắp xếp..."</code>.</li>
+                <li><strong>Format (Định dạng)</strong> — Đầu ra mong muốn là JSON, XML, table hay markdown.</li>
+                <li><strong>Constraints (Ràng buộc)</strong> — Những quy tắc bắt buộc. Ví dụ: <code>"KHÔNG dùng eval(), PHẢI có type hints"</code>.</li>
+                <li><strong>Examples (Ví dụ mẫu)</strong> — Cung cấp cặp input-output mẫu để AI bắt chước phong cách và kết cấu.</li>
+            </ul>
+
+            <div class="callout tip">
+                <span class="callout-icon">💡</span>
+                <div class="callout-content">
+                    <strong>Độ Steerability (Khả năng điều hướng)</strong>
+                    <p>Prompt càng rõ ràng, các ràng buộc đầu ra càng chặt chẽ thì mức độ Steerability càng cao, giảm thiểu tối đa các câu trả lời lan man và không đúng định dạng của mô hình.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Structured System Prompt Block -->
+        <div class="block animate-on-scroll">
+            <div class="block-header">
+                <span class="block-icon">📐</span>
+                <span class="block-label theory">Lý thuyết</span>
+                <span class="block-label new">🆕 2026</span>
+            </div>
+            <h3>Structured System Prompt Architecture</h3>
+
+            <p>Năm 2026, thay vì viết một đoạn văn dài dòng, các kỹ sư sử dụng cấu trúc thẻ (HTML/XML tags) để chia nhỏ các chỉ dẫn trong System Prompt. Cách này cải thiện độ Steerability đáng kể trên Claude Fable 5 và GPT-5.5:</p>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Đặc tính</th>
+                            <th>Cách viết kiểu cũ (2023-2024)</th>
+                            <th>Thiết kế cấu trúc (2025-2026)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Hình thức</strong></td>
+                            <td>Đoạn văn mô tả tự nhiên dài dòng</td>
+                            <td>Phân vùng bằng thẻ XML/HTML hoặc Markdown Headers</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Ràng buộc</strong></td>
+                            <td>Trộn lẫn trong mô tả ("lưu ý đừng làm X")</td>
+                            <td>Tách biệt hoàn toàn trong các thẻ <code>&lt;constraints&gt;</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Steerability</strong></td>
+                            <td>Trung bình, dễ bị trôi chỉ dẫn khi chat dài</td>
+                            <td>Rất cao, mô hình tuân thủ tuyệt đối cấu trúc</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-lang">xml</span>
+                    <div class="code-dots"><span></span><span></span><span></span></div>
+                </div>
+                <pre><code><span class="comment">&lt;!-- Ví dụ: Structured System Prompt tối ưu cho Claude Fable 5 --&gt;</span>
+<span class="tag">&lt;system_prompt&gt;</span>
+  <span class="tag">&lt;role&gt;</span>Senior Backend Engineer chuyên về tối ưu hóa Python<span class="tag">&lt;/role&gt;</span>
+  <span class="tag">&lt;constraints&gt;</span>
+    - KHÔNG sử dụng các hàm built-in phức tạp không tối ưu.
+    - PHẢI viết Type Hints cho mọi function.
+    - Chỉ trả về block code chính, không giải thích dài dòng.
+  <span class="tag">&lt;/constraints&gt;</span>
+  <span class="tag">&lt;output_format&gt;</span>Mã nguồn định dạng Python chuẩn PEP8<span class="tag">&lt;/output_format&gt;</span>
+<span class="tag">&lt;/system_prompt&gt;</span></code></pre>
+            </div>
+        </div>
+
+        <!-- Practice Block -->
+        <div class="block animate-on-scroll">
+            <div class="block-header">
+                <span class="block-icon">🛠️</span>
+                <span class="block-label practice">Thực hành</span>
+            </div>
+            <h3>Phân tích & Viết lại Prompt</h3>
+            <p>1. Hãy phân tích prompt sau và chỉ ra các thành phần R-C-T-F-C-E còn thiếu:</p>
+            <div class="diagram-box">"Hãy viết một email phản hồi khách hàng phàn nàn về việc giao hàng trễ."</div>
+            <p>2. Viết lại prompt trên thành một <strong>Structured System Prompt</strong> hoàn chỉnh, áp dụng các thẻ XML để AI đóng vai trò Customer Support Specialist, xử lý khiếu nại chuyên nghiệp, cấu trúc email 3 phần, cam kết bồi thường voucher 10%, và xuất kết quả ở định dạng email sạch không chứa lời dẫn.</p>
+        </div>
+
+        <!-- Exercises Block -->
+        <div class="block animate-on-scroll">
+            <div class="block-header">
+                <span class="block-icon">📝</span>
+                <span class="block-label exercise">Bài tập</span>
+            </div>
+            <h3>Bài tập Lesson 2.1</h3>
+            
+            <div class="exercise-item">
+                <div class="exercise-num">1</div>
+                <div class="exercise-text">
+                    <strong>Thiết kế Prompt:</strong> Hãy viết 3 prompt hoàn chỉnh (đáp ứng đủ 6 thành phần R-C-T-F-C-E) cho 3 tác vụ khác nhau: review lỗ hổng bảo mật cho Node.js code; tóm tắt báo cáo tài chính thành bảng so sánh; viết kịch bản video ngắn 30s.
+                </div>
+            </div>
+
+            <div class="exercise-item">
+                <div class="exercise-num">2</div>
+                <div class="exercise-text">
+                    <strong>So sánh mô hình:</strong> Nạp cùng một Structured System Prompt vào <strong>Claude Fable 5</strong> và <strong>GPT-5.5</strong>. Đánh giá mức độ tuân thủ định dạng đầu ra và tính chính xác của kết quả.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="separator"></div>
+
+    <!-- ================================================================== -->
+    <!-- LESSON 2.2 -->
+    <!-- ================================================================== -->
+    <section class="lesson animate-on-scroll" id="lesson-2-2">
+        <div class="lesson-header">
+            <div class="lesson-number">2.2</div>
+            <div class="lesson-title-group">
+                <h2>Zero-Shot, One-Shot & Few-Shot Prompting</h2>
+                <div class="lesson-meta">
+                    <span>📖 Lý thuyết + 🛠️ Thực hành + 📝 Bài tập</span>
+                    <span>⏱️ ~45-60 phút</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Theory Block -->
+        <div class="block animate-on-scroll" id="shot-selection">
+            <div class="block-header">
+                <span class="block-icon">📖</span>
+                <span class="block-label theory">Lý thuyết</span>
+            </div>
+            <h3>Khái niệm Shots trong Prompting</h3>
+
+            <div class="image-showcase">
+                <img src="images/prompting_shots.png" alt="Zero-Shot, One-Shot & Few-Shot Prompting" loading="lazy">
+                <div class="image-caption">Hình 2.2 — So sánh các kỹ thuật Shot Prompting: từ không ví dụ (Zero-Shot) đến chuỗi ví dụ (Few-Shot)</div>
+            </div>
+
+            <p>Việc cung cấp ví dụ trong prompt được định nghĩa qua số lượng "Shots" (lượt mẫu):</p>
+            <ul>
+                <li><strong>Zero-Shot</strong> — AI nhận lệnh trực tiếp và tự giải quyết dựa trên tri thức có sẵn, không có ví dụ mẫu. Thích hợp cho các task thông dụng, quen thuộc.</li>
+                <li><strong>One-Shot</strong> — Cung cấp duy nhất 1 ví dụ cụ thể (cặp Input - Output). Rất tốt để giúp AI định hình phong cách, tone giọng hoặc định dạng văn bản đặc thù.</li>
+                <li><strong>Few-Shot</strong> — Cung cấp từ 2 đến 5 ví dụ mẫu trở lên. Đây là phương án cứu cánh cho các task cực khó, domain-specific, hoặc đòi hỏi tính nhất quán định dạng tuyệt đối.</li>
+            </ul>
+
+            <div class="diagram-box">
+<span class="label">Ví dụ trực quan về các kỹ thuật Shots:</span>
+
+<span class="gold">Zero-shot:</span> "Phân loại cảm xúc: 'Sản phẩm giao nhanh và đóng gói kỹ' -> ?"
+<span class="gold">One-shot:</span>  "Ví dụ: 'Tệ quá' -> Negative. Phân loại: 'Sản phẩm giao nhanh và đóng gói kỹ' -> ?"
+<span class="gold">Few-shot:</span> "VD1: 'Tệ quá' -> Negative. VD2: 'Cũng thường' -> Neutral. VD3: 'Tuyệt vời' -> Positive.
+           Phân loại: 'Sản phẩm giao nhanh và đóng gói kỹ' -> ?"
+</div>
+        </div>
+
+        <!-- Shot Selection 2026 Block -->
+        <div class="block animate-on-scroll">
+            <div class="block-header">
+                <span class="block-icon">📐</span>
+                <span class="block-label theory">Lý thuyết</span>
+                <span class="block-label new">🆕 2026</span>
+            </div>
+            <h3>Chiến lược Shot Selection năm 2026</h3>
+            <p>Với các frontier models như **Claude Fable 5** và **GPT-5.5**, khả năng Zero-shot đã cực kỳ mạnh. Việc lạm dụng Few-shot không còn được khuyến khích vì:</p>
+            <ul>
+                <li>Làm phình to Context Window không cần thiết, tăng giá cost API.</li>
+                <li>Tăng Latency phản hồi của hệ thống.</li>
+            </ul>
+            <p><strong>Quy tắc 2026:</strong> Luôn thử Zero-shot trước. Chỉ nâng cấp lên Few-shot khi format đầu ra quá phức tạp hoặc cần tính nhất quán qua hàng loạt lượt chạy tự động (batch processing).</p>
+        </div>
+
+        <!-- Practice Block -->
+        <div class="block animate-on-scroll">
+            <div class="block-header">
+                <span class="block-icon">🛠️</span>
+                <span class="block-label practice">Thực hành</span>
+            </div>
+            <h3>Phân loại Email tự động</h3>
+            <p>Chuẩn bị 10 email phản hồi của khách hàng. Hãy:</p>
+            <ol>
+                <li>Viết một Zero-Shot Prompt phân loại chúng thành 3 nhãn: <code>[Complaint, Feedback, Support]</code>.</li>
+                <li>Viết một Few-Shot Prompt cung cấp 3 ví dụ cụ thể cho mỗi nhãn.</li>
+                <li>Đo đạc độ chính xác và tính toán lượng token chênh lệch trên <strong>Gemini 3.5 Flash</strong>.</li>
+            </ol>
+        </div>
+
+        <!-- Exercises Block -->
+        <div class="block animate-on-scroll">
+            <div class="block-header">
+                <span class="block-icon">📝</span>
+                <span class="block-label exercise">Bài tập</span>
+            </div>
+            <h3>Bài tập Lesson 2.2</h3>
+
+            <div class="exercise-item">
+                <div class="exercise-num">1</div>
+                <div class="exercise-text">
+                    <strong>Thiết kế Few-Shot Dataset:</strong> Xây dựng một bộ dữ liệu Few-Shot gồm 5 cặp mẫu để chuyển đổi các câu lệnh truy vấn ngôn ngữ tự nhiên tiếng Anh sang câu lệnh SQL chuẩn cho cơ sở dữ liệu bán hàng.
+                </div>
+            </div>
+
+            <div class="exercise-item">
+                <div class="exercise-num">2</div>
+                <div class="exercise-text">
+                    <strong>Đánh giá Token Budget:</strong> Sử dụng tokenizer tool đo lượng token tiêu hao khi dùng Few-Shot (5 ví dụ) so với Zero-Shot. Tính toán chi phí chênh lệch cho 100,000 lượt yêu cầu/ngày dựa trên bảng giá API hiện tại của OpenAI GPT-5.5.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="separator"></div>
+
+    <!-- ================================================================== -->
+    <!-- LESSON 2.3 -->
+    <!-- ================================================================== -->
+    <section class="lesson animate-on-scroll" id="lesson-2-3">
+        <div class="lesson-header">
+            <div class="lesson-number">2.3</div>
+            <div class="lesson-title-group">
+                <h2>Role Prompting & System Prompt Architecture</h2>
+                <div class="lesson-meta">
+                    <span>📖 Lý thuyết + 🛠️ Thực hành + 📝 Bài tập</span>
+                    <span>⏱️ ~45-60 phút</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Theory Block -->
+        <div class="block animate-on-scroll" id="multi-layer-system">
+            <div class="block-header">
+                <span class="block-icon">📖</span>
+                <span class="block-label theory">Lý thuyết</span>
+            </div>
+            <h3>Role Prompting & Persona Engineering</h3>
+
+            <p>Gán vai trò (Role/Persona) giúp mô hình giới hạn phạm vi phân bố xác suất của token đầu ra (Knowledge Cluster). Khi AI được bảo <code>"Bạn là bác sĩ tim mạch"</code>, nó sẽ tập trung tìm các từ vựng chuyên ngành y khoa, cách lập luận lâm sàng và văn phong học thuật, thay vì dùng từ ngữ đời thường.</p>
+        </div>
+
+        <!-- Multi-layer System Prompt Architecture Block -->
+        <div class="block animate-on-scroll">
+            <div class="block-header">
+                <span class="block-icon">📐</span>
+                <span class="block-label theory">Lý thuyết</span>
+                <span class="block-label new">🆕 2026</span>
+            </div>
+            <h3>Kiến trúc System Prompt Đa Tầng (Multi-layer System Prompt)</h3>
+
+            <div class="image-showcase">
+                <img src="images/system_prompt_architecture.png" alt="Multi-layer System Prompt Architecture" loading="lazy">
+                <div class="image-caption">Hình 2.3 — Kiến trúc System Prompt đa tầng: từ định danh, ràng buộc hành vi đến khai báo công cụ và định dạng đầu ra</div>
+            </div>
+
+            <p>Trong môi trường sản xuất năm 2026, System Prompt được thiết kế theo cấu trúc phân tầng nghiêm ngặt:</p>
+            <ol>
+                <li><strong>Layer 1: Identity & Role</strong> — Khai báo AI là ai, kinh nghiệm bao nhiêu năm, lĩnh vực hoạt động.</li>
+                <li><strong>Layer 2: Behavioral Constraints</strong> — Các ràng buộc hành vi cực kỳ quan trọng (ví dụ: cấm đưa lời khuyên đầu tư tài chính, cấm rò rỉ mã bảo mật).</li>
+                <li><strong>Layer 3: Tool Definitions</strong> — Khai báo các API/Functions mà AI được quyền gọi.</li>
+                <li><strong>Layer 4: Output Specifications</strong> — Ràng buộc định dạng đầu ra là JSON, XML, table...</li>
+                <li><strong>Layer 5: Dynamic Context Slots</strong> — Khe cắm động để nạp dữ liệu người dùng (user_profile, retrieved_docs).</li>
+            </ol>
+
+            <div class="callout warning">
+                <span class="callout-icon">⚠️</span>
+                <div class="callout-content">
+                    <strong>Định dạng theo nhà cung cấp (Model-specific formatting)</strong>
+                    <p><strong>Claude Fable 5</strong> hỗ trợ và phản hồi tốt nhất với cấu trúc thẻ XML: <code>&lt;role&gt;...&lt;/role&gt;</code>. Trong khi đó, <strong>GPT-5.5</strong> tối ưu nhất với cấu trúc Markdown Headers: <code>## Identity</code>.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Practice Block -->
+        <div class="block animate-on-scroll">
+            <div class="block-header">
+                <span class="block-icon">🛠️</span>
+                <span class="block-label practice">Thực hành</span>
+            </div>
+            <h3>Kỹ thuật Role Stacking (Ghép vai trò)</h3>
+            <p>Role Stacking là kỹ thuật tạo ra một siêu vai trò bằng cách kết hợp nhiều lĩnh vực chuyên môn lại với nhau để giải quyết bài toán giao thoa phức tạp.</p>
+            <p>Hãy thiết kế một System Prompt sử dụng kỹ thuật Role Stacking kết hợp chuyên môn của: <strong>"Chuyên gia AI bảo mật"</strong> và <strong>"Luật sư sở hữu trí tuệ thương mại"</strong> để AI đánh giá lỗ hổng pháp lý khi sử dụng thư viện open-source trong dự án thương mại.</p>
+        </div>
+
+        <!-- Exercises Block -->
+        <div class="block animate-on-scroll">
+            <div class="block-header">
+                <span class="block-icon">📝</span>
+                <span class="block-label exercise">Bài tập</span>
+            </div>
+            <h3>Bài tập Lesson 2.3</h3>
+
+            <div class="exercise-item">
+                <div class="exercise-num">1</div>
+                <div class="exercise-text">
+                    <strong>Thiết kế System Prompt đa tầng:</strong> Viết một System Prompt đa tầng hoàn chỉnh (gồm đủ 5 lớp) cho một AI Trợ lý Tư vấn Tuyển dụng Nhân sự Fintech.
+                </div>
+            </div>
+
+            <div class="exercise-item">
+                <div class="exercise-num">2</div>
+                <div class="exercise-text">
+                    <strong>Tối ưu hóa đa nền tảng:</strong> Chuyển đổi System Prompt vừa viết thành 2 phiên bản: Phiên bản XML tối ưu cho Claude và phiên bản Markdown tối ưu cho GPT. Thử nghiệm trên cả hai mô hình và lập bảng so sánh kết quả.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="separator"></div>
+
+    <!-- ================================================================== -->
+    <!-- LESSON 2.4 -->
+    <!-- ================================================================== -->
+    <section class="lesson animate-on-scroll" id="lesson-2-4">
+        <div class="lesson-header">
+            <div class="lesson-number">2.4</div>
+            <div class="lesson-title-group">
+                <h2>Output Formatting, Structured Output & Schema Enforcement</h2>
+                <div class="lesson-meta">
+                    <span>📖 Lý thuyết + 🛠️ Thực hành + 📝 Bài tập</span>
+                    <span>⏱️ ~45-60 phút</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Theory Block -->
+        <div class="block animate-on-scroll" id="schema-enforcement">
+            <div class="block-header">
+                <span class="block-icon">📖</span>
+                <span class="block-label theory">Lý thuyết</span>
+            </div>
+            <h3>Native Structured Output vs. Prompt-based Formatting</h3>
+
+            <div class="image-showcase">
+                <img src="images/schema_enforcement.png" alt="Schema Enforcement & Native Structured Output" loading="lazy">
+                <div class="image-caption">Hình 2.4 — Cơ chế ép khung định dạng đầu ra (Schema Enforcement) từ dòng chảy token thô thô thành cấu trúc dữ liệu JSON sạch</div>
+            </div>
+
+            <p>Trong môi trường sản xuất, nếu AI trả về sai định dạng (ví dụ JSON thiếu dấu đóng ngoặc hoặc chứa văn bản rác bên ngoài), các script ở backend sẽ bị lỗi (crash). Có 3 cơ chế xuất dữ liệu cấu trúc:</p>
+            <ul>
+                <li><strong>Prompt-based JSON</strong> — Yêu cầu AI xuất JSON bằng câu lệnh viết trong prompt. Độ tin cậy thấp (85-90%), dễ bị lỗi cú pháp khi dữ liệu lớn.</li>
+                <li><strong>Native JSON Mode</strong> — Bật chế độ JSON của API (ví dụ <code>response_format={"type": "json_object"}</code>). Đảm bảo xuất cú pháp JSON chuẩn nhưng không cam kết đúng cấu trúc các trường bên trong.</li>
+                <li><strong>Schema Enforcement (API level)</strong> — Bạn gửi kèm <strong>JSON Schema</strong> định nghĩa chính xác cấu trúc dữ liệu. API mô hình (GPT-5.5, Gemini 3.5, Claude tool use) can thiệp trực tiếp vào quá trình dự đoán token để đảm bảo 100% kết quả đầu ra khớp tuyệt đối với Schema của bạn.</li>
+            </ul>
+        </div>
+
+        <!-- Practice Block -->
+        <div class="block animate-on-scroll">
+            <div class="block-header">
+                <span class="block-icon">🛠️</span>
+                <span class="block-label practice">Thực hành</span>
+            </div>
+            <h3>Cấu hình Schema Enforcement với Pydantic/JSON Schema</h3>
+            <p>Ví dụ cấu hình API call ép cấu trúc JSON bằng JSON Schema trên OpenAI GPT-5.5:</p>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-lang">python</span>
+                    <div class="code-dots"><span></span><span></span><span></span></div>
+                </div>
+                <pre><code><span class="comment"># Cấu hình Schema Enforcement sử dụng API JSON Schema</span>
+response_format = {
+    <span class="string">"type"</span>: <span class="string">"json_schema"</span>,
+    <span class="string">"json_schema"</span>: {
+        <span class="string">"name"</span>: <span class="string">"customer_extraction"</span>,
+        <span class="string">"schema"</span>: {
+            <span class="string">"type"</span>: <span class="string">"object"</span>,
+            <span class="string">"properties"</span>: {
+                <span class="string">"customer_name"</span>: {<span class="string">"type"</span>: <span class="string">"string"</span>},
+                <span class="string">"phone_number"</span>: {<span class="string">"type"</span>: <span class="string">"string"</span>},
+                <span class="string">"sentiment"</span>: {<span class="string">"type"</span>: <span class="string">"string"</span>, <span class="string">"enum"</span>: [<span class="string">"Happy"</span>, <span class="string">"Angry"</span>, <span class="string">"Neutral"</span>]},
+                <span class="string">"issue_summary"</span>: {<span class="string">"type"</span>: <span class="string">"string"</span>}
+            },
+            <span class="string">"required"</span>: [<span class="string">"customer_name"</span>, <span class="string">"sentiment"</span>, <span class="string">"issue_summary"</span>]
+        }
+    }
+}</code></pre>
+            </div>
+
+            <p>Hãy viết một script hoặc thiết kế một prompt trích xuất thông tin khách hàng từ nhật ký chat log sau, đảm bảo đầu ra khớp với schema trên:</p>
+            <div class="diagram-box">"Chào shop, mình là Nam (SĐT: 0905123456). Mình nhận được hàng từ hôm qua nhưng bị bể màn hình rồi. Shop hỗ trợ đổi trả giúp mình gấp!"</div>
+        </div>
+
+        <!-- Exercises Block -->
+        <div class="block animate-on-scroll">
+            <div class="block-header">
+                <span class="block-icon">📝</span>
+                <span class="block-label exercise">Bài tập</span>
+            </div>
+            <h3>Bài tập Lesson 2.4</h3>
+
+            <div class="exercise-item">
+                <div class="exercise-num">1</div>
+                <div class="exercise-text">
+                    <strong>Xây dựng Pipeline trích xuất:</strong> Thiết kế hệ thống prompt trích xuất thông tin bệnh án điện tử từ lời thoại ghi âm của bác sĩ. Đầu ra yêu cầu định dạng JSON chứa các trường: <code>[Patient_Name, Age, Symptoms, Diagnosed_Disease, Prescription_List]</code>.
+                </div>
+            </div>
+
+            <div class="exercise-item">
+                <div class="exercise-num">2</div>
+                <div class="exercise-text">
+                    <strong>Đánh giá Edge-cases:</strong> Thử nghiệm gửi dữ liệu nhiễu hoặc văn bản không liên quan vào hệ thống trên. Ghi nhận xem cơ chế Schema Enforcement của mô hình xử lý như thế nào (AI có tự động để trống trường hay bị crash cú pháp).
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="separator"></div>
+
+    <!-- ================================================================== -->
+    <!-- QUIZ SECTION -->
+    <!-- ================================================================== -->
+    <section class="lesson animate-on-scroll" id="quiz">
+        <div class="lesson-header">
+            <div class="lesson-number">🧪</div>
+            <div class="lesson-title-group">
+                <h2>Quiz Kiểm tra Session 02</h2>
+                <p class="lesson-meta">Kiểm tra nhanh kiến thức cơ bản về Prompt Engineering</p>
+            </div>
+        </div>
+
+        <!-- Question 1 -->
+        <div class="quiz-card" data-correct="1">
+            <div class="quiz-question">Câu 1: Thành phần nào trong cấu trúc R-C-T-F-C-E quyết định trực tiếp việc thu hẹp vùng tìm kiếm xác suất từ vựng (Knowledge Cluster) của LLM?</div>
+            <div class="quiz-options">
+                <div class="quiz-option" data-index="0"><div class="radio"></div> A. Constraints (Ràng buộc)</div>
+                <div class="quiz-option" data-index="1"><div class="radio"></div> B. Role (Vai trò)</div>
+                <div class="quiz-option" data-index="2"><div class="radio"></div> C. Format (Định dạng)</div>
+                <div class="quiz-option" data-index="3"><div class="radio"></div> D. Examples (Ví dụ mẫu)</div>
+            </div>
+            <div class="quiz-feedback correct-feedback">✅ Chính xác! Role định vị AI vào một nhóm tri thức chuyên môn cụ thể, giúp mô hình ưu tiên lựa chọn các token liên quan mật thiết đến ngành nghề/chuyên môn đó.</div>
+            <div class="quiz-feedback wrong-feedback">❌ Sai rồi! Role (Vai trò) mới là thành phần thu hẹp vùng tìm kiếm xác suất tri thức phù hợp của LLM.</div>
+        </div>
+
+        <!-- Question 2 -->
+        <div class="quiz-card" data-correct="1">
+            <div class="quiz-question">Câu 2: Trong trường hợp nào kỹ sư AI BẮT BUỘC nên sử dụng Few-Shot Prompting thay vì Zero-Shot?</div>
+            <div class="quiz-options">
+                <div class="quiz-option" data-index="0"><div class="radio"></div> A. Khi cần AI viết một bài thơ chúc mừng sinh nhật</div>
+                <div class="quiz-option" data-index="1"><div class="radio"></div> B. Khi cần trích xuất thông tin từ tài liệu theo một định dạng dữ liệu tự chế (Custom Format) đặc thù</div>
+                <div class="quiz-option" data-index="2"><div class="radio"></div> C. Khi sử dụng các mô hình suy luận sâu như GPT-5 Pro</div>
+                <div class="quiz-option" data-index="3"><div class="radio"></div> D. Khi muốn tiết kiệm tối đa chi phí sử dụng API</div>
+            </div>
+            <div class="quiz-feedback correct-feedback">✅ Chính xác! Few-Shot đặc biệt hiệu quả khi cần dạy mô hình một mẫu phân loại hoặc định dạng đầu ra độc quyền mà nó chưa từng được huấn luyện trước đó.</div>
+            <div class="quiz-feedback wrong-feedback">❌ Sai rồi! Zero-shot phù hợp cho tác vụ thông thường. Khi có format tự chế đặc thù, bạn bắt buộc phải dùng Few-Shot.</div>
+        </div>
+
+        <!-- Question 3 -->
+        <div class="quiz-card" data-correct="1">
+            <div class="quiz-question">Câu 3: Điểm khác biệt cốt lõi giữa Native Structured Output (Schema Enforcement) và việc yêu cầu định dạng bằng Prompt thông thường là gì?</div>
+            <div class="quiz-options">
+                <div class="quiz-option" data-index="0"><div class="radio"></div> A. Native Structured Output chỉ hoạt động với ngôn ngữ tiếng Anh</div>
+                <div class="quiz-option" data-index="1"><div class="radio"></div> B. Native Structured Output can thiệp vào quá trình lấy mẫu xác suất token của API để đảm bảo 100% không bao giờ sai cấu trúc JSON</div>
+                <div class="quiz-option" data-index="2"><div class="radio"></div> C. Native Structured Output giúp AI trả lời dài hơn</div>
+                <div class="quiz-option" data-index="3"><div class="radio"></div> D. Không có sự khác biệt nào về độ tin cậy</div>
+            </div>
+            <div class="quiz-feedback correct-feedback">✅ Chính xác! Schema Enforcement can thiệp vào decoding level của mô hình ở mức độ API, loại bỏ các token vi phạm cấu trúc Schema đã khai báo.</div>
+            <div class="quiz-feedback wrong-feedback">❌ Sai rồi! Native Structured Output (Schema Enforcement) cam kết 100% cú pháp chuẩn xác nhờ can thiệp trực tiếp vào quá trình sinh token đầu ra.</div>
+        </div>
+
+        <!-- Question 4 -->
+        <div class="quiz-card" data-correct="1">
+            <div class="quiz-question">Câu 4: Việc lạm dụng nạp quá nhiều ví dụ mẫu (n > 10) trong Few-Shot Prompting gây ra pitfall gì?</div>
+            <div class="quiz-options">
+                <div class="quiz-option" data-index="0"><div class="radio"></div> A. Làm mô hình AI bị quá tải nhiệt phần cứng</div>
+                <div class="quiz-option" data-index="1"><div class="radio"></div> B. Tiêu hao quá nhiều token trong Context Window, làm tăng chi phí và tăng Latency phản hồi</div>
+                <div class="quiz-option" data-index="2"><div class="radio"></div> C. Làm mô hình trả lời hoàn toàn ngẫu nhiên</div>
+                <div class="quiz-option" data-index="3"><div class="radio"></div> D. Bắt buộc mô hình phải tự động chuyển sang chế độ suy nghĩ sâu</div>
+            </div>
+            <div class="quiz-feedback correct-feedback">✅ Chính xác! Mọi token của ví dụ đều chiếm dụng không gian của Context Window. Việc nhồi nhét quá nhiều ví dụ không cần thiết sẽ làm tăng chi phí sử dụng và thời gian xử lý của API.</div>
+            <div class="quiz-feedback wrong-feedback">❌ Sai rồi! Nhồi nhét quá nhiều ví dụ sẽ làm phình to context window dẫn đến tốn tiền API và tăng độ trễ (latency).</div>
+        </div>
+
+        <!-- Question 5 -->
+        <div class="quiz-card" data-correct="1">
+            <div class="quiz-question">Câu 5: Trong kiến trúc System Prompt Đa Tầng (Multi-layer), phần cấm đoán AI tiết lộ mật khẩu hệ thống sẽ được xếp vào lớp nào?</div>
+            <div class="quiz-options">
+                <div class="quiz-option" data-index="0"><div class="radio"></div> A. Layer 1: Identity & Role</div>
+                <div class="quiz-option" data-index="1"><div class="radio"></div> B. Layer 2: Behavioral Constraints</div>
+                <div class="quiz-option" data-index="2"><div class="radio"></div> C. Layer 3: Tool Definitions</div>
+                <div class="quiz-option" data-index="3"><div class="radio"></div> D. Layer 4: Output Specifications</div>
+            </div>
+            <div class="quiz-feedback correct-feedback">✅ Chính xác! Các quy tắc cấm kỵ, điều hướng bảo mật, và giới hạn hoạt động của AI thuộc về Layer 2: Behavioral Constraints (Ràng buộc hành vi).</div>
+            <div class="quiz-feedback wrong-feedback">❌ Sai rồi! Mọi chỉ dẫn cấm đoán và quy định an toàn bảo mật thuộc về Layer 2: Behavioral Constraints.</div>
+        </div>
+    </section>
+
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="nav-buttons">
+        <a href="../session-01/index.html" class="nav-btn prev">← Session 01</a>
+        <a href="#" class="nav-btn next">Session 03: Prompt Engineering - Nâng cao →</a>
+    </div>
+    <p>
+        📚 Prompt, Context & Harness Engineering — Phiên bản 06/2026<br>
+        Tạo bởi AI Giảng viên · Cập nhật lần cuối: 28/06/2026
+    </p>
+</footer>
+
+<!-- Scroll to Top -->
+<button class="scroll-top" id="scrollTop">↑</button>
+
+<!-- ====================== JAVASCRIPT ====================== -->
+<script>
+    // ===== Progress Bar =====
+    window.addEventListener('scroll', () => {
+        const scrollTop = document.documentElement.scrollTop;
+        const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const progress = (scrollTop / scrollHeight) * 100;
+        document.getElementById('progressBar').style.width = progress + '%';
+    });
+
+    // ===== Scroll Animations =====
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+    document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
+
+    // ===== Scroll to Top =====
+    const scrollTopBtn = document.getElementById('scrollTop');
+    window.addEventListener('scroll', () => {
+        scrollTopBtn.classList.toggle('visible', window.scrollY > 500);
+    });
+    scrollTopBtn.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // ===== TOC Panel =====
+    const tocToggle = document.getElementById('tocToggle');
+    const tocPanel = document.getElementById('tocPanel');
+    tocToggle.addEventListener('click', () => {
+        tocPanel.classList.toggle('open');
+    });
+    document.addEventListener('click', (e) => {
+        if (!tocPanel.contains(e.target) && !tocToggle.contains(e.target)) {
+            tocPanel.classList.remove('open');
+        }
+    });
+    tocPanel.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => tocPanel.classList.remove('open'));
+    });
+
+    // ===== Active Nav Link =====
+    const sections = document.querySelectorAll('.lesson');
+    const navLinks = document.querySelectorAll('.nav-links a');
+    window.addEventListener('scroll', () => {
+        let current = '';
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop - 100;
+            if (window.scrollY >= sectionTop) {
+                current = section.getAttribute('id');
+            }
+        });
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === '#' + current) {
+                link.classList.add('active');
+            }
+        });
+    });
+
+    // ===== Quiz Logic =====
+    document.querySelectorAll('.quiz-card').forEach(card => {
+        const correctIndex = card.dataset.correct;
+        const options = card.querySelectorAll('.quiz-option');
+        const correctFeedback = card.querySelector('.correct-feedback');
+        const wrongFeedback = card.querySelector('.wrong-feedback');
+        let answered = false;
+
+        options.forEach(option => {
+            option.addEventListener('click', () => {
+                if (answered) return;
+                answered = true;
+                const selectedIndex = option.dataset.index;
+
+                if (selectedIndex === correctIndex) {
+                    option.classList.add('correct');
+                    correctFeedback.classList.add('show');
+                } else {
+                    option.classList.add('wrong');
+                    options[correctIndex].classList.add('correct');
+                    wrongFeedback.classList.add('show');
+                }
+
+                options.forEach(opt => {
+                    opt.style.pointerEvents = 'none';
+                });
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
