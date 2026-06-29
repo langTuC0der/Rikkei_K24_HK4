@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 650" width="100%" height="100%">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0a23" />
+      <stop offset="100%" stop-color="#12123a" />
+    </linearGradient>
+    <linearGradient id="layer-grad-1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#8b5cf6" />
+      <stop offset="100%" stop-color="#a78bfa" />
+    </linearGradient>
+    <linearGradient id="layer-grad-2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6366f1" />
+      <stop offset="100%" stop-color="#818cf8" />
+    </linearGradient>
+    <linearGradient id="layer-grad-3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#06b6d4" />
+      <stop offset="100%" stop-color="#22d3ee" />
+    </linearGradient>
+    <linearGradient id="layer-grad-4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ec4899" />
+      <stop offset="100%" stop-color="#f472b6" />
+    </linearGradient>
+    <linearGradient id="layer-grad-5" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#fbbf24" />
+      <stop offset="100%" stop-color="#fcd34d" />
+    </linearGradient>
+    <linearGradient id="llm-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1f2937" />
+      <stop offset="100%" stop-color="#111827" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="100%" height="100%" rx="16" fill="url(#bg-grad)" stroke="#2d2d6a" stroke-width="2" />
+
+  <!-- Fonts Style -->
+  <style>
+    .title { font-family: 'Inter', system-ui, sans-serif; font-size: 14px; font-weight: 700; fill: #ffffff; }
+    .desc { font-family: 'Inter', system-ui, sans-serif; font-size: 12px; fill: #1e1b4b; font-weight: 600; }
+    .section-title { font-family: 'Inter', system-ui, sans-serif; font-size: 16px; font-weight: 800; fill: #ffffff; text-transform: uppercase; letter-spacing: 1px; }
+  </style>
+
+  <text x="450" y="45" text-anchor="middle" class="section-title" fill="#818cf8">Cấu trúc System Prompt Đa Tầng</text>
+
+  <!-- Layer 1 -->
+  <g transform="translate(100, 70)">
+    <rect width="700" height="60" rx="8" fill="url(#layer-grad-1)" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.3))" />
+    <text x="25" y="35" class="title">Lớp 1: Identity &amp; Role (Định danh)</text>
+    <text x="400" y="35" class="desc">Khai báo AI đóng vai trò là ai, chuyên môn gì...</text>
+  </g>
+
+  <!-- Down Arrow 1 -->
+  <path d="M 450 130 L 450 150" stroke="#8b5cf6" stroke-width="3" fill="none" />
+  <polygon points="446,146 450,152 454,146" fill="#8b5cf6" />
+
+  <!-- Layer 2 -->
+  <g transform="translate(100, 150)">
+    <rect width="700" height="60" rx="8" fill="url(#layer-grad-2)" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.3))" />
+    <text x="25" y="35" class="title">Lớp 2: Behavioral Constraints (Ràng buộc hành vi)</text>
+    <text x="400" y="35" class="desc">Quy tắc an toàn, giới hạn và cấm kỵ...</text>
+  </g>
+
+  <!-- Down Arrow 2 -->
+  <path d="M 450 210 L 450 230" stroke="#6366f1" stroke-width="3" fill="none" />
+  <polygon points="446,226 450,232 454,226" fill="#6366f1" />
+
+  <!-- Layer 3 -->
+  <g transform="translate(100, 230)">
+    <rect width="700" height="60" rx="8" fill="url(#layer-grad-3)" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.3))" />
+    <text x="25" y="35" class="title">Lớp 3: Tool Definitions (Định nghĩa công cụ)</text>
+    <text x="400" y="35" class="desc">Khai báo APIs, Functions mà AI có thể gọi...</text>
+  </g>
+
+  <!-- Down Arrow 3 -->
+  <path d="M 450 290 L 450 310" stroke="#06b6d4" stroke-width="3" fill="none" />
+  <polygon points="446,306 450,312 454,306" fill="#06b6d4" />
+
+  <!-- Layer 4 -->
+  <g transform="translate(100, 310)">
+    <rect width="700" height="60" rx="8" fill="url(#layer-grad-4)" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.3))" />
+    <text x="25" y="35" class="title">Lớp 4: Output Specifications (Định dạng đầu ra)</text>
+    <text x="400" y="35" class="desc">Quy định định dạng phản hồi (JSON, XML, Markdown)...</text>
+  </g>
+
+  <!-- Down Arrow 4 -->
+  <path d="M 450 370 L 450 390" stroke="#ec4899" stroke-width="3" fill="none" />
+  <polygon points="446,386 450,392 454,386" fill="#ec4899" />
+
+  <!-- Layer 5 -->
+  <g transform="translate(100, 390)">
+    <rect width="700" height="60" rx="8" fill="url(#layer-grad-5)" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.3))" />
+    <text x="25" y="35" class="title">Lớp 5: Dynamic Context Slots (Ngữ cảnh động)</text>
+    <text x="400" y="35" class="desc">Vùng nạp tài liệu hoặc thông tin người dùng vào...</text>
+  </g>
+
+  <!-- Down Arrow 5 (Heavy) -->
+  <path d="M 450 450 L 450 495" stroke="#fbbf24" stroke-width="4" fill="none" />
+  <polygon points="444,490 450,500 456,490" fill="#fbbf24" />
+
+  <!-- Core LLM Model Box -->
+  <rect x="300" y="500" width="300" height="90" rx="12" fill="url(#llm-grad)" stroke="#6366f1" stroke-width="2.5" />
+  <text x="450" y="540" text-anchor="middle" class="title" font-size="18" fill="#a78bfa">☁️ Bộ xử lý LLM</text>
+  <text x="450" y="565" text-anchor="middle" font-family="'Inter', sans-serif" font-size="12" fill="#9ca3bf">Tiếp nhận chỉ dẫn cấu trúc và xử lý</text>
+</svg>

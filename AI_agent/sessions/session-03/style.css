@@ -493,7 +493,6 @@ body {
   align-items: center;
   background: #090d16;
   border: 1px solid rgba(255, 255, 255, 0.03);
-  /* Removed aspect-ratio: 16/9 to show full image without cropping */
 }
 
 .illustration-img {

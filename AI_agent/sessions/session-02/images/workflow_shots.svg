@@ -1,0 +1,121 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 500" width="100%" height="100%">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0a23" />
+      <stop offset="100%" stop-color="#12123a" />
+    </linearGradient>
+    <linearGradient id="card-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1e4f" />
+      <stop offset="100%" stop-color="#16163f" />
+    </linearGradient>
+    <linearGradient id="cyan-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06b6d4" />
+      <stop offset="100%" stop-color="#0891b2" />
+    </linearGradient>
+    <linearGradient id="purple-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8b5cf6" />
+      <stop offset="100%" stop-color="#6366f1" />
+    </linearGradient>
+    <linearGradient id="magenta-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ec4899" />
+      <stop offset="100%" stop-color="#db2777" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="100%" height="100%" rx="16" fill="url(#bg-grad)" stroke="#2d2d6a" stroke-width="2" />
+
+  <!-- Fonts Style -->
+  <style>
+    .section-title { font-family: 'Inter', system-ui, sans-serif; font-size: 15px; font-weight: 700; fill: #ffffff; }
+    .node-text { font-family: 'JetBrains Mono', monospace; font-size: 11px; fill: #e8e8f0; }
+    .label { font-family: 'Inter', system-ui, sans-serif; font-size: 11px; font-weight: 600; fill: #9ca3bf; text-transform: uppercase; letter-spacing: 0.5px; }
+    .glow-text { fill: #ffffff; font-weight: 700; }
+    .badge { font-family: 'Inter', system-ui, sans-serif; font-size: 10px; font-weight: 700; fill: #ffffff; }
+  </style>
+
+  <!-- Column 1: Zero-Shot -->
+  <rect x="30" y="30" width="350" height="440" rx="12" fill="#141432" stroke="#2d2d6a" stroke-width="1.5" />
+  <rect x="30" y="30" width="350" height="40" rx="12" fill="url(#cyan-grad)" />
+  <rect x="30" y="55" width="350" height="15" fill="url(#cyan-grad)" />
+  <text x="45" y="55" class="section-title">Zero-Shot (Không ví dụ)</text>
+  
+  <text x="50" y="105" class="label">Input Query</text>
+  <rect x="50" y="115" width="310" height="60" rx="6" fill="url(#card-grad)" stroke="#2d2d6a" stroke-width="1" />
+  <text x="65" y="140" class="node-text">Phân loại email:</text>
+  <text x="65" y="160" class="node-text">"Sản phẩm giao nhanh..."</text>
+  
+  <line x1="205" y1="175" x2="205" y2="230" stroke="#0891b2" stroke-width="2" stroke-dasharray="4,4" />
+  <polygon points="201,225 205,235 209,225" fill="#0891b2" />
+  
+  <text x="50" y="225" class="label">Model Processor</text>
+  <rect x="50" y="235" width="310" height="70" rx="8" fill="#1e1b4b" stroke="#6366f1" stroke-width="1.5" />
+  <text x="205" y="275" text-anchor="middle" class="section-title glow-text" font-size="14">☁️ LLM Processor</text>
+  
+  <line x1="205" y1="305" x2="205" y2="360" stroke="#0891b2" stroke-width="2" />
+  <polygon points="201,355 205,365 209,355" fill="#0891b2" />
+  
+  <text x="50" y="355" class="label">Direct Output</text>
+  <rect x="50" y="365" width="310" height="75" rx="6" fill="#111827" stroke="#059669" stroke-width="1.5" />
+  <text x="205" y="395" text-anchor="middle" class="node-text" font-weight="bold" fill="#34d399">Phân loại trực tiếp</text>
+  <text x="205" y="415" text-anchor="middle" class="node-text" fill="#9ca3bf" font-size="11">Dựa trên tri thức sẵn có</text>
+
+  <!-- Column 2: One-Shot -->
+  <rect x="425" y="30" width="350" height="440" rx="12" fill="#141432" stroke="#2d2d6a" stroke-width="1.5" />
+  <rect x="425" y="30" width="350" height="40" rx="12" fill="url(#purple-grad)" />
+  <rect x="425" y="55" width="350" height="15" fill="url(#purple-grad)" />
+  <text x="440" y="55" class="section-title">One-Shot (Một ví dụ)</text>
+  
+  <text x="445" y="105" class="label">Input &amp; Example</text>
+  <rect x="445" y="115" width="310" height="100" rx="6" fill="url(#card-grad)" stroke="#2d2d6a" stroke-width="1" />
+  <text x="460" y="135" class="node-text" fill="#a78bfa">Ví dụ: "Tệ quá" -> Negative</text>
+  <line x1="460" y1="148" x2="740" y2="148" stroke="#2d2d6a" stroke-width="1" />
+  <text x="460" y="170" class="node-text">Query: Phân loại email:</text>
+  <text x="460" y="190" class="node-text">"Sản phẩm giao nhanh..."</text>
+  
+  <line x1="600" y1="215" x2="600" y2="250" stroke="#8b5cf6" stroke-width="2" stroke-dasharray="4,4" />
+  <polygon points="596,245 600,255 604,245" fill="#8b5cf6" />
+  
+  <text x="445" y="245" class="label">Model Processor</text>
+  <rect x="445" y="255" width="310" height="70" rx="8" fill="#1e1b4b" stroke="#6366f1" stroke-width="1.5" />
+  <text x="600" y="295" text-anchor="middle" class="section-title glow-text" font-size="14">☁️ LLM Processor</text>
+  
+  <line x1="600" y1="325" x2="600" y2="360" stroke="#8b5cf6" stroke-width="2" />
+  <polygon points="596,355 600,365 604,355" fill="#8b5cf6" />
+  
+  <text x="445" y="355" class="label">Pattern Output</text>
+  <rect x="445" y="365" width="310" height="75" rx="6" fill="#111827" stroke="#059669" stroke-width="1.5" />
+  <text x="600" y="395" text-anchor="middle" class="node-text" font-weight="bold" fill="#34d399">Phân loại theo mẫu</text>
+  <text x="600" y="415" text-anchor="middle" class="node-text" fill="#9ca3bf" font-size="11">Bắt chước cấu trúc ví dụ</text>
+
+  <!-- Column 3: Few-Shot -->
+  <rect x="820" y="30" width="350" height="440" rx="12" fill="#141432" stroke="#6366f1" stroke-width="2" />
+  <rect x="820" y="30" width="350" height="40" rx="12" fill="url(#magenta-grad)" />
+  <rect x="820" y="55" width="350" height="15" fill="url(#magenta-grad)" />
+  <text x="835" y="55" class="section-title">Few-Shot (Nhiều ví dụ)</text>
+  
+  <text x="840" y="105" class="label">Dataset &amp; Query</text>
+  <rect x="840" y="115" width="310" height="135" rx="6" fill="url(#card-grad)" stroke="#6366f1" stroke-width="1" />
+  <text x="855" y="135" class="node-text" fill="#f472b6">VD1: "Tệ quá" -> Negative</text>
+  <text x="855" y="152" class="node-text" fill="#f472b6">VD2: "Cũng thường" -> Neutral</text>
+  <text x="855" y="169" class="node-text" fill="#f472b6">VD3: "Tuyệt vời" -> Positive</text>
+  <line x1="855" y1="179" x2="1135" y2="179" stroke="#2d2d6a" stroke-width="1" />
+  <text x="855" y="200" class="node-text">Query: Phân loại email:</text>
+  <text x="855" y="220" class="node-text">"Sản phẩm giao nhanh..."</text>
+  
+  <line x1="995" y1="250" x2="995" y2="275" stroke="#ec4899" stroke-width="2" stroke-dasharray="4,4" />
+  <polygon points="991,270 995,280 999,270" fill="#ec4899" />
+  
+  <text x="840" y="268" class="label">Model Processor</text>
+  <rect x="840" y="278" width="310" height="70" rx="8" fill="#1e1b4b" stroke="#6366f1" stroke-width="2" />
+  <text x="995" y="318" text-anchor="middle" class="section-title glow-text" font-size="14">☁️ LLM Processor</text>
+  
+  <line x1="995" y1="348" x2="995" y2="375" stroke="#ec4899" stroke-width="2" />
+  <polygon points="991,370 995,380 999,370" fill="#ec4899" />
+  
+  <text x="840" y="365" class="label">Consistent Output</text>
+  <rect x="840" y="375" width="310" height="75" rx="6" fill="#111827" stroke="#34d399" stroke-width="2" />
+  <text x="995" y="405" text-anchor="middle" class="node-text" font-weight="bold" fill="#34d399">Phân loại nhất quán cao</text>
+  <text x="995" y="425" text-anchor="middle" class="node-text" fill="#9ca3bf" font-size="11">Độ chính xác &amp; Ổn định tối đa</text>
+</svg>

@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 450" width="100%" height="100%">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#080c16" />
+      <stop offset="100%" stop-color="#12123a" />
+    </linearGradient>
+    <linearGradient id="blue-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+    <linearGradient id="purple-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8b5cf6" />
+      <stop offset="100%" stop-color="#6d28d9" />
+    </linearGradient>
+    <linearGradient id="yellow-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#eab308" />
+      <stop offset="100%" stop-color="#ca8a04" />
+    </linearGradient>
+    <linearGradient id="emerald-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+    <!-- Glow Filters -->
+    <filter id="glow-purple" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="100%" height="100%" rx="16" fill="url(#bg-grad)" stroke="#20225c" stroke-width="2" />
+
+  <!-- Styles -->
+  <style>
+    .title-text { font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 800; fill: #ffffff; text-anchor: middle; }
+    .label-text { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700; fill: #ffffff; text-anchor: middle; }
+    .desc-text { font-family: 'Inter', sans-serif; font-size: 11px; fill: #9ca3af; text-anchor: middle; }
+    .metrics-text { font-family: 'JetBrains Mono', monospace; font-size: 11px; fill: #fbbf24; }
+  </style>
+
+  <text x="500" y="35" class="title-text">Hệ Thống Đánh Giá Prompt Tự Động (Automated Eval Pipeline)</text>
+
+  <!-- Node 1: Prompt Draft -->
+  <rect x="50" y="180" width="130" height="90" rx="10" fill="url(#blue-grad)" stroke="#60a5fa" stroke-width="1.5" />
+  <text x="115" y="215" class="label-text">1. PHÁC THẢO</text>
+  <text x="115" y="235" class="label-text">PROMPT (v1)</text>
+  <text x="115" y="255" class="desc-text" fill="#dbeaf8">Viết hệ thống chỉ dẫn</text>
+
+  <!-- Arrow 1 -> 2 -->
+  <line x1="180" y1="225" x2="240" y2="225" stroke="#6b7280" stroke-width="2" />
+  <path d="M 235 220 L 245 225 L 235 230 Z" fill="#6b7280" />
+
+  <!-- Node 2: Golden Dataset Run -->
+  <rect x="240" y="180" width="150" height="90" rx="10" fill="url(#purple-grad)" stroke="#a78bfa" stroke-width="1.5" filter="url(#glow-purple)" />
+  <text x="315" y="215" class="label-text">2. THỰC THI</text>
+  <text x="315" y="235" class="desc-text" fill="#ffffff">Chạy thử trên batch</text>
+  <text x="315" y="252" class="label-text" fill="#fbcfe8">Golden Dataset (50+)</text>
+
+  <!-- Arrow 2 -> 3 -->
+  <line x1="390" y1="225" x2="450" y2="225" stroke="#6b7280" stroke-width="2" />
+  <path d="M 445 220 L 455 225 L 445 230 Z" fill="#6b7280" />
+
+  <!-- Node 3: LLM-as-Judge -->
+  <rect x="450" y="180" width="160" height="90" rx="10" fill="url(#yellow-grad)" stroke="#fef08a" stroke-width="1.5" />
+  <text x="530" y="215" class="label-text" fill="#ffffff">3. ĐÁNH GIÁ</text>
+  <text x="530" y="235" class="label-text" fill="#fef08a">(LLM-AS-JUDGE)</text>
+  <text x="530" y="255" class="desc-text" fill="#fef9c3">Chấm điểm tự động</text>
+
+  <!-- Arrow 3 -> 4 -->
+  <line x1="610" y1="225" x2="670" y2="225" stroke="#6b7280" stroke-width="2" />
+  <path d="M 665 220 L 675 225 L 665 230 Z" fill="#6b7280" />
+
+  <!-- Node 4: Metrics Dashboard -->
+  <rect x="670" y="150" width="280" height="150" rx="12" fill="rgba(30, 41, 59, 0.9)" stroke="#10b981" stroke-width="2" />
+  <text x="810" y="175" class="label-text" fill="#10b981">📊 BẢNG ĐIỂM SẢN XUẤT</text>
+  <!-- Metrics text lines -->
+  <text x="690" y="205" class="metrics-text">• Accuracy: 98% (Đạt)</text>
+  <text x="690" y="225" class="metrics-text">• JSON Compliance: 100% (Đạt)</text>
+  <text x="690" y="245" class="metrics-text">• Groundedness: 94% (Đạt)</text>
+  <text x="690" y="265" class="metrics-text" fill="#f87171">• Latency: 480ms (Cảnh báo)</text>
+  <text x="690" y="285" class="metrics-text" fill="#fb923c">• Avg Cost: $0.002 / req</text>
+
+  <!-- Feedback Loop: Metrics back to Node 1 (Prompt Draft) -->
+  <path d="M 810 300 L 810 380 L 115 380 L 115 270" fill="none" stroke="#10b981" stroke-width="2" />
+  <path d="M 110 280 L 115 270 L 120 280 Z" fill="#10b981" />
+  <text x="460" y="370" class="desc-text" fill="#34d399">Phân tích sai lệch &amp; Tự động tối ưu hóa (DSPy / OPRO) để nâng cấp lên Prompt v2</text>
+
+</svg>

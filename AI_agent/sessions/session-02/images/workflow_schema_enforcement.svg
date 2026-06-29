@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 450" width="100%" height="100%">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0a23" />
+      <stop offset="100%" stop-color="#12123a" />
+    </linearGradient>
+    <linearGradient id="red-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ef4444" />
+      <stop offset="100%" stop-color="#b91c1c" />
+    </linearGradient>
+    <linearGradient id="green-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#047857" />
+    </linearGradient>
+    <linearGradient id="blue-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+    <linearGradient id="card-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1e4f" />
+      <stop offset="100%" stop-color="#16163f" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="100%" height="100%" rx="16" fill="url(#bg-grad)" stroke="#2d2d6a" stroke-width="2" />
+
+  <!-- Fonts Style -->
+  <style>
+    .title { font-family: 'Inter', system-ui, sans-serif; font-size: 15px; font-weight: 700; fill: #ffffff; }
+    .sub-title { font-family: 'Inter', system-ui, sans-serif; font-size: 11px; fill: #9ca3bf; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .code { font-family: 'JetBrains Mono', monospace; font-size: 11px; fill: #e8e8f0; }
+  </style>
+
+  <!-- Column 1: Prompt-based Formatting -->
+  <rect x="40" y="30" width="480" height="390" rx="12" fill="#141432" stroke="#ef4444" stroke-width="1.5" />
+  <rect x="40" y="30" width="480" height="40" rx="12" fill="url(#red-grad)" />
+  <rect x="40" y="55" width="480" height="15" fill="url(#red-grad)" />
+  <text x="60" y="55" class="title">Prompt-based Formatting (Dễ lỗi cú pháp)</text>
+
+  <!-- Step 1 -->
+  <text x="60" y="100" class="sub-title">1. Gửi Prompt thông thường</text>
+  <rect x="60" y="110" width="440" height="45" rx="6" fill="url(#card-grad)" stroke="#2d2d6a" stroke-width="1" />
+  <text x="75" y="136" class="code">Prompt: "Hãy trả về dạng JSON..."</text>
+
+  <!-- Arrow 1 -->
+  <line x1="280" y1="155" x2="280" y2="190" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="3,3" />
+  <polygon points="277,185 280,193 283,185" fill="#ef4444" />
+
+  <!-- Step 2 -->
+  <text x="60" y="185" class="sub-title">2. Bộ xử lý LLM sinh từ tự do</text>
+  <rect x="60" y="195" width="440" height="60" rx="8" fill="#1e1e38" stroke="#2d2d6a" stroke-width="1" />
+  <text x="280" y="230" text-anchor="middle" class="title" font-size="14" fill="#ef4444">☁️ LLM Model (Tự do)</text>
+
+  <!-- Arrow 2 -->
+  <line x1="280" y1="255" x2="280" y2="295" stroke="#ef4444" stroke-width="1.5" />
+  <polygon points="277,290 280,298 283,290" fill="#ef4444" />
+
+  <!-- Step 3 -->
+  <text x="60" y="285" class="sub-title">3. Kết quả không cam kết</text>
+  <rect x="60" y="295" width="440" height="95" rx="6" fill="#180b0b" stroke="#ef4444" stroke-width="1.5" />
+  <text x="75" y="325" class="code" fill="#fca5a5">"Dưới đây là JSON của bạn:"</text>
+  <text x="75" y="345" class="code" fill="#fca5a5">{ "customer_name": "Nam" ... [Thiếu dấu đóng ngoặc] }</text>
+  <text x="75" y="370" class="code" fill="#ef4444" font-weight="bold">⚠️ Lỗi cú pháp và chứa text thừa khiến backend bị CRASH!</text>
+
+
+  <!-- Column 2: Schema Enforcement -->
+  <rect x="580" y="30" width="480" height="390" rx="12" fill="#141432" stroke="#10b981" stroke-width="2" />
+  <rect x="580" y="30" width="480" height="40" rx="12" fill="url(#green-grad)" />
+  <rect x="580" y="55" width="480" height="15" fill="url(#green-grad)" />
+  <text x="600" y="55" class="title">Schema Enforcement (Độ tin cậy 100%)</text>
+
+  <!-- Step 1 -->
+  <text x="600" y="100" class="sub-title">1. Gửi Prompt kèm JSON Schema</text>
+  <rect x="600" y="110" width="440" height="45" rx="6" fill="url(#card-grad)" stroke="#2d2d6a" stroke-width="1" />
+  <text x="615" y="136" class="code">Prompt + JSON Schema Definition (API level)</text>
+
+  <!-- Arrow 1 -->
+  <line x1="820" y1="155" x2="820" y2="190" stroke="#10b981" stroke-width="1.5" stroke-dasharray="3,3" />
+  <polygon points="817,185 820,193 823,185" fill="#10b981" />
+
+  <!-- Step 2 -->
+  <text x="600" y="185" class="sub-title">2. Bộ lọc token ép khung tại API</text>
+  <rect x="600" y="195" width="440" height="60" rx="8" fill="#064e3b" stroke="#10b981" stroke-width="1.5" />
+  <text x="820" y="222" text-anchor="middle" class="title" font-size="13" fill="#34d399">⚙️ Constrained Sampling Filter</text>
+  <text x="820" y="240" text-anchor="middle" class="code" font-size="10" fill="#a7f3d0">(Loại bỏ các token vi phạm Schema từ bước sinh từ)</text>
+
+  <!-- Arrow 2 -->
+  <line x1="820" y1="255" x2="820" y2="295" stroke="#10b981" stroke-width="1.5" />
+  <polygon points="817,290 820,298 823,290" fill="#10b981" />
+
+  <!-- Step 3 -->
+  <text x="600" y="285" class="sub-title">3. Kết quả sạch 100%</text>
+  <rect x="600" y="295" width="440" height="95" rx="6" fill="#022c22" stroke="#10b981" stroke-width="1.5" />
+  <text x="615" y="325" class="code" fill="#a7f3d0">{</text>
+  <text x="635" y="345" class="code" fill="#a7f3d0">"customer_name": "Nam", "sentiment": "Angry"</text>
+  <text x="615" y="365" class="code" fill="#a7f3d0">}</text>
+  <text x="615" y="380" class="code" fill="#34d399" font-weight="bold">✅ Cú pháp chuẩn cấu trúc tuyệt đối, tích hợp an toàn!</text>
+</svg>
