@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session 04 — Context Engineering | Rikkei AI Academy</title>
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Prism Code Highlighting Theme -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+  
+  <!-- Mermaid.js -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'dark',
+      securityLevel: 'loose',
+      themeVariables: {
+        background: '#090d16',
+        primaryColor: '#1e293b',
+        primaryTextColor: '#f3f4f6',
+        lineColor: '#8b5cf6',
+        textColor: '#f3f4f6'
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">
+          <i class="fas fa-brain"></i>
+        </div>
+        <div class="brand-text">Rikkei AI Academy</div>
+      </div>
+
+      <a href="../../index.html" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+        <span>Quay lại cổng chính</span>
+      </a>
+      
+      <!-- Navigation for Session 04 -->
+      <nav class="lesson-navigation" id="s4-nav">
+        <div class="nav-label">Bài học Session 04</div>
+        <button class="lesson-nav-btn active" data-lesson="s4_l1">
+          <i class="fas fa-book-open"></i>
+          <span>Lesson 01 — Context Window & 4 Failure Modes</span>
+        </button>
+        <button class="lesson-nav-btn" data-lesson="s4_l2">
+          <i class="fas fa-network-wired"></i>
+          <span>Lesson 02 — RAG & MCP Protocol</span>
+        </button>
+        <button class="lesson-nav-btn" data-lesson="s4_l3">
+          <i class="fas fa-memory"></i>
+          <span>Lesson 03 — Memory System & 4 Pillars</span>
+        </button>
+        <button class="lesson-nav-btn" data-lesson="s4_l4">
+          <i class="fas fa-hdd"></i>
+          <span>Lesson 04 — Design Patterns & Caching</span>
+        </button>
+        <div class="nav-label">Kiểm tra</div>
+        <button class="lesson-nav-btn" data-lesson="s4_quiz">
+          <i class="fas fa-vial"></i>
+          <span>Quiz kiểm tra Session 04</span>
+        </button>
+      </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <header class="header">
+        <div class="header-title">
+          <h1 id="header-session-title">Session 04 — Context Engineering</h1>
+        </div>
+        <div class="header-meta">
+          <span class="tech-pill">Memory Systems</span>
+          <span class="tech-pill">Model Context Protocol</span>
+        </div>
+      </header>
+
+      <div class="content-wrapper">
+        
+        <!-- ==================== SESSION 04 LESSON 01 ==================== -->
+        <section class="lesson-section active" id="s4_l1">
+          <div class="lesson-banner">
+            <div class="lesson-subtitle">LESSON 01</div>
+            <h2 class="lesson-title">Context Window: Hiểu, Tối Ưu & 4 Failure Modes</h2>
+          </div>
+
+          <div class="tab-container">
+            <div class="tab-nav">
+              <button class="tab-btn active" data-tab="theory"><i class="fas fa-book"></i> Lý thuyết</button>
+              <button class="tab-btn" data-tab="diagram"><i class="fas fa-project-diagram"></i> Sơ đồ & Minh họa</button>
+              <button class="tab-btn" data-tab="practice"><i class="fas fa-laptop-code"></i> Thực hành & Demo</button>
+              <button class="tab-btn" data-tab="video"><i class="fas fa-video"></i> Video Prompt</button>
+              <button class="tab-btn" data-tab="slide"><i class="fas fa-images"></i> Slides Prompt</button>
+              <button class="tab-btn" data-tab="exercise"><i class="fas fa-edit"></i> Bài tập</button>
+            </div>
+
+            <!-- Tab: Theory -->
+            <div class="tab-pane active" id="s4_l1_pane_theory">
+              <div class="theory-content">
+                <h3>1.1 Cơ chế Lost in the Middle & Phân bổ Token</h3>
+                <p>Cửa sổ ngữ cảnh (Context Window) hoạt động giống như RAM của máy tính. Việc quản lý hiệu quả nguồn tài nguyên này quyết định trực tiếp đến độ chính xác và chi phí API. Các mô hình hiện đại có xu hướng gặp hiện tượng <strong>Lost in the Middle</strong> (bỏ quên thông tin ở giữa bối cảnh) do đặc tính của cơ chế Attention. Do đó, các thông tin quan trọng luôn cần được xếp ở đầu hoặc cuối bối cảnh nạp vào.</p>
+
+                <div class="info-card">
+                  <div class="info-card-title"><i class="fas fa-info-circle"></i> Token Budget Allocation</div>
+                  <p>Một kiến trúc bối cảnh tốt phân bổ tài nguyên hợp lý: System Prompt (~5-10%), Tool Schemas (~5-10%), Retrieved Context (~40-50%), Chat History (~15-25%), User Query (~5%), và khoảng trống dành cho Output (~10-20%).</p>
+                </div>
+
+                <h3>1.2 4 Lỗi Bối Cảnh (Context Failure Modes) Theo Andrej Karpathy</h3>
+                <p>Karpathy đã đúc kết ra 4 Failure Modes chính dẫn đến sự thất bại của các AI Agent dài hạn:</p>
+                <ol>
+                  <li><strong>Context Poisoning</strong>: Lỗi sai của vòng lặp trước nạp lại vào bối cảnh vòng sau và bị khuếch đại lên.</li>
+                  <li><strong>Context Distraction</strong>: Lịch sử chat quá dài hoặc tài liệu nhiễu khiến LLM bị xao lãng khỏi mục tiêu chính.</li>
+                  <li><strong>Context Confusion</strong>: Cung cấp quá nhiều định nghĩa công cụ hoặc tài liệu khiến AI gọi nhầm tool hoặc chọn sai hành động.</li>
+                  <li><strong>Context Clash</strong>: Thông tin mâu thuẫn giữa các tài liệu được nạp vào bối cảnh.</li>
+                </ol>
+              </div>
+            </div>
+
+            <!-- Tab: Diagram & Illustration -->
+            <div class="tab-pane" id="s4_l1_pane_diagram">
+              <div class="diagram-visual-container">
+                <div class="card-container">
+                  <div class="card-title"><i class="fas fa-project-diagram"></i> Sơ đồ 4 Failure Modes (SVG)</div>
+                  <div class="mermaid-wrapper">
+                    <img class="workflow-img" src="images/workflow_failure_modes.svg" alt="Sơ đồ Failure Modes">
+                  </div>
+                </div>
+
+                <div class="card-container">
+                  <div class="card-title"><i class="fas fa-image"></i> Ảnh minh họa Lost in the Middle</div>
+                  <div class="illustration-wrapper">
+                    <img class="illustration-img" src="images/context_failure_modes.png" alt="Lost in the Middle Illustration">
+                  </div>
+                  <div class="prompt-drawer">
+                    <div class="prompt-drawer-header">
+                      <span>DALL-E / Imagen Prompt</span>
+                      <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="prompt-drawer-body" style="display: none;">
+                      A futuristic 3D infographic illustrating "Lost in the Middle" problem in AI context windows. A long horizontal glowing glass bar representing the context window. The left end is labeled "ĐẦU (BEGINNING - HIGH ATTENTION)" glowing in cyan. The right end is labeled "CUỐI (END - HIGH ATTENTION)" glowing in purple. The middle section is dark and foggy, labeled "GIỮA (MIDDLE - LOST IN THE MIDDLE)" with dim orange outlines. Neon data nodes flow through the bar. Sleek dark mode tech background, 8k, highly detailed.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Practice -->
+            <div class="tab-pane" id="s4_l1_pane_practice">
+              <div class="practice-container">
+                <h3>Thực hành: Khắc phục lỗi Context Distraction</h3>
+                <p><strong>Yêu cầu:</strong> Nhận diện bối cảnh lịch sử chat bị quá tải và áp dụng chiến thuật tóm tắt (compaction) để giữ lại thông tin cốt lõi.</p>
+                
+                <div class="code-block-header">
+                  <span class="file-name">Bối cảnh bị quá tải (Distracted Context)</span>
+                  <button class="copy-btn" onclick="copyCode(this, 's4_l1_p1')"><i class="far fa-copy"></i> Copy</button>
+                </div>
+                <div class="code-wrapper">
+                  <pre><code class="language-markdown" id="s4_l1_p1">System Prompt: Bạn là trợ lý tài chính chỉ tư vấn về chứng khoán.
+User: Chào bạn.
+Assistant: Chào bạn, tôi có thể hỗ trợ gì về chứng khoán hôm nay?
+User: Thời tiết hôm nay đẹp quá nhỉ, tôi định đi chơi.
+Assistant: Vâng, thời tiết đẹp thật. Nhưng nếu bạn có thời gian rảnh, chúng ta có thể xem xét thị trường chứng khoán hôm nay có nhiều biến động đấy.
+User: Nhà bạn ở đâu thế?
+Assistant: Tôi là một trợ lý AI, không có ngôi nhà vật lý nào cả.
+[... 40 lượt chat nói về thời tiết, ăn uống, phim ảnh ...]
+User: Thế mã VNM hiện tại có xu hướng gì?</code></pre>
+                </div>
+
+                <div class="code-block-header">
+                  <span class="file-name">Bối cảnh đã tối ưu (Compacted Context)</span>
+                  <button class="copy-btn" onclick="copyCode(this, 's4_l1_p2')"><i class="far fa-copy"></i> Copy</button>
+                </div>
+                <div class="code-wrapper">
+                  <pre><code class="language-markdown" id="s4_l1_p2">System Prompt: Bạn là trợ lý tài chính chỉ tư vấn về chứng khoán.
+&lt;chat_summary&gt;
+Người dùng đã chào trợ lý và có một cuộc trò chuyện ngắn ngoài chủ đề về thời tiết và cuộc sống cá nhân. Trợ lý đã giữ nguyên định hướng phục vụ chứng khoán.
+&lt;/chat_summary&gt;
+User: Thế mã VNM hiện tại có xu hướng gì?</code></pre>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Video Prompt -->
+            <div class="tab-pane" id="s4_l1_pane_video">
+              <div class="prompt-box">
+                <div class="card-title"><i class="fas fa-microphone"></i> NotebookLM Podcast Custom Prompt</div>
+                <div class="prompt-text">Hãy tạo một buổi thảo luận Podcast đối thoại cực kỳ sinh động giữa 2 chuyên gia công nghệ (một nam, một nữ) về chủ đề "Context Engineering: RAM của kỷ nguyên AI 2026".
+
+MC Nữ đặt câu hỏi tại sao trước đây cứ phải cố gắng tối ưu prompt trong khi Karpathy lại nói quản trị bối cảnh (Context Engineering) mới là quan trọng nhất.
+MC Nam sử dụng ví dụ RAM máy tính để giải thích bối cảnh, mô tả sinh động 4 Failure Modes (đặc biệt là Context Poisoning) và cách phòng tránh lỗi. Cuộc hội thoại bằng tiếng Việt tự nhiên, trẻ trung và giữ nguyên các thuật ngữ kỹ thuật tiếng Anh.</div>
+              </div>
+            </div>
+
+            <!-- Tab: Slide Prompt -->
+            <div class="tab-pane" id="s4_l1_pane_slide">
+              <div class="prompt-box">
+                <div class="card-title"><i class="fas fa-images"></i> Marp Slide Generator Prompt</div>
+                <div class="prompt-text">Role: Chuyên gia thiết kế Slide đào tạo.
+Task: Soạn thảo mã nguồn Markdown Marp thuyết trình về "Cửa sổ ngữ cảnh & 4 Failure Modes của bối cảnh".
+
+Cấu trúc Slide yêu cầu:
+- Slide 1: Tiêu đề lớn "Quản trị bối cảnh nâng cao và Các lỗi vận hành AI Agent".
+- Slide 2: Bản chất của Context Window và hiện tượng Lost in the Middle trong Attention Mechanism.
+- Slide 3: Phân bổ ngân sách Token tối ưu (Token Budget Allocation) cho hệ thống thực tế.
+- Slide 4: Giới thiệu 4 Failure Modes theo Karpathy Framework: Poisoning, Distraction, Confusion, Clash.
+- Slide 5: Phân tích lỗi Context Poisoning và cách thiết lập chốt chặn.
+- Slide 6: Bài tập tình huống thực tế của chatbot hỗ trợ bán hàng.
+
+Thiết kế slide: Phong cách tối giản, nền tối, bullet points ngắn gọn.</div>
+              </div>
+            </div>
+
+            <!-- Tab: Exercise -->
+            <div class="tab-pane" id="s4_l1_pane_exercise">
+              <div class="theory-content">
+                <h3>Bài tập Lesson 4.1</h3>
+                <ol>
+                  <li><strong>Thiết kế Context Budget</strong>: Xây dựng bảng cấu hình phân bổ token (System Prompt, History, RAG, Output) cho một chatbot tư vấn luật với giới hạn context window nghiêm ngặt là <strong>32,000 tokens</strong>.</li>
+                  <li><strong>Phân tích Case Study</strong>: Viết một báo cáo ngắn (200-300 từ) phân tích một sự cố AI Agent thực tế mà bạn từng gặp phải, phân loại lỗi đó thuộc về Failure Mode nào trong 4 loại trên và đề xuất giải pháp sửa đổi cụ thể.</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== SESSION 04 LESSON 02 ==================== -->
+        <section class="lesson-section" id="s4_l2">
+          <div class="lesson-banner">
+            <div class="lesson-subtitle">LESSON 02</div>
+            <h2 class="lesson-title">RAG, MCP Protocol & Dynamic Context</h2>
+          </div>
+
+          <div class="tab-container">
+            <div class="tab-nav">
+              <button class="tab-btn active" data-tab="theory"><i class="fas fa-book"></i> Lý thuyết</button>
+              <button class="tab-btn" data-tab="diagram"><i class="fas fa-project-diagram"></i> Sơ đồ & Minh họa</button>
+              <button class="tab-btn" data-tab="practice"><i class="fas fa-laptop-code"></i> Thực hành & Demo</button>
+              <button class="tab-btn" data-tab="video"><i class="fas fa-video"></i> Video Prompt</button>
+              <button class="tab-btn" data-tab="slide"><i class="fas fa-images"></i> Slides Prompt</button>
+              <button class="tab-btn" data-tab="exercise"><i class="fas fa-edit"></i> Bài tập</button>
+            </div>
+
+            <!-- Tab: Theory -->
+            <div class="tab-pane active" id="s4_l2_pane_theory">
+              <div class="theory-content">
+                <h3>2.1 Luồng RAG Nâng Cao</h3>
+                <p>Retrieval-Augmented Generation (RAG) thực hiện lấy dữ liệu từ bên ngoài nạp vào cửa sổ ngữ cảnh trước khi LLM bắt đầu sinh văn bản. Nó bao gồm các bước: Nhận Query ➜ Nhúng Vector (Embedding) ➜ Tìm kiếm độ tương đồng (Vector Search) ➜ Tái xếp hạng (Reranking) ➜ Nhúng vào bối cảnh ➜ Sinh câu trả lời.</p>
+
+                <h3>2.2 Model Context Protocol (MCP) — Giao thức kết nối mở</h3>
+                <p>Năm 2026, **Model Context Protocol (MCP)** do Anthropic khởi xướng đã trở thành tiêu chuẩn công nghiệp giống như **cổng USB-C dành cho AI**. MCP tách biệt AI Client và Data Sources bên ngoài. Nhờ vậy, nhà phát triển chỉ cần dựng một MCP Server một lần duy nhất là mọi MCP Client tương thích (như Cursor, Claude Desktop, LangGraph) đều có thể kết nối và tự động khám phá (auto-discover) tài liệu hoặc công cụ của server đó.</p>
+                <p>Giao thức **A2A (Agent-to-Agent)** của Google đóng vai trò bổ trợ cho MCP, giúp chuẩn hóa việc giao tiếp và ủy thác tác vụ giữa các agent với nhau thay vì chỉ kết nối agent với tool.</p>
+              </div>
+            </div>
+
+            <!-- Tab: Diagram & Illustration -->
+            <div class="tab-pane" id="s4_l2_pane_diagram">
+              <div class="diagram-visual-container">
+                <div class="card-container">
+                  <div class="card-title"><i class="fas fa-project-diagram"></i> Sơ đồ kiến trúc MCP (SVG)</div>
+                  <div class="mermaid-wrapper">
+                    <img class="workflow-img" src="images/workflow_mcp.svg" alt="Sơ đồ Model Context Protocol">
+                  </div>
+                </div>
+
+                <div class="card-container">
+                  <div class="card-title"><i class="fas fa-image"></i> Ảnh minh họa Model Context Protocol</div>
+                  <div class="illustration-wrapper">
+                    <img class="illustration-img" src="images/mcp_protocol.png" alt="MCP Protocol Illustration">
+                  </div>
+                  <div class="prompt-drawer">
+                    <div class="prompt-drawer-header">
+                      <span>DALL-E / Imagen Prompt</span>
+                      <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="prompt-drawer-body" style="display: none;">
+                      A futuristic 3D architectural diagram of Model Context Protocol (MCP). The central glowing node is the "MCP CLIENT (AI BRAIN)". Glowing digital cables represent the standardized protocol branching out to connect three glass-encased servers labeled in Vietnamese: "MCP SERVER: CƠ SỞ DỮ LIỆU", "MCP SERVER: HỆ THỐNG PHÁT TRIỂN", and "MCP SERVER: SLACK/EMAIL API". Highly detailed cybertech elements, neon purple and cyan styling, dark background, 8k.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Practice -->
+            <div class="tab-pane" id="s4_l2_pane_practice">
+              <div class="practice-container">
+                <h3>Thực hành: Tạo MCP Server đơn giản bằng Python FastMCP</h3>
+                <p><strong>Kịch bản:</strong> Khởi tạo một MCP Server cung cấp cho AI công cụ lấy log tệp tin hệ thống cục bộ an toàn.</p>
+                
+                <div class="code-block-header">
+                  <span class="file-name">mcp_server.py</span>
+                  <button class="copy-btn" onclick="copyCode(this, 's4_l2_p1')"><i class="far fa-copy"></i> Copy</button>
+                </div>
+                <div class="code-wrapper">
+                  <pre><code class="language-python" id="s4_l2_p1"># Cài đặt: pip install fastmcp
+from fastmcp import FastMCP
+
+# Khởi tạo MCP Server mang tên "FileInspector"
+mcp = FastMCP("FileInspector")
+
+@mcp.tool()
+def read_local_log(file_path: str) -> str:
+    """Đọc tệp tin log cục bộ. Chỉ dùng khi cần phân tích log hệ thống."""
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+            # Chỉ đọc 50 dòng cuối để tránh làm tràn bối cảnh của LLM
+            return "".join(lines[-50:])
+    except Exception as e:
+        return f"Lỗi đọc file: {str(e)}"
+
+if __name__ == "__main__":
+    mcp.run()</code></pre>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Video Prompt -->
+            <div class="tab-pane" id="s4_l2_pane_video">
+              <div class="prompt-box">
+                <div class="card-title"><i class="fas fa-microphone"></i> NotebookLM Podcast Custom Prompt</div>
+                <div class="prompt-text">Tạo podcast thảo luận NotebookLM đối thoại về "Model Context Protocol (MCP)".
+MC Nữ đóng vai trò người học muốn tích hợp AI vào Slack doanh nghiệp, phàn nàn vì trước đây cứ phải code tay từng API.
+MC Nam hào hứng giới thiệu về MCP: Giải thích cổng USB-C cho AI hoạt động ra sao, giúp AI tự khám phá ra tool mà không cần cấu hình lại code client. Cuộc thảo luận diễn ra bằng tiếng Việt tự nhiên và giữ nguyên các từ khóa chuyên ngành.</div>
+              </div>
+            </div>
+
+            <!-- Tab: Slide Prompt -->
+            <div class="tab-pane" id="s4_l2_pane_slide">
+              <div class="prompt-box">
+                <div class="card-title"><i class="fas fa-images"></i> Marp Slide Generator Prompt</div>
+                <div class="prompt-text">Role: Chuyên gia thiết kế Slide đào tạo.
+Task: Tạo mã nguồn Markdown Marp thuyết trình về "Model Context Protocol (MCP) & RAG".
+
+Cấu trúc Slide yêu cầu:
+- Slide 1: Tiêu đề "Kết nối vạn năng qua MCP và Thiết kế bối cảnh động".
+- Slide 2: Khó khăn của tích hợp công cụ kiểu cũ vs chuẩn hóa cổng kết nối MCP.
+- Slide 3: Sơ đồ kiến trúc MCP: MCP Client kết nối đa cổng tới các MCP Server độc lập.
+- Slide 4: Luồng RAG nâng cao: Embedding, Vector Search và Reranking trong sản xuất.
+- Slide 5: Giao thức giao tiếp giữa các AI Agent: Google A2A Protocol.
+- Slide 6: Bài tập nhóm: Thiết kế MCP server tích hợp cơ sở dữ liệu bán hàng.
+
+Thiết kế slide: Màu sắc neon tương phản, hiện đại, dễ theo dõi.</div>
+              </div>
+            </div>
+
+            <!-- Tab: Exercise -->
+            <div class="tab-pane" id="s4_l2_pane_exercise">
+              <div class="theory-content">
+                <h3>Bài tập Lesson 4.2</h3>
+                <ol>
+                  <li><strong>Thiết kế Kiến trúc RAG + MCP</strong>: Vẽ sơ đồ khối mô tả cách một AI Agent trả lời câu hỏi về báo cáo tài chính của khách hàng. Sơ đồ phải thể hiện rõ: User ➜ MCP Client ➜ RAG Server (MCP Server) ➜ Vector DB ➜ Trả kết quả bối cảnh ➜ LLM sinh câu trả lời.</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== SESSION 04 LESSON 03 ==================== -->
+        <section class="lesson-section" id="s4_l3">
+          <div class="lesson-banner">
+            <div class="lesson-subtitle">LESSON 03</div>
+            <h2 class="lesson-title">Conversation Memory, State Management & 4 Pillars</h2>
+          </div>
+
+          <div class="tab-container">
+            <div class="tab-nav">
+              <button class="tab-btn active" data-tab="theory"><i class="fas fa-book"></i> Lý thuyết</button>
+              <button class="tab-btn" data-tab="diagram"><i class="fas fa-project-diagram"></i> Sơ đồ & Minh họa</button>
+              <button class="tab-btn" data-tab="practice"><i class="fas fa-laptop-code"></i> Thực hành & Demo</button>
+              <button class="tab-btn" data-tab="video"><i class="fas fa-video"></i> Video Prompt</button>
+              <button class="tab-btn" data-tab="slide"><i class="fas fa-images"></i> Slides Prompt</button>
+              <button class="tab-btn" data-tab="exercise"><i class="fas fa-edit"></i> Bài tập</button>
+            </div>
+
+            <!-- Tab: Theory -->
+            <div class="tab-pane active" id="s4_l3_pane_theory">
+              <div class="theory-content">
+                <h3>3.1 Hệ thống bộ nhớ AI Agent</h3>
+                <p>Một AI Agent chạy lâu dài (long-running) đòi hỏi kiến trúc bộ nhớ đa tầng:</p>
+                <ul>
+                  <li><strong>Working Memory</strong>: Cửa sổ ngữ cảnh xử lý các token hiện hành (RAM).</li>
+                  <li><strong>Episodic Memory</strong>: Ghi lại toàn bộ chuỗi hành động và nhật ký lỗi ở các lượt chạy trước để sửa sai.</li>
+                  <li><strong>Semantic Memory</strong>: Tri thức chung của hệ thống được lấy qua RAG hoặc Vector Database.</li>
+                </ul>
+
+                <h3>3.2 4 Trụ Cột của Context Engineering</h3>
+                <p>Quy chuẩn thiết kế bối cảnh năm 2026 dựa trên 4 trụ cột:</p>
+                <div class="compare-table-wrapper">
+                  <table class="compare-table">
+                    <thead>
+                      <tr>
+                        <th>Trụ cột</th>
+                        <th>Hành động kỹ thuật</th>
+                        <th>Mục tiêu đạt được</th>
+                        <th>Ví dụ thực tế</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><strong>1. Write (Ghi ngoại vi)</strong></td>
+                        <td>Lưu thông tin ra cơ sở dữ liệu ngoài.</td>
+                        <td>Giải phóng token bối cảnh tại chỗ, giảm nhiễu.</td>
+                        <td>Lưu thông tin khách hàng vào database thay vì giữ trong chat history.</td>
+                      </tr>
+                      <tr>
+                        <td><strong>2. Select (Lọc đưa vào)</strong></td>
+                        <td>Chỉ nạp đúng tài liệu cần thiết qua RAG.</td>
+                        <td>Tránh lỗi Lost in the Middle và nhiễu bối cảnh.</td>
+                        <td>Chỉ truy xuất 3 tài liệu hướng dẫn khớp với câu hỏi của khách.</td>
+                      </tr>
+                      <tr>
+                        <td><strong>3. Compress (Nén thông tin)</strong></td>
+                        <td>Tóm tắt các hội thoại cũ hoặc rút trích dữ liệu dạng JSON.</td>
+                        <td>Tăng mật độ tín hiệu thông tin (Signal Density).</td>
+                        <td>Tóm tắt 10 câu chat cũ thành một dòng mô tả ý định hoàn tiền.</td>
+                      </tr>
+                      <tr>
+                        <td><strong>4. Isolate (Cô lập bối cảnh)</strong></td>
+                        <td>Tách biệt môi trường cho các sub-agents chuyên biệt.</td>
+                        <td>Ngăn chặn lỗi xung đột chỉ dẫn hoặc loạn công cụ.</td>
+                        <td>Agent viết code kiểm thử không nạp các tool gửi email hoặc thông tin thanh toán.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Diagram & Illustration -->
+            <div class="tab-pane" id="s4_l3_pane_diagram">
+              <div class="diagram-visual-container">
+                <div class="card-container">
+                  <div class="card-title"><i class="fas fa-project-diagram"></i> Sơ đồ bộ nhớ đa cấp (SVG)</div>
+                  <div class="mermaid-wrapper">
+                    <img class="workflow-img" src="images/workflow_memory.svg" alt="Sơ đồ bộ nhớ AI Agent">
+                  </div>
+                </div>
+
+                <div class="card-container">
+                  <div class="card-title"><i class="fas fa-image"></i> Ảnh minh họa Hệ thống Bộ nhớ</div>
+                  <div class="illustration-wrapper">
+                    <img class="illustration-img" src="images/agent_memory_system.png" alt="Memory System Illustration">
+                  </div>
+                  <div class="prompt-drawer">
+                    <div class="prompt-drawer-header">
+                      <span>DALL-E / Imagen Prompt</span>
+                      <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="prompt-drawer-body" style="display: none;">
+                      A 3D visualization of an AI Agent Memory System. Three stacked glowing holographic layers. Top layer is small and bright labeled "WORKING MEMORY (RAM / CONTEXT)". Middle layer is a rolling digital film strip labeled "EPISODIC MEMORY (NHẬT KÝ SỰ KIỆN)". Bottom layer is a massive glowing matrix database labeled "SEMANTIC MEMORY (VECTOR DATABASE)". Cyberpunk dark tech theme, neon blue and gold light beams connect the layers, 8k.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Practice -->
+            <div class="tab-pane" id="s4_l3_pane_practice">
+              <div class="practice-container">
+                <h3>Thực hành: Thiết lập cơ chế Cô Lập Bối Cảnh (Isolate Pattern)</h3>
+                <p><strong>Yêu cầu:</strong> Cấu hình 2 sub-agent hoạt động biệt lập để hỗ trợ khách hàng mà không bị nhiễu chéo (crosstalk) thông tin.</p>
+                
+                <div class="code-block-header">
+                  <span class="file-name">System Prompt Agent A (Chuyên gia đọc logs hệ thống)</span>
+                  <button class="copy-btn" onclick="copyCode(this, 's4_l3_p1')"><i class="far fa-copy"></i> Copy</button>
+                </div>
+                <div class="code-wrapper">
+                  <pre><code class="language-markdown" id="s4_l3_p1">Bạn là Agent chuyên phân tích log hệ thống. Nhiệm vụ của bạn là đọc tệp tin logs được truyền vào, tìm kiếm mã lỗi E100-E199 và trả về tóm tắt nguyên nhân lỗi.
+
+RÀNG BUỘC: Bạn KHÔNG được tiếp cận thông tin cá nhân hoặc gói cước tài chính của khách hàng. Chỉ tập trung vào phân tích kỹ thuật.</code></pre>
+                </div>
+
+                <div class="code-block-header">
+                  <span class="file-name">System Prompt Agent B (Chăm sóc khách hàng)</span>
+                  <button class="copy-btn" onclick="copyCode(this, 's4_l3_p2')"><i class="far fa-copy"></i> Copy</button>
+                </div>
+                <div class="code-wrapper">
+                  <pre><code class="language-markdown" id="s4_l3_p2">Bạn là Trợ lý CSKH. Nhiệm vụ của bạn là trò chuyện thân thiện với người dùng và tư vấn giải pháp.
+Bạn sẽ nhận được tóm tắt phân tích kỹ thuật từ Agent A. Hãy sử dụng tóm tắt đó để giải thích dễ hiểu cho khách hàng.
+
+RÀNG BUỘC: Bạn KHÔNG được tự đọc logs hệ thống trực tiếp mà bắt buộc phải chờ kết quả từ Agent A.</code></pre>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Video Prompt -->
+            <div class="tab-pane" id="s4_l3_pane_video">
+              <div class="prompt-box">
+                <div class="card-title"><i class="fas fa-microphone"></i> NotebookLM Podcast Custom Prompt</div>
+                <div class="prompt-text">Tạo podcast thảo luận NotebookLM đối thoại về "4 Trụ cột Context Engineering và Bộ nhớ AI Agent".
+MC Nữ phàn nàn về việc AI bị loạn khi đưa quá nhiều thông tin khách hàng và kỹ thuật cùng lúc.
+MC Nam giới thiệu giải pháp 4 Trụ cột (Write, Select, Compress, Isolate) để cô lập bối cảnh. Đưa ra ví dụ sinh động về việc phân vai Agent giống như phân công công việc trong công ty: Kế toán không được phép vào phòng máy chủ để tránh nhầm lẫn. Cuộc thảo luận diễn ra vui vẻ, sử dụng tiếng Việt tự nhiên và giữ nguyên các từ tiếng Anh chuyên ngành.</div>
+              </div>
+            </div>
+
+            <!-- Tab: Slide Prompt -->
+            <div class="tab-pane" id="s4_l3_pane_slide">
+              <div class="prompt-box">
+                <div class="card-title"><i class="fas fa-images"></i> Marp Slide Generator Prompt</div>
+                <div class="prompt-text">Role: Chuyên gia thiết kế Slide giáo trình AI nâng cao.
+Task: Tạo mã nguồn Markdown Marp thuyết trình về "Conversation Memory & 4 Pillars of Context".
+
+Nội dung slide yêu cầu:
+- Slide 1: Tiêu đề "Thiết kế bộ nhớ đa cấp cho Agent và 4 Trụ cột bối cảnh".
+- Slide 2: Phân cấp hệ thống bộ nhớ: Working, Episodic và Semantic Memory.
+- Slide 3: Trụ cột 1 & 2: Write (Đẩy ra ngoài) và Select (Lọc nạp vào).
+- Slide 4: Trụ cột 3 & 4: Compress (Nén thông tin) và Isolate (Cô lập agent).
+- Slide 5: Tại sao việc cô lập bối cảnh giúp AI hoạt động an toàn và ổn định hơn?
+- Slide 6: Thảo luận bài tập nhóm thiết kế hệ thống AI Tutor.
+
+Thiết kế slide: Màu sắc neon nổi bật trên nền tối, bố cục tinh gọn.</div>
+              </div>
+            </div>
+
+            <!-- Tab: Exercise -->
+            <div class="tab-pane" id="s4_l3_pane_exercise">
+              <div class="theory-content">
+                <h3>Bài tập Lesson 4.3</h3>
+                <ol>
+                  <li><strong>Thiết kế hệ thống AI Tutor</strong>: Áp dụng 4 trụ cột của Context Engineering để viết tài liệu thiết kế hệ thống bối cảnh cho một trợ lý AI dạy tiếng Anh. Xác định rõ: Dữ liệu nào cần <strong>Write</strong>, tài liệu nào cần <strong>Select</strong>, khi nào cần <strong>Compress</strong> lịch sử học tập, và các sub-agent nào cần được <strong>Isolate</strong>.</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== SESSION 04 LESSON 04 ==================== -->
+        <section class="lesson-section" id="s4_l4">
+          <div class="lesson-banner">
+            <div class="lesson-subtitle">LESSON 04</div>
+            <h2 class="lesson-title">Context Design Patterns & Production Architecture</h2>
+          </div>
+
+          <div class="tab-container">
+            <div class="tab-nav">
+              <button class="tab-btn active" data-tab="theory"><i class="fas fa-book"></i> Lý thuyết</button>
+              <button class="tab-btn" data-tab="diagram"><i class="fas fa-project-diagram"></i> Sơ đồ & Minh họa</button>
+              <button class="tab-btn" data-tab="practice"><i class="fas fa-laptop-code"></i> Thực hành & Demo</button>
+              <button class="tab-btn" data-tab="video"><i class="fas fa-video"></i> Video Prompt</button>
+              <button class="tab-btn" data-tab="slide"><i class="fas fa-images"></i> Slides Prompt</button>
+              <button class="tab-btn" data-tab="exercise"><i class="fas fa-edit"></i> Bài tập</button>
+            </div>
+
+            <!-- Tab: Theory -->
+            <div class="tab-pane active" id="s4_l4_pane_theory">
+              <div class="theory-content">
+                <h3>4.1 Context Design Patterns</h3>
+                <p>Trong thực tế phát triển phần mềm AI, các mẫu thiết kế bối cảnh được áp dụng để nâng cao độ Steerability:</p>
+                <ul>
+                  <li><strong>Layered Context</strong>: Sắp xếp các tầng bối cảnh theo thứ tự ưu tiên (System Instructions ➜ Dynamic Context ➜ History ➜ Query).</li>
+                  <li><strong>Dynamic Context Injection</strong>: Lọc ý định người dùng bằng bộ phân loại nhanh trước, từ đó chỉ chọn nạp các phần tài liệu tương ứng.</li>
+                  <li><strong>Context Routing</strong>: Hướng câu hỏi của người dùng tới các nguồn bối cảnh hoặc cơ sở dữ liệu tối ưu nhất.</li>
+                </ul>
+
+                <h3>4.2 Tối ưu hóa đột phá: Context Caching</h3>
+                <p>Năm 2026, **Context Caching** (Prompt Caching) trở thành tiêu chuẩn trên các cổng API lớn như Anthropic hay Google Gemini. 
+                Khi nạp một tài liệu khổng lồ (System Prompt dài, tài liệu luật, hoặc mã nguồn dự án), máy chủ API sẽ tự lưu trữ bối cảnh này vào Cache. 
+                Ở các câu hỏi tiếp theo, API chỉ đọc trực tiếp từ cache mà không cần gửi lại và tính toán lại từ đầu. 
+                Việc này giúp <strong>giảm từ 50% đến 90% chi phí API</strong> và giảm thời gian phản hồi (latency) xuống từ 2 đến 3 lần.</p>
+
+                <div class="info-card">
+                  <div class="info-card-title"><i class="fas fa-lightbulb"></i> Triết lý Context Engineering 2026</div>
+                  <p>"The best prompt is no prompt — just great context." Khi bối cảnh được thiết kế đủ tốt và đầy đủ thông tin, AI sẽ tự đưa ra câu trả lời chuẩn xác mà không cần các kỹ thuật viết prompt dỗ dành phức tạp.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Diagram & Illustration -->
+            <div class="tab-pane" id="s4_l4_pane_diagram">
+              <div class="diagram-visual-container">
+                <div class="card-container">
+                  <div class="card-title"><i class="fas fa-project-diagram"></i> Sơ đồ tối ưu hóa Context Caching (SVG)</div>
+                  <div class="mermaid-wrapper">
+                    <img class="workflow-img" src="images/workflow_caching.svg" alt="Sơ đồ Context Caching">
+                  </div>
+                </div>
+
+                <div class="card-container">
+                  <div class="card-title"><i class="fas fa-image"></i> Ảnh minh họa API Caching</div>
+                  <div class="illustration-wrapper">
+                    <img class="illustration-img" src="images/production_context_architecture.png" alt="Context Caching Illustration">
+                  </div>
+                  <div class="prompt-drawer">
+                    <div class="prompt-drawer-header">
+                      <span>DALL-E / Imagen Prompt</span>
+                      <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="prompt-drawer-body" style="display: none;">
+                      A futuristic 3D diagram comparing Standard API call vs Context Caching API call. On the left side (Standard), a massive data stream (representing system prompt + documents) is sent repeatedly for each query. On the right side (Caching), the massive data block is anchored in a glowing server slot labeled "CONTEXT CACHE (90% COST SAVED)" in neon green, and only the tiny query nodes are sent. Sleek technology dark mode, 8k.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Practice -->
+            <div class="tab-pane" id="s4_l4_pane_practice">
+              <div class="practice-container">
+                <h3>Thực hành: Thiết lập điểm lưu Cache (Anthropic Style)</h3>
+                <p><strong>Yêu cầu:</strong> Khai báo cấu trúc API nạp tài liệu siêu dài và gán nhãn điểm lưu cache (breakpoint) giúp tối ưu hóa chi phí cho các lượt chat tiếp theo.</p>
+                
+                <div class="code-block-header">
+                  <span class="file-name">api_request_caching.json</span>
+                  <button class="copy-btn" onclick="copyCode(this, 's4_l4_p1')"><i class="far fa-copy"></i> Copy</button>
+                </div>
+                <div class="code-wrapper">
+                  <pre><code class="language-json" id="s4_l4_p1">{
+  "model": "claude-3-5-sonnet-20241022",
+  "messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "[Đây là tài liệu quy trình vận hành bảo mật hệ thống fintech dài 50,000 từ...]",
+          // Gán nhãn breakpoint lưu cache tại đây
+          "cache_control": {"type": "ephemeral"}
+        },
+        {
+          "type": "text",
+          "text": "Hãy tìm kiếm quy định về thời gian tự động đổi mật khẩu định kỳ của kỹ sư hệ thống."
+        }
+      ]
+    }
+  ]
+}</code></pre>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Video Prompt -->
+            <div class="tab-pane" id="s4_l4_pane_video">
+              <div class="prompt-box">
+                <div class="card-title"><i class="fas fa-microphone"></i> NotebookLM Podcast Custom Prompt</div>
+                <div class="prompt-text">Tạo podcast thảo luận NotebookLM đối thoại về "Context Caching giúp giảm 90% chi phí vận hành AI".
+MC Nữ chia sẻ về việc làm dự án AI đọc tài liệu y khoa bị hết tiền tài khoản API quá nhanh.
+MC Nam giới thiệu tính năng Context Caching: Giải thích việc máy chủ API lưu trữ thông tin bối cảnh tĩnh, giúp các lượt truy vấn sau đọc trực tiếp từ cache, tiết kiệm phần lớn ngân sách và phản hồi cực nhanh. Cuộc đối thoại bằng tiếng Việt tự nhiên, trẻ trung và nhiều ví dụ so sánh thú vị.</div>
+              </div>
+            </div>
+
+            <!-- Tab: Slide Prompt -->
+            <div class="tab-pane" id="s4_l4_pane_slide">
+              <div class="prompt-box">
+                <div class="card-title"><i class="fas fa-images"></i> Marp Slide Generator Prompt</div>
+                <div class="prompt-text">Role: Chuyên gia thiết kế Slide đào tạo AI.
+Task: Tạo mã nguồn Markdown Marp thuyết trình về "Context Design Patterns & Caching".
+
+Cấu trúc Slide yêu cầu:
+- Slide 1: Tiêu đề "Các mẫu thiết kế bối cảnh nâng cao và Tối ưu hóa Context Caching".
+- Slide 2: Giới thiệu Layered Context và thứ tự ưu tiên của các tầng bối cảnh.
+- Slide 3: Cơ chế Dynamic Context Injection và Context Routing dựa trên ý định.
+- Slide 4: Khái niệm Context Caching: Cơ chế tiết kiệm 90% chi phí API năm 2026.
+- Slide 5: Ví dụ JSON khai báo điểm lưu Cache breakpoint trên API.
+- Slide 6: Thảo luận bài tập viết tài liệu kiến trúc bối cảnh (Context Architecture Document).
+
+Thiết kế slide: Tông màu tối, hiện đại, bố cục rõ ràng dễ đọc.</div>
+              </div>
+            </div>
+
+            <!-- Tab: Exercise -->
+            <div class="tab-pane" id="s4_l4_pane_exercise">
+              <div class="theory-content">
+                <h3>Bài tập Lesson 4.4</h3>
+                <ol>
+                  <li><strong>Viết Tài Liệu Kiến Trúc Bối Cảnh (Context Architecture Document)</strong>: Hãy chọn một dự án thực tế (ví dụ: AI trợ giúp pháp lý hoặc AI hỗ trợ lập trình cho công ty). Viết tài liệu mô tả chi tiết cách thiết lập bối cảnh cho hệ thống đó, tích hợp: RAG tìm kiếm điều luật, MCP kết nối hệ thống dữ liệu, bộ nhớ lưu lịch sử tư vấn, và thiết lập điểm lưu Context Caching để tiết kiệm chi phí.</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== SESSION 04 QUIZ ==================== -->
+        <section class="lesson-section" id="s4_quiz">
+          <div class="lesson-banner">
+            <div class="lesson-subtitle">TEST YOUR KNOWLEDGE</div>
+            <h2 class="lesson-title">Quiz kiểm tra Session 04</h2>
+          </div>
+
+          <div class="quiz-container">
+            
+            <!-- Question 1 -->
+            <div class="quiz-card" id="q1">
+              <div class="quiz-header">
+                <span class="quiz-num">CÂU HỎI 1 / 5</span>
+              </div>
+              <div class="quiz-qtext">Hiện tượng "Lost in the Middle" mô tả hành vi nào của mô hình ngôn ngữ lớn khi xử lý bối cảnh?</div>
+              <div class="quiz-options">
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>A. Mô hình bị crash cú pháp khi thông tin quan trọng nằm ở dòng thứ 50.</span>
+                </div>
+                <div class="quiz-option" data-correct="true">
+                  <div class="quiz-radio"></div>
+                  <span>B. Mô hình có xu hướng xử lý thông tin kém hiệu quả hơn khi thông tin đó nằm ở giữa cửa sổ ngữ cảnh, so với khi nằm ở đầu hoặc cuối.</span>
+                </div>
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>C. Mô hình tự động cắt tỉa phần văn bản ở giữa để tiết kiệm token.</span>
+                </div>
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>D. Mô hình không thể gọi được các tool nằm ở giữa danh sách định nghĩa.</span>
+                </div>
+              </div>
+              <div class="quiz-explanation">
+                <div class="quiz-explanation-title"><i class="fas fa-info-circle"></i> Giải thích đáp án</div>
+                Lost in the Middle là điểm yếu kinh điển của cơ chế Attention, mô hình chú ý nhiều nhất đến phần đầu (Primacy) và phần cuối (Recency) của chuỗi token đầu vào, khiến thông tin ở giữa dễ bị bỏ qua.
+              </div>
+            </div>
+
+            <!-- Question 2 -->
+            <div class="quiz-card" id="q2">
+              <div class="quiz-header">
+                <span class="quiz-num">CÂU HỎI 2 / 5</span>
+              </div>
+              <div class="quiz-qtext">Trong 4 Failure Modes của bối cảnh theo Andrej Karpathy, lỗi "Context Poisoning" xảy ra khi nào?</div>
+              <div class="quiz-options">
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>A. Hacker tấn công chèn mã độc vào cơ sở dữ liệu Vector.</span>
+                </div>
+                <div class="quiz-option" data-correct="true">
+                  <div class="quiz-radio"></div>
+                  <span>B. Agent tự sinh ra một kết quả sai lệch ở vòng lặp trước, nạp lại kết quả sai đó vào bối cảnh ở vòng lặp sau và tiếp tục lập luận sai dây chuyền.</span>
+                </div>
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>C. Cửa sổ ngữ cảnh bị tràn token dẫn đến mô hình bị mất trí nhớ tạm thời.</span>
+                </div>
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>D. Có quá nhiều tài liệu mâu thuẫn được nạp vào bối cảnh.</span>
+                </div>
+              </div>
+              <div class="quiz-explanation">
+                <div class="quiz-explanation-title"><i class="fas fa-info-circle"></i> Giải thích đáp án</div>
+                Context Poisoning là hiện tượng "tự đầu độc". Trong một chuỗi agent tự động, nếu một bước trung gian đưa ra thông tin ảo tưởng (hallucination) mà không có kiểm chứng, thông tin sai đó sẽ nằm lại trong bối cảnh và dẫn dắt các bước suy luận sau sai hoàn toàn.
+              </div>
+            </div>
+
+            <!-- Question 3 -->
+            <div class="quiz-card" id="q3">
+              <div class="quiz-header">
+                <span class="quiz-num">CÂU HỎI 3 / 5</span>
+              </div>
+              <div class="quiz-qtext">Vai trò chính của Model Context Protocol (MCP) công bố bởi Anthropic là gì?</div>
+              <div class="quiz-options">
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>A. Dịch các prompt từ tiếng Việt sang tiếng Anh tự động.</span>
+                </div>
+                <div class="quiz-option" data-correct="true">
+                  <div class="quiz-radio"></div>
+                  <span>B. Cung cấp chuẩn kết nối mở vạn năng (giống USB-C) giúp các ứng dụng AI dễ dàng khám phá và gọi các công cụ, cơ sở dữ liệu và API bên ngoài.</span>
+                </div>
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>C. Lưu trữ các file vector database tốc độ cao.</span>
+                </div>
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>D. Nén dung lượng token của tài liệu văn bản.</span>
+                </div>
+              </div>
+              <div class="quiz-explanation">
+                <div class="quiz-explanation-title"><i class="fas fa-info-circle"></i> Giải thích đáp án</div>
+                MCP là giao thức chuẩn hóa mở, giúp tách biệt phần xử lý logic của AI (MCP Client) và phần thực thi công cụ bên ngoài (MCP Server). Nhờ đó, lập trình viên chỉ cần viết MCP server một lần là có thể kết nối với mọi mô hình AI tương thích.
+              </div>
+            </div>
+
+            <!-- Question 4 -->
+            <div class="quiz-card" id="q4">
+              <div class="quiz-header">
+                <span class="quiz-num">CÂU HỎI 4 / 5</span>
+              </div>
+              <div class="quiz-qtext">Khi áp dụng Trụ cột thứ 4 "Isolate (Cô lập)" của Context Engineering, chúng ta thực hiện hành động gì?</div>
+              <div class="quiz-options">
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>A. Đóng băng hoàn toàn mô hình AI không cho cập nhật trọng số.</span>
+                </div>
+                <div class="quiz-option" data-correct="true">
+                  <div class="quiz-radio"></div>
+                  <span>B. Chia nhỏ hệ thống thành các sub-agent hoạt động độc lập và chỉ nạp cho mỗi agent phần bối cảnh tối thiểu cần thiết để hoàn thành nhiệm vụ của nó.</span>
+                </div>
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>C. Ngắt kết nối internet của chatbot để đảm bảo an toàn bảo mật.</span>
+                </div>
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>D. Chỉ cho phép mô hình giao tiếp với 1 người dùng duy nhất.</span>
+                </div>
+              </div>
+              <div class="quiz-explanation">
+                <div class="quiz-explanation-title"><i class="fas fa-info-circle"></i> Giải thích đáp án</div>
+                Isolate giúp ngăn chặn hiện tượng "Context Confusion" và "Context Clash". Bằng cách chia nhỏ các tác vụ và cung cấp cho mỗi sub-agent một bối cảnh tối giản biệt lập, chúng ta ngăn chặn được việc AI bị rối loạn hoặc xung đột các chỉ dẫn khác nhau.
+              </div>
+            </div>
+
+            <!-- Question 5 -->
+            <div class="quiz-card" id="q5">
+              <div class="quiz-header">
+                <span class="quiz-num">CÂU HỎI 5 / 5</span>
+              </div>
+              <div class="quiz-qtext">Lợi ích lớn nhất của tính năng Context Caching (Prompt Caching) trên các API thế hệ mới năm 2026 là gì?</div>
+              <div class="quiz-options">
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>A. Giúp mô hình AI trả lời thông minh và sáng tạo hơn.</span>
+                </div>
+                <div class="quiz-option" data-correct="true">
+                  <div class="quiz-radio"></div>
+                  <span>B. Cắt giảm đáng kể chi phí API (lên đến 90%) và giảm thời gian phản hồi (latency) đối với các tác vụ tái sử dụng bối cảnh lớn nhiều lần.</span>
+                </div>
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>C. Loại bỏ hoàn toàn các lỗi Prompt Injection từ người dùng.</span>
+                </div>
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>D. Tự động hóa việc chia nhỏ tài liệu văn bản.</span>
+                </div>
+              </div>
+              <div class="quiz-explanation">
+                <div class="quiz-explanation-title"><i class="fas fa-info-circle"></i> Giải thích đáp án</div>
+                Context Caching cho phép máy chủ của nhà cung cấp API lưu lại trạng thái bối cảnh khổng lồ đã parse. Khi chạy các lượt chat tiếp theo trên cùng tài liệu đó, hệ thống không cần tính toán lại từ đầu, giúp tiết kiệm phần lớn chi phí và tăng tốc độ xử lý cực kỳ nhanh chóng.
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Footer -->
+      <footer class="credits-footer">
+        <p>📚 Session 04 — Context Engineering · Rikkei AI Academy</p>
+        <p>Bản quyền thuộc Rikkei Academy AI Coordinator · Cập nhật 06/2026</p>
+      </footer>
+    </main>
+  </div>
+
+  <!-- Prism.js Code Highlighter -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  
+  <!-- Custom Logic JS -->
+  <script src="script.js"></script>
+</body>
+</html>

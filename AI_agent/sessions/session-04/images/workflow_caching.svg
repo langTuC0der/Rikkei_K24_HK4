@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 450" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0a23" />
+      <stop offset="100%" stop-color="#12123a" />
+    </linearGradient>
+    <linearGradient id="cyan-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#22d3ee" />
+      <stop offset="100%" stop-color="#06b6d4" />
+    </linearGradient>
+    <linearGradient id="green-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+    <linearGradient id="card-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1e4f" />
+      <stop offset="100%" stop-color="#16163f" />
+    </linearGradient>
+    <!-- Glow Filters -->
+    <filter id="glow-green" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="100%" height="100%" rx="16" fill="url(#bg-grad)" stroke="#2d2d6a" stroke-width="2" />
+
+  <!-- Styles -->
+  <style>
+    .title-text { font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 800; fill: #ffffff; text-anchor: middle; }
+    .header-text { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 700; fill: #9ca3bf; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; }
+    .label-text { font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 700; fill: #ffffff; }
+    .desc-text { font-family: 'Inter', sans-serif; font-size: 11px; fill: #9ca3af; }
+    .code-text { font-family: 'JetBrains Mono', monospace; font-size: 10px; fill: #a5b4fc; }
+  </style>
+
+  <text x="500" y="35" class="title-text">Cơ Chế Tiết Kiệm Chi Phí Của Context Caching (Prompt Caching)</text>
+
+  <!-- LEFT PANEL: Standard API Call (Without Caching) -->
+  <rect x="40" y="65" width="430" height="340" rx="12" fill="rgba(255,255,255,0.01)" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="6,4" />
+  <text x="60" y="90" class="header-text" fill="#f87171">1. Gọi API Thông Thường (Không Caching)</text>
+
+  <!-- Query 1 -->
+  <rect x="60" y="110" width="390" height="50" rx="6" fill="url(#card-grad)" stroke="#2d2d6a" stroke-width="1" />
+  <text x="75" y="130" class="label-text">Query 1: Gửi 100K tokens bối cảnh</text>
+  <text x="75" y="148" class="desc-text">• Phí: 100% token đầu vào. Trả lời mất 5.2s.</text>
+
+  <!-- Connection line representing repeat -->
+  <path d="M 250 160 L 250 190" fill="none" stroke="#6b7280" stroke-width="1.5" stroke-dasharray="4,2" />
+
+  <!-- Query 2 -->
+  <rect x="60" y="190" width="390" height="50" rx="6" fill="url(#card-grad)" stroke="#2d2d6a" stroke-width="1" />
+  <text x="75" y="210" class="label-text">Query 2: Gửi lại 100K tokens + Câu hỏi mới</text>
+  <text x="75" y="228" class="desc-text">• Phí: 100% token bối cảnh gửi lại. Trả lời mất 5.5s.</text>
+
+  <!-- Highlight box for standard cost -->
+  <rect x="60" y="270" width="390" height="110" rx="8" fill="rgba(239, 68, 68, 0.05)" stroke="#ef4444" stroke-width="1" />
+  <text x="75" y="295" class="label-text" fill="#f87171">Hạn chế trong sản xuất:</text>
+  <text x="75" y="320" class="desc-text" fill="#fca5a5">• Phải nạp đi nạp lại dữ liệu tĩnh (System prompt, Documents).</text>
+  <text x="75" y="340" class="desc-text" fill="#fca5a5">• Latency tăng cao cho mỗi lượt trò chuyện tiếp theo.</text>
+  <text x="75" y="360" class="desc-text" fill="#fca5a5">• Chi phí API phình to theo cấp số cộng.</text>
+
+
+  <!-- RIGHT PANEL: Caching API Call (With Context Caching) -->
+  <rect x="530" y="65" width="430" height="340" rx="12" fill="rgba(255,255,255,0.01)" stroke="#10b981" stroke-width="1.5" stroke-dasharray="6,4" />
+  <text x="550" y="90" class="header-text" fill="#34d399">2. Có Context Caching (Prompt Caching 2026)</text>
+
+  <!-- Query 1 (Warm cache) -->
+  <rect x="550" y="110" width="390" height="50" rx="6" fill="url(#card-grad)" stroke="#2d2d6a" stroke-width="1" />
+  <text x="565" y="130" class="label-text" fill="#34d399">Query 1: Gửi 100K tokens &amp; Đánh dấu điểm lưu</text>
+  <text x="565" y="148" class="desc-text">• Server tự lưu bối cảnh vào Cache. Latency 5.2s.</text>
+
+  <!-- Connection to Cache Anchor -->
+  <path d="M 740 160 L 740 190" fill="none" stroke="#10b981" stroke-width="1.5" />
+
+  <!-- Cache Server Stack representation -->
+  <rect x="550" y="190" width="390" height="70" rx="8" fill="url(#green-grad)" stroke="#34d399" stroke-width="1.5" filter="url(#glow-green)" />
+  <text x="745" y="218" class="label-text" text-anchor="middle" font-size="13">💾 CONTEXT CACHE (Lưu trên Server)</text>
+  <text x="745" y="240" class="desc-text" text-anchor="middle" fill="#e0f2fe">System Prompt + CSDL Vector được giữ ấm sẵn</text>
+
+  <!-- Query 2 (Read from cache) -->
+  <rect x="550" y="280" width="390" height="100" rx="6" fill="url(#card-grad)" stroke="#10b981" stroke-width="1.5" />
+  <text x="565" y="302" class="label-text">Query 2: Chỉ gửi câu hỏi mới (100 tokens)</text>
+  <text x="565" y="322" class="desc-text">• Đọc bối cảnh trực tiếp từ Cache (Không gửi lại).</text>
+  <text x="565" y="342" class="label-text" fill="#34d399">• PHÍ ĐẦU VÀO GIẢM 90% (Cache read pricing).</text>
+  <text x="565" y="362" class="label-text" fill="#67e8f9">• Latency cực thấp: Chỉ mất 1.2s để phản hồi.</text>
+
+</svg>

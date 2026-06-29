@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 450" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#080c14" />
+      <stop offset="100%" stop-color="#0f0f35" />
+    </linearGradient>
+    <linearGradient id="blue-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+    <linearGradient id="gold-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#eab308" />
+      <stop offset="100%" stop-color="#ca8a04" />
+    </linearGradient>
+    <linearGradient id="purple-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a855f7" />
+      <stop offset="100%" stop-color="#7e22ce" />
+    </linearGradient>
+    <linearGradient id="card-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1e4f" />
+      <stop offset="100%" stop-color="#16163f" />
+    </linearGradient>
+    <!-- Glow Filters -->
+    <filter id="glow-blue" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="100%" height="100%" rx="16" fill="url(#bg-grad)" stroke="#222554" stroke-width="2" />
+
+  <!-- Styles -->
+  <style>
+    .title-text { font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 800; fill: #ffffff; text-anchor: middle; }
+    .label-text { font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 700; fill: #ffffff; text-anchor: middle; }
+    .desc-text { font-family: 'Inter', sans-serif; font-size: 11px; fill: #9ca3af; text-anchor: middle; }
+    .slot-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; fill: #67e8f9; text-anchor: middle; }
+  </style>
+
+  <text x="500" y="35" class="title-text">Hệ Thống Bộ Nhớ Đa Cấp AI Agent (Multi-Tier Memory Architecture)</text>
+
+  <!-- TOP LAYER: Working Memory (Context Window / RAM) -->
+  <rect x="150" y="70" width="700" height="150" rx="12" fill="url(#card-grad)" stroke="#0284c7" stroke-width="2" filter="url(#glow-blue)" />
+  <text x="500" y="98" class="label-text" fill="#38bdf8">BỘ NHỚ LÀM VIỆC TẠI CHỖ (WORKING MEMORY - RAM / CONTEXT WINDOW)</text>
+  
+  <!-- Sub slots inside context window -->
+  <rect x="175" y="120" width="150" height="75" rx="6" fill="#0f172a" stroke="#1e293b" />
+  <text x="250" y="145" class="label-text" font-size="11">System Prompt</text>
+  <text x="250" y="170" class="slot-label">&lt;Core Instructions&gt;</text>
+
+  <rect x="340" y="120" width="150" height="75" rx="6" fill="#0f172a" stroke="#1e293b" />
+  <text x="415" y="145" class="label-text" font-size="11">Tool Definitions</text>
+  <text x="415" y="170" class="slot-label">&lt;Exposed APIs&gt;</text>
+
+  <rect x="505" y="120" width="150" height="75" rx="6" fill="#0f172a" stroke="#1e293b" />
+  <text x="580" y="145" class="label-text" font-size="11">Retrieved Context</text>
+  <text x="580" y="170" class="slot-label">&lt;RAG / Documents&gt;</text>
+
+  <rect x="670" y="120" width="160" height="75" rx="6" fill="#0f172a" stroke="#1e293b" />
+  <text x="750" y="145" class="label-text" font-size="11">Active Chat History</text>
+  <text x="750" y="170" class="slot-label">&lt;Episodic sliding&gt;</text>
+
+
+  <!-- MIDDLE: Channels (Write & Select arrows) -->
+  <!-- Write / Externalize (Left-ish arrow pointing down) -->
+  <path d="M 330 220 L 330 290" fill="none" stroke="#f97316" stroke-width="2.5" />
+  <polygon points="325,280 330,290 335,280" fill="#f97316" />
+  <text x="250" y="255" class="desc-text" fill="#fb923c">Write (Lưu trữ ngoài)</text>
+
+  <!-- Select / Retrieve (Right-ish arrow pointing up) -->
+  <path d="M 670 290 L 670 220" fill="none" stroke="#10b981" stroke-width="2.5" />
+  <polygon points="665,230 670,220 675,230" fill="#10b981" />
+  <text x="750" y="255" class="desc-text" fill="#34d399">Select (Nạp bối cảnh)</text>
+
+
+  <!-- BOTTOM LAYER: Long-Term Memory (LTM / Disk) -->
+  <!-- Semantic Memory (Right bottom) -->
+  <rect x="520" y="295" width="330" height="110" rx="10" fill="url(#purple-grad)" stroke="#c084fc" stroke-width="1.5" />
+  <text x="685" y="325" class="label-text">BỘ NHỚ NGỮ NGHĨA (SEMANTIC MEMORY)</text>
+  <text x="685" y="355" class="desc-text" fill="#f3e8ff">Cơ sở dữ liệu tri thức dài hạn (Vector DB)</text>
+  <text x="685" y="375" class="slot-label" fill="#fbcfe8">&lt;FAQ / Documents / Codebase&gt;</text>
+
+  <!-- Episodic Memory (Left bottom) -->
+  <rect x="150" y="295" width="330" height="110" rx="10" fill="url(#gold-grad)" stroke="#fef08a" stroke-width="1.5" />
+  <text x="315" y="325" class="label-text" fill="#ffffff">BỘ NHỚ SỰ KIỆN (EPISODIC MEMORY)</text>
+  <text x="315" y="355" class="desc-text" fill="#fffbeb">Nhật ký hành động &amp; lỗi của các Agent runs trước</text>
+  <text x="315" y="375" class="slot-label" fill="#fef9c3">&lt;Actions logs / Failures memory&gt;</text>
+
+</svg>
