@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 450" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#080c14" />
+      <stop offset="100%" stop-color="#0f0f35" />
+    </linearGradient>
+    <linearGradient id="cpu-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+    <linearGradient id="ram-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06b6d4" />
+      <stop offset="100%" stop-color="#0891b2" />
+    </linearGradient>
+    <linearGradient id="os-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ec4899" />
+      <stop offset="100%" stop-color="#be185d" />
+    </linearGradient>
+    <filter id="glow-cpu" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="100%" height="100%" rx="16" fill="url(#bg-grad)" stroke="#222554" stroke-width="2" />
+
+  <style>
+    .title-text { font-family: 'Inter', sans-serif; font-size: 20px; font-weight: 800; fill: #ffffff; text-anchor: middle; }
+    .label-text { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700; fill: #ffffff; text-anchor: middle; }
+    .desc-text { font-family: 'Inter', sans-serif; font-size: 11px; fill: #9ca3af; text-anchor: middle; }
+    .bold-text { font-weight: 800; }
+  </style>
+
+  <text x="500" y="45" class="title-text">Mô Hình Tư Duy Karpathy: LLM Kiến Trúc Máy Tính (LLM OS)</text>
+
+  <!-- Component 1: OS (AI Engineer) -->
+  <rect x="80" y="160" width="200" height="100" rx="12" fill="url(#os-grad)" stroke="#f472b6" stroke-width="2" />
+  <text x="180" y="200" class="label-text">HỆ ĐIỀU HÀNH (OS)</text>
+  <text x="180" y="225" class="desc-text" fill="#fdf2f8">Kỹ sư AI / Lập trình viên</text>
+  <text x="180" y="242" class="desc-text" fill="#fbcfe8">Quản lý &amp; Điều phối luồng</text>
+
+  <!-- Arrow: OS -> RAM -->
+  <path d="M 280 210 L 370 210" fill="none" stroke="#f472b6" stroke-width="3" />
+  <polygon points="360,205 370,210 360,215" fill="#f472b6" />
+  <text x="325" y="195" class="desc-text" fill="#f472b6" style="font-size: 9px; font-weight: 700;">NẠP / GIẢI PHÓNG</text>
+
+  <!-- Component 2: RAM (Context Window) -->
+  <rect x="380" y="120" width="240" height="180" rx="12" fill="url(#ram-grad)" stroke="#22d3ee" stroke-width="2" />
+  <text x="500" y="150" class="label-text">BỘ NHỚ RAM (Context Window)</text>
+  <!-- RAM Slots -->
+  <rect x="400" y="170" width="200" height="25" rx="4" fill="#0c4a6e" stroke="#0284c7" stroke-width="1" />
+  <text x="500" y="187" class="desc-text" fill="#e0f2fe" style="font-size: 10px; font-weight: 700;">System/Task Prompts</text>
+
+  <rect x="400" y="205" width="200" height="25" rx="4" fill="#0c4a6e" stroke="#0284c7" stroke-width="1" />
+  <text x="500" y="222" class="desc-text" fill="#e0f2fe" style="font-size: 10px; font-weight: 700;">Retrieved Documents (RAG Context)</text>
+
+  <rect x="400" y="240" width="200" height="25" rx="4" fill="#0c4a6e" stroke="#0284c7" stroke-width="1" />
+  <text x="500" y="257" class="desc-text" fill="#e0f2fe" style="font-size: 10px; font-weight: 700;">Tool Schemas &amp; Chat History</text>
+
+  <!-- Arrow: RAM -> CPU -->
+  <path d="M 620 210 L 710 210" fill="none" stroke="#22d3ee" stroke-width="3" />
+  <polygon points="700,205 710,210 700,215" fill="#22d3ee" />
+  <text x="665" y="195" class="desc-text" fill="#22d3ee" style="font-size: 9px; font-weight: 700;">XỬ LÝ NGỮ NGHĨA</text>
+
+  <!-- Component 3: CPU (LLM Core) -->
+  <rect x="720" y="160" width="200" height="100" rx="12" fill="url(#cpu-grad)" stroke="#60a5fa" stroke-width="2" filter="url(#glow-cpu)" />
+  <text x="820" y="200" class="label-text">CHIP CPU (LLM Core)</text>
+  <text x="820" y="225" class="desc-text" fill="#eff6ff">Bộ vi xử lý tính toán cực mạnh</text>
+  <text x="820" y="242" class="desc-text" fill="#bfdbfe">Không có ổ cứng lưu trữ tự thân</text>
+</svg>

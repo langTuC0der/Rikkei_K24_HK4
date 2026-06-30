@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 450" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#080c14" />
+      <stop offset="100%" stop-color="#0f0f35" />
+    </linearGradient>
+    <linearGradient id="blue-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+    <linearGradient id="cyan-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06b6d4" />
+      <stop offset="100%" stop-color="#0891b2" />
+    </linearGradient>
+    <linearGradient id="purple-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a855f7" />
+      <stop offset="100%" stop-color="#7e22ce" />
+    </linearGradient>
+    <linearGradient id="emerald-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+    <filter id="glow-purple" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="100%" height="100%" rx="16" fill="url(#bg-grad)" stroke="#222554" stroke-width="2" />
+
+  <style>
+    .title-text { font-family: 'Inter', sans-serif; font-size: 20px; font-weight: 800; fill: #ffffff; text-anchor: middle; }
+    .label-text { font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 700; fill: #ffffff; text-anchor: middle; }
+    .desc-text { font-family: 'Inter', sans-serif; font-size: 10px; fill: #9ca3af; text-anchor: middle; }
+    .status-text { font-family: 'JetBrains Mono', monospace; font-size: 10px; fill: #a78bfa; text-anchor: middle; font-weight: 700; }
+  </style>
+
+  <text x="500" y="45" class="title-text">Kiến Trúc Hoạt Động Của Agentic Workflow Tự Chủ (2026)</text>
+
+  <!-- Step 1: User Intent -->
+  <rect x="40" y="160" width="150" height="90" rx="10" fill="url(#blue-grad)" stroke="#38bdf8" stroke-width="1.5" />
+  <text x="115" y="195" class="label-text">1. USER INTENT</text>
+  <text x="115" y="215" class="desc-text" fill="#e0f2fe">Mục tiêu từ người dùng</text>
+  <text x="115" y="230" class="desc-text" fill="#93c5fd">"Tạo báo cáo tháng..."</text>
+
+  <!-- Arrow: 1 -> 2 -->
+  <path d="M 190 205 L 240 205" fill="none" stroke="#38bdf8" stroke-width="2" />
+  <polygon points="230,200 240,205 230,210" fill="#38bdf8" />
+
+  <!-- Step 2: Agent Router -->
+  <rect x="240" y="160" width="160" height="90" rx="10" fill="url(#purple-grad)" stroke="#c084fc" stroke-width="1.5" filter="url(#glow-purple)" />
+  <text x="320" y="195" class="label-text">2. AGENT ROUTER</text>
+  <text x="320" y="215" class="desc-text" fill="#f3e8ff">Điều phối trung tâm</text>
+  <text x="320" y="230" class="desc-text" fill="#c084fc">Phân rã nhiệm vụ lớn</text>
+
+  <!-- Arrow: 2 -> 3 -->
+  <path d="M 400 205 L 450 205" fill="none" stroke="#c084fc" stroke-width="2" />
+  <polygon points="440,200 450,205 440,210" fill="#c084fc" />
+
+  <!-- Step 3: MCP Tool Calls -->
+  <rect x="450" y="160" width="160" height="90" rx="10" fill="url(#cyan-grad)" stroke="#22d3ee" stroke-width="1.5" />
+  <text x="530" y="195" class="label-text">3. TOOL CALLS (MCP)</text>
+  <text x="530" y="215" class="desc-text" fill="#ecfeff">Gọi công cụ qua cổng MCP</text>
+  <text x="530" y="230" class="desc-text" fill="#67e8f9">Đọc database, viết file</text>
+
+  <!-- Arrow: 3 -> 4 -->
+  <path d="M 610 205 L 660 205" fill="none" stroke="#22d3ee" stroke-width="2" />
+  <polygon points="650,200 660,205 650,210" fill="#22d3ee" />
+
+  <!-- Step 4: Background Agent -->
+  <rect x="660" y="160" width="160" height="90" rx="10" fill="url(#blue-grad)" stroke="#38bdf8" stroke-width="1.5" />
+  <text x="740" y="195" class="label-text">4. BACKGROUND RUN</text>
+  <text x="740" y="215" class="desc-text" fill="#e0f2fe">Chạy ngầm bất đồng bộ</text>
+  <text x="740" y="230" class="desc-text" fill="#93c5fd">Tự kiểm tra lỗi &amp; chạy lại</text>
+
+  <!-- Arrow: 4 -> 5 -->
+  <path d="M 820 205 L 870 205" fill="none" stroke="#38bdf8" stroke-width="2" />
+  <polygon points="860,200 870,205 860,210" fill="#38bdf8" />
+
+  <!-- Step 5: Webhook Notification -->
+  <rect x="870" y="160" width="90" height="90" rx="10" fill="url(#emerald-grad)" stroke="#34d399" stroke-width="1.5" />
+  <text x="915" y="195" class="label-text">5. WEBHOOK</text>
+  <text x="915" y="215" class="desc-text" fill="#ecfdf5">Thông báo</text>
+  <text x="915" y="230" class="desc-text" fill="#a7f3d0">Đã xong!</text>
+
+  <!-- Loop: Background checking and iterating -->
+  <path d="M 740 250 Q 530 350 320 250" fill="none" stroke="#f43f5e" stroke-width="2" stroke-dasharray="4,4" />
+  <polygon points="323,258 320,250 329,252" fill="#f43f5e" />
+  <text x="530" y="320" class="status-text" fill="#f43f5e">VÒNG LẶP SỬA SAI &amp; TỰ HỌC (REFLEXION LOOP)</text>
+</svg>

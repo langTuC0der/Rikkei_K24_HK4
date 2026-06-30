@@ -1,2119 +1,788 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Session 01 — Nền tảng & Bối cảnh AI 2026 | Prompt, Context & Harness Engineering</title>
-    <meta name="description" content="Học liệu chi tiết Session 01: Hiểu cách LLM hoạt động, bối cảnh AI 2026, 3 trụ cột Prompt-Context-Harness, Mental Model Karpathy.">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        /* ====================== DESIGN SYSTEM ====================== */
-        :root {
-            --bg-primary: #0a0a1a;
-            --bg-secondary: #111128;
-            --bg-card: #161635;
-            --bg-card-hover: #1c1c45;
-            --bg-code: #1e1e3f;
-            --bg-highlight: rgba(99, 102, 241, 0.08);
-
-            --text-primary: #e8e8f0;
-            --text-secondary: #9ca3bf;
-            --text-muted: #6b7294;
-            --text-accent: #818cf8;
-
-            --accent-primary: #818cf8;
-            --accent-secondary: #6366f1;
-            --accent-gradient: linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa);
-            --accent-glow: rgba(99, 102, 241, 0.3);
-
-            --cyan: #22d3ee;
-            --cyan-glow: rgba(34, 211, 238, 0.2);
-            --magenta: #f472b6;
-            --magenta-glow: rgba(244, 114, 182, 0.2);
-            --gold: #fbbf24;
-            --gold-glow: rgba(251, 191, 36, 0.15);
-            --emerald: #34d399;
-            --emerald-glow: rgba(52, 211, 153, 0.15);
-            --red-soft: #f87171;
-            --orange-soft: #fb923c;
-
-            --border-subtle: rgba(99, 102, 241, 0.12);
-            --border-medium: rgba(99, 102, 241, 0.25);
-
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            --radius-xl: 24px;
-
-            --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
-            --shadow-glow: 0 0 30px var(--accent-glow);
-
-            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-
-            --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-medium: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-slow: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* ====================== RESET & BASE ====================== */
-        *, *::before, *::after {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html {
-            scroll-behavior: smooth;
-            font-size: 16px;
-        }
-
-        body {
-            font-family: var(--font-body);
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            line-height: 1.7;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        ::selection {
-            background: var(--accent-secondary);
-            color: white;
-        }
-
-        /* ====================== BACKGROUND EFFECTS ====================== */
-        .bg-grid {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-image:
-                linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
-            background-size: 60px 60px;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .bg-glow-1 {
-            position: fixed;
-            top: -200px; right: -200px;
-            width: 600px; height: 600px;
-            background: radial-gradient(circle, rgba(99, 102, 241, 0.08), transparent 70%);
-            pointer-events: none;
-            z-index: 0;
-            animation: float-glow 15s ease-in-out infinite;
-        }
-
-        .bg-glow-2 {
-            position: fixed;
-            bottom: -200px; left: -200px;
-            width: 500px; height: 500px;
-            background: radial-gradient(circle, rgba(34, 211, 238, 0.06), transparent 70%);
-            pointer-events: none;
-            z-index: 0;
-            animation: float-glow 20s ease-in-out infinite reverse;
-        }
-
-        @keyframes float-glow {
-            0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(40px, 30px); }
-        }
-
-        /* ====================== NAVIGATION ====================== */
-        .nav {
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            z-index: 1000;
-            background: rgba(10, 10, 26, 0.85);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border-subtle);
-            transition: var(--transition-fast);
-        }
-
-        .nav-inner {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            height: 64px;
-        }
-
-        .nav-brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 700;
-            font-size: 0.95rem;
-            color: var(--text-primary);
-            text-decoration: none;
-        }
-
-        .nav-brand .badge {
-            background: var(--accent-gradient);
-            color: white;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 4px;
-            list-style: none;
-        }
-
-        .nav-links a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            padding: 8px 14px;
-            border-radius: var(--radius-sm);
-            font-size: 0.85rem;
-            font-weight: 500;
-            transition: var(--transition-fast);
-        }
-
-        .nav-links a:hover, .nav-links a.active {
-            color: var(--accent-primary);
-            background: var(--bg-highlight);
-        }
-
-        .progress-bar {
-            position: fixed;
-            top: 64px; left: 0;
-            height: 3px;
-            background: var(--accent-gradient);
-            z-index: 999;
-            transition: width 0.1s linear;
-            border-radius: 0 3px 3px 0;
-            box-shadow: 0 0 10px var(--accent-glow);
-        }
-
-        /* ====================== HERO SECTION ====================== */
-        .hero {
-            position: relative;
-            z-index: 1;
-            padding: 140px 2rem 80px;
-            text-align: center;
-            overflow: hidden;
-        }
-
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 800px; height: 800px;
-            background: radial-gradient(circle, rgba(99, 102, 241, 0.1), transparent 60%);
-            pointer-events: none;
-        }
-
-        .hero-label {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(99, 102, 241, 0.1);
-            border: 1px solid var(--border-medium);
-            padding: 6px 18px;
-            border-radius: 30px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--accent-primary);
-            margin-bottom: 24px;
-            animation: fadeInUp 0.6s ease;
-        }
-
-        .hero-label .dot {
-            width: 8px; height: 8px;
-            background: var(--emerald);
-            border-radius: 50%;
-            animation: pulse-dot 2s ease infinite;
-        }
-
-        @keyframes pulse-dot {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.3); }
-        }
-
-        .hero h1 {
-            font-size: clamp(2.2rem, 5vw, 3.8rem);
-            font-weight: 900;
-            line-height: 1.15;
-            margin-bottom: 16px;
-            letter-spacing: -1.5px;
-            animation: fadeInUp 0.6s ease 0.1s backwards;
-        }
-
-        .hero h1 .gradient-text {
-            background: var(--accent-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .hero .subtitle {
-            font-size: clamp(1rem, 2vw, 1.25rem);
-            color: var(--text-secondary);
-            max-width: 700px;
-            margin: 0 auto 32px;
-            line-height: 1.6;
-            animation: fadeInUp 0.6s ease 0.2s backwards;
-        }
-
-        .hero-stats {
-            display: flex;
-            justify-content: center;
-            gap: 40px;
-            flex-wrap: wrap;
-            animation: fadeInUp 0.6s ease 0.3s backwards;
-        }
-
-        .hero-stat {
-            text-align: center;
-        }
-
-        .hero-stat .number {
-            font-size: 2rem;
-            font-weight: 800;
-            background: var(--accent-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .hero-stat .label {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* ====================== MAIN CONTENT ====================== */
-        .main {
-            position: relative;
-            z-index: 1;
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 0 2rem 80px;
-        }
-
-        /* ====================== LESSON SECTIONS ====================== */
-        .lesson {
-            margin-bottom: 80px;
-            animation: fadeInUp 0.5s ease backwards;
-        }
-
-        .lesson-header {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 32px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--border-subtle);
-        }
-
-        .lesson-number {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 56px; height: 56px;
-            background: var(--accent-gradient);
-            border-radius: var(--radius-md);
-            font-size: 1.1rem;
-            font-weight: 800;
-            color: white;
-            flex-shrink: 0;
-            box-shadow: var(--shadow-glow);
-        }
-
-        .lesson-title-group h2 {
-            font-size: 1.6rem;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            line-height: 1.2;
-        }
-
-        .lesson-title-group .lesson-meta {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-top: 4px;
-            display: flex;
-            gap: 16px;
-        }
-
-        .lesson-title-group .lesson-meta span {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        /* ====================== CONTENT BLOCKS ====================== */
-        .block {
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            padding: 32px;
-            margin-bottom: 24px;
-            transition: var(--transition-medium);
-        }
-
-        .block:hover {
-            border-color: var(--border-medium);
-            box-shadow: var(--shadow-card);
-            transform: translateY(-2px);
-        }
-
-        .block-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .block-icon {
-            font-size: 1.4rem;
-        }
-
-        .block-label {
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            padding: 4px 12px;
-            border-radius: 20px;
-        }
-
-        .block-label.theory {
-            background: rgba(99, 102, 241, 0.15);
-            color: var(--accent-primary);
-        }
-
-        .block-label.practice {
-            background: rgba(34, 211, 238, 0.15);
-            color: var(--cyan);
-        }
-
-        .block-label.exercise {
-            background: rgba(251, 191, 36, 0.15);
-            color: var(--gold);
-        }
-
-        .block-label.insight {
-            background: rgba(52, 211, 153, 0.15);
-            color: var(--emerald);
-        }
-
-        .block-label.warning {
-            background: rgba(248, 113, 113, 0.15);
-            color: var(--red-soft);
-        }
-
-        .block-label.new {
-            background: rgba(244, 114, 182, 0.15);
-            color: var(--magenta);
-        }
-
-        .block h3 {
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin-bottom: 16px;
-        }
-
-        .block p, .block li {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-            line-height: 1.8;
-        }
-
-        .block ul, .block ol {
-            padding-left: 20px;
-            margin: 12px 0;
-        }
-
-        .block li {
-            margin-bottom: 8px;
-        }
-
-        .block li::marker {
-            color: var(--accent-primary);
-        }
-
-        .block strong {
-            color: var(--text-primary);
-            font-weight: 600;
-        }
-
-        /* ====================== IMAGES ====================== */
-        .image-showcase {
-            margin: 24px 0;
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-            border: 1px solid var(--border-subtle);
-            background: var(--bg-secondary);
-            transition: var(--transition-medium);
-        }
-
-        .image-showcase:hover {
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 30px var(--accent-glow);
-        }
-
-        .image-showcase img {
-            width: 100%;
-            display: block;
-            transition: var(--transition-medium);
-        }
-
-        .image-showcase:hover img {
-            transform: scale(1.02);
-        }
-
-        .image-caption {
-            padding: 14px 20px;
-            font-size: 0.82rem;
-            color: var(--text-muted);
-            text-align: center;
-            font-style: italic;
-            border-top: 1px solid var(--border-subtle);
-            background: rgba(0, 0, 0, 0.2);
-        }
-
-        /* ====================== TABLES ====================== */
-        .table-wrapper {
-            overflow-x: auto;
-            margin: 20px 0;
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border-subtle);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.88rem;
-        }
-
-        thead {
-            background: rgba(99, 102, 241, 0.1);
-        }
-
-        th {
-            text-align: left;
-            padding: 14px 18px;
-            font-weight: 700;
-            font-size: 0.78rem;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: var(--accent-primary);
-            border-bottom: 1px solid var(--border-medium);
-            white-space: nowrap;
-        }
-
-        td {
-            padding: 12px 18px;
-            color: var(--text-secondary);
-            border-bottom: 1px solid var(--border-subtle);
-            vertical-align: top;
-        }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        tr:hover td {
-            background: rgba(99, 102, 241, 0.04);
-        }
-
-        td strong {
-            color: var(--text-primary);
-        }
-
-        /* ====================== CODE BLOCKS ====================== */
-        .code-block {
-            background: var(--bg-code);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-md);
-            margin: 16px 0;
-            overflow: hidden;
-        }
-
-        .code-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 16px;
-            background: rgba(0, 0, 0, 0.3);
-            border-bottom: 1px solid var(--border-subtle);
-        }
-
-        .code-lang {
-            font-size: 0.72rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .code-dots {
-            display: flex;
-            gap: 6px;
-        }
-
-        .code-dots span {
-            width: 10px; height: 10px;
-            border-radius: 50%;
-        }
-
-        .code-dots span:nth-child(1) { background: #ff5f56; }
-        .code-dots span:nth-child(2) { background: #ffbd2e; }
-        .code-dots span:nth-child(3) { background: #27c93f; }
-
-        .code-block pre {
-            padding: 20px;
-            overflow-x: auto;
-            font-family: var(--font-mono);
-            font-size: 0.82rem;
-            line-height: 1.7;
-            color: #e0e0f0;
-        }
-
-        .code-block .comment { color: #6b7294; }
-        .code-block .keyword { color: #c792ea; }
-        .code-block .string { color: #c3e88d; }
-        .code-block .function { color: #82aaff; }
-        .code-block .variable { color: #f78c6c; }
-        .code-block .type { color: #ffcb6b; }
-        .code-block .highlight-line { 
-            background: rgba(99, 102, 241, 0.1); 
-            display: block;
-            margin: 0 -20px;
-            padding: 0 20px;
-            border-left: 3px solid var(--accent-primary);
-        }
-
-        /* ====================== CALLOUTS ====================== */
-        .callout {
-            border-radius: var(--radius-md);
-            padding: 20px 24px;
-            margin: 20px 0;
-            display: flex;
-            gap: 14px;
-            align-items: flex-start;
-        }
-
-        .callout-icon {
-            font-size: 1.3rem;
-            flex-shrink: 0;
-            margin-top: 2px;
-        }
-
-        .callout-content {
-            flex: 1;
-        }
-
-        .callout-content strong {
-            display: block;
-            margin-bottom: 4px;
-            font-size: 0.9rem;
-        }
-
-        .callout-content p {
-            font-size: 0.88rem;
-            line-height: 1.6;
-        }
-
-        .callout.insight {
-            background: rgba(52, 211, 153, 0.08);
-            border: 1px solid rgba(52, 211, 153, 0.2);
-        }
-        .callout.insight strong { color: var(--emerald); }
-
-        .callout.warning {
-            background: rgba(248, 113, 113, 0.08);
-            border: 1px solid rgba(248, 113, 113, 0.2);
-        }
-        .callout.warning strong { color: var(--red-soft); }
-
-        .callout.tip {
-            background: rgba(34, 211, 238, 0.08);
-            border: 1px solid rgba(34, 211, 238, 0.2);
-        }
-        .callout.tip strong { color: var(--cyan); }
-
-        .callout.new-tag {
-            background: rgba(244, 114, 182, 0.08);
-            border: 1px solid rgba(244, 114, 182, 0.2);
-        }
-        .callout.new-tag strong { color: var(--magenta); }
-
-        /* ====================== DIAGRAM BOX ====================== */
-        .diagram-box {
-            background: var(--bg-code);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-md);
-            padding: 24px;
-            margin: 20px 0;
-            font-family: var(--font-mono);
-            font-size: 0.78rem;
-            line-height: 1.6;
-            color: var(--text-secondary);
-            overflow-x: auto;
-            white-space: pre;
-        }
-
-        .diagram-box .label { color: var(--accent-primary); font-weight: 600; }
-        .diagram-box .highlight { color: var(--cyan); }
-        .diagram-box .accent { color: var(--magenta); }
-        .diagram-box .gold { color: var(--gold); }
-
-        /* ====================== STAR RATING ====================== */
-        .stars { color: var(--gold); letter-spacing: 1px; }
-
-        /* ====================== EXERCISE ITEMS ====================== */
-        .exercise-item {
-            background: rgba(251, 191, 36, 0.05);
-            border: 1px solid rgba(251, 191, 36, 0.15);
-            border-radius: var(--radius-sm);
-            padding: 16px 20px;
-            margin: 10px 0;
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            transition: var(--transition-fast);
-        }
-
-        .exercise-item:hover {
-            background: rgba(251, 191, 36, 0.08);
-            border-color: rgba(251, 191, 36, 0.3);
-        }
-
-        .exercise-num {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 28px; height: 28px;
-            background: rgba(251, 191, 36, 0.15);
-            border-radius: 50%;
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: var(--gold);
-        }
-
-        .exercise-text {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            line-height: 1.6;
-        }
-
-        /* ====================== SEPARATOR ====================== */
-        .separator {
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--border-medium), transparent);
-            margin: 60px 0;
-        }
-
-        /* ====================== QUIZ SECTION ====================== */
-        .quiz-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            padding: 28px;
-            margin: 16px 0;
-        }
-
-        .quiz-question {
-            font-weight: 600;
-            font-size: 0.95rem;
-            margin-bottom: 16px;
-            color: var(--text-primary);
-        }
-
-        .quiz-options {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .quiz-option {
-            background: rgba(99, 102, 241, 0.05);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-sm);
-            padding: 12px 18px;
-            cursor: pointer;
-            font-size: 0.88rem;
-            color: var(--text-secondary);
-            transition: var(--transition-fast);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .quiz-option:hover {
-            background: rgba(99, 102, 241, 0.1);
-            border-color: var(--accent-primary);
-            color: var(--text-primary);
-        }
-
-        .quiz-option.correct {
-            background: rgba(52, 211, 153, 0.1);
-            border-color: var(--emerald);
-            color: var(--emerald);
-        }
-
-        .quiz-option.wrong {
-            background: rgba(248, 113, 113, 0.1);
-            border-color: var(--red-soft);
-            color: var(--red-soft);
-        }
-
-        .quiz-option .radio {
-            width: 18px; height: 18px;
-            border: 2px solid var(--border-medium);
-            border-radius: 50%;
-            flex-shrink: 0;
-            transition: var(--transition-fast);
-        }
-
-        .quiz-option.correct .radio {
-            border-color: var(--emerald);
-            background: var(--emerald);
-            box-shadow: inset 0 0 0 3px var(--bg-card);
-        }
-
-        .quiz-option.wrong .radio {
-            border-color: var(--red-soft);
-            background: var(--red-soft);
-            box-shadow: inset 0 0 0 3px var(--bg-card);
-        }
-
-        .quiz-feedback {
-            margin-top: 12px;
-            padding: 12px 16px;
-            border-radius: var(--radius-sm);
-            font-size: 0.85rem;
-            display: none;
-        }
-
-        .quiz-feedback.show { display: block; }
-
-        .quiz-feedback.correct-feedback {
-            background: rgba(52, 211, 153, 0.1);
-            border: 1px solid rgba(52, 211, 153, 0.2);
-            color: var(--emerald);
-        }
-
-        .quiz-feedback.wrong-feedback {
-            background: rgba(248, 113, 113, 0.1);
-            border: 1px solid rgba(248, 113, 113, 0.2);
-            color: var(--red-soft);
-        }
-
-        /* ====================== FOOTER ====================== */
-        .footer {
-            position: relative;
-            z-index: 1;
-            text-align: center;
-            padding: 40px 2rem;
-            border-top: 1px solid var(--border-subtle);
-            color: var(--text-muted);
-            font-size: 0.8rem;
-        }
-
-        .footer a {
-            color: var(--accent-primary);
-            text-decoration: none;
-        }
-
-        .footer .nav-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 16px;
-            margin-bottom: 20px;
-        }
-
-        .footer .nav-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 24px;
-            border-radius: var(--radius-sm);
-            font-weight: 600;
-            font-size: 0.85rem;
-            text-decoration: none;
-            transition: var(--transition-fast);
-        }
-
-        .footer .nav-btn.prev {
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            color: var(--text-secondary);
-        }
-
-        .footer .nav-btn.next {
-            background: var(--accent-gradient);
-            color: white;
-            border: none;
-        }
-
-        .footer .nav-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-card);
-        }
-
-        /* ====================== SCROLL ANIMATIONS ====================== */
-        .animate-on-scroll {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.6s ease, transform 0.6s ease;
-        }
-
-        .animate-on-scroll.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* ====================== SCROLL TO TOP ====================== */
-        .scroll-top {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 46px; height: 46px;
-            background: var(--accent-gradient);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 999;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: var(--transition-fast);
-            box-shadow: var(--shadow-glow);
-        }
-
-        .scroll-top.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .scroll-top:hover {
-            transform: translateY(-3px) scale(1.05);
-        }
-
-        /* ====================== TOC SIDEBAR ====================== */
-        .toc-toggle {
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            z-index: 998;
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            color: var(--text-secondary);
-            width: 40px; height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            transition: var(--transition-fast);
-        }
-
-        .toc-toggle:hover {
-            background: var(--accent-secondary);
-            color: white;
-        }
-
-        .toc-panel {
-            position: fixed;
-            top: 0; right: -360px;
-            width: 340px;
-            height: 100vh;
-            background: rgba(16, 16, 40, 0.98);
-            backdrop-filter: blur(20px);
-            border-left: 1px solid var(--border-subtle);
-            z-index: 997;
-            padding: 80px 24px 40px;
-            overflow-y: auto;
-            transition: right 0.3s ease;
-        }
-
-        .toc-panel.open {
-            right: 0;
-        }
-
-        .toc-panel h3 {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: var(--text-muted);
-            margin-bottom: 16px;
-        }
-
-        .toc-panel a {
-            display: block;
-            padding: 8px 14px;
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 0.85rem;
-            border-radius: var(--radius-sm);
-            margin-bottom: 2px;
-            transition: var(--transition-fast);
-            border-left: 2px solid transparent;
-        }
-
-        .toc-panel a:hover,
-        .toc-panel a.active {
-            color: var(--accent-primary);
-            background: var(--bg-highlight);
-            border-left-color: var(--accent-primary);
-        }
-
-        .toc-panel .sub-link {
-            padding-left: 28px;
-            font-size: 0.8rem;
-        }
-
-        /* ====================== RESPONSIVE ====================== */
-        @media (max-width: 768px) {
-            .nav-links { display: none; }
-            .hero { padding: 120px 1.5rem 60px; }
-            .hero-stats { gap: 24px; }
-            .main { padding: 0 1.25rem 60px; }
-            .block { padding: 24px; }
-            .lesson-header { flex-direction: column; align-items: flex-start; }
-            .toc-toggle { display: none; }
-            th, td { padding: 10px 12px; font-size: 0.82rem; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session 01 — Nền tảng & Bối cảnh AI 2026 | Rikkei AI Academy</title>
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Prism Code Highlighting Theme -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+  
+  <!-- Mermaid.js -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'dark',
+      securityLevel: 'loose',
+      themeVariables: {
+        background: '#090d16',
+        primaryColor: '#1e293b',
+        primaryTextColor: '#f3f4f6',
+        lineColor: '#8b5cf6',
+        textColor: '#f3f4f6'
+      }
+    });
+  </script>
 </head>
 <body>
-
-<!-- Background Effects -->
-<div class="bg-grid"></div>
-<div class="bg-glow-1"></div>
-<div class="bg-glow-2"></div>
-
-<!-- Progress Bar -->
-<div class="progress-bar" id="progressBar"></div>
-
-<!-- Navigation -->
-<nav class="nav">
-    <div class="nav-inner">
-        <a class="nav-brand" href="#">
-            📚 PCH Engineering
-            <span class="badge">SESSION 01</span>
-        </a>
-        <ul class="nav-links">
-            <li><a href="#lesson-1-1" class="active">1.1</a></li>
-            <li><a href="#lesson-1-2">1.2</a></li>
-            <li><a href="#lesson-1-3">1.3</a></li>
-            <li><a href="#lesson-1-4">1.4</a></li>
-            <li><a href="#quiz">Quiz</a></li>
-        </ul>
-    </div>
-</nav>
-
-<!-- TOC Toggle -->
-<button class="toc-toggle" id="tocToggle" title="Mục lục">☰</button>
-
-<!-- TOC Panel -->
-<div class="toc-panel" id="tocPanel">
-    <h3>📑 Mục lục Session 01</h3>
-    <a href="#lesson-1-1">Lesson 1.1 — LLM hoạt động thế nào?</a>
-    <a href="#models-2026" class="sub-link">Frontier Models 06/2026</a>
-    <a href="#lesson-1-2">Lesson 1.2 — 3 Trụ cột: Prompt → Context → Harness</a>
-    <a href="#paradigm-shift" class="sub-link">Paradigm Shift 2025-2026</a>
-    <a href="#lesson-1-3">Lesson 1.3 — Mental Model: LLM = CPU</a>
-    <a href="#karpathy-model" class="sub-link">Mô hình Karpathy</a>
-    <a href="#lesson-1-4">Lesson 1.4 — Taxonomy & Agentic Workflows</a>
-    <a href="#agentic" class="sub-link">Agentic Workflows 2026</a>
-    <a href="#quiz">🧪 Quiz kiểm tra</a>
-</div>
-
-<!-- Hero Section -->
-<header class="hero">
-    <div class="hero-label">
-        <span class="dot"></span>
-        Cập nhật tháng 06/2026
-    </div>
-    <h1>
-        Session 01: <br>
-        <span class="gradient-text">Nền tảng & Bối cảnh AI 2026</span>
-    </h1>
-    <p class="subtitle">
-        Hiểu cách LLM xử lý ngôn ngữ, nắm bắt landscape AI hiện tại, phân biệt 3 trụ cột 
-        <strong>Prompt – Context – Harness</strong>, và hiểu tại sao ngành đang dịch chuyển 
-        từ Prompt Engineering sang Context Engineering.
-    </p>
-    <div class="hero-stats">
-        <div class="hero-stat">
-            <div class="number">4</div>
-            <div class="label">Lessons</div>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">
+          <i class="fas fa-cubes"></i>
         </div>
-        <div class="hero-stat">
-            <div class="number">3-4h</div>
-            <div class="label">Thời lượng</div>
-        </div>
-        <div class="hero-stat">
-            <div class="number">12</div>
-            <div class="label">Bài tập</div>
-        </div>
-        <div class="hero-stat">
-            <div class="number">6</div>
-            <div class="label">Hình minh họa</div>
-        </div>
-    </div>
-</header>
+        <div class="brand-text">Rikkei AI Academy</div>
+      </div>
 
-<!-- Main Content -->
-<main class="main">
+      <a href="../../index.html" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+        <span>Quay lại cổng chính</span>
+      </a>
+      
+      <!-- Navigation for Session 01 -->
+      <nav class="lesson-navigation" id="s1-nav">
+        <div class="nav-label">Bài học Session 01</div>
+        <button class="lesson-nav-btn active" data-lesson="s1_l1">
+          <i class="fas fa-brain"></i>
+          <span>Lesson 01 — LLM hoạt động thế nào?</span>
+        </button>
+        <button class="lesson-nav-btn" data-lesson="s1_l2">
+          <i class="fas fa-circle-nodes"></i>
+          <span>Lesson 02 — Ba Trụ Cột AI Engineering</span>
+        </button>
+        <button class="lesson-nav-btn" data-lesson="s1_l3">
+          <i class="fas fa-microchip"></i>
+          <span>Lesson 03 — Khung tư duy Karpathy</span>
+        </button>
+        <button class="lesson-nav-btn" data-lesson="s1_l4">
+          <i class="fas fa-network-wired"></i>
+          <span>Lesson 04 — Phân loại & Agentic Workflow</span>
+        </button>
+        <div class="nav-label">Kiểm tra</div>
+        <button class="lesson-nav-btn" data-lesson="s1_quiz">
+          <i class="fas fa-vial"></i>
+          <span>Quiz kiểm tra Session 01</span>
+        </button>
+      </nav>
+    </aside>
 
-    <!-- ================================================================== -->
-    <!-- LESSON 1.1 -->
-    <!-- ================================================================== -->
-    <section class="lesson animate-on-scroll" id="lesson-1-1">
-        <div class="lesson-header">
-            <div class="lesson-number">1.1</div>
-            <div class="lesson-title-group">
-                <h2>LLM hoạt động như thế nào? <span style="color:var(--magenta);">(Phiên bản 2026)</span></h2>
-                <div class="lesson-meta">
-                    <span>📖 Lý thuyết + 🛠️ Thực hành + 📝 Bài tập</span>
-                    <span>⏱️ ~45-60 phút</span>
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <header class="header">
+        <div class="header-title">
+          <h1 id="header-session-title">Session 01 — Nền tảng & Bối cảnh AI 2026</h1>
+        </div>
+        <div class="header-meta">
+          <span class="tech-pill">Transformer & Tokens</span>
+          <span class="tech-pill">Mental Model & MCP</span>
+        </div>
+      </header>
+
+      <div class="content-wrapper">
+        
+        <!-- ==================== SESSION 01 LESSON 01 ==================== -->
+        <section class="lesson-section active" id="s1_l1">
+          <div class="lesson-banner">
+            <div class="lesson-subtitle">LESSON 01</div>
+            <h2 class="lesson-title">Lesson 1.1 — LLM hoạt động như thế nào? (Phiên bản 2026)</h2>
+          </div>
+
+          <div class="tab-container">
+            <div class="tab-nav">
+              <button class="tab-btn active" data-tab="theory"><i class="fas fa-book"></i> Lý thuyết</button>
+              <button class="tab-btn" data-tab="diagram"><i class="fas fa-project-diagram"></i> Sơ đồ minh họa</button>
+              <button class="tab-btn" data-tab="practice"><i class="fas fa-code"></i> Thực hành &amp; Bài tập</button>
+              <button class="tab-btn" data-tab="video"><i class="fas fa-microphone"></i> NotebookLM Podcast</button>
+            </div>
+
+            <!-- Tab: Theory -->
+            <div class="tab-pane active" id="s1_l1_pane_theory">
+              <div class="theory-content">
+                <h3>Cơ chế vận hành của Transformer</h3>
+                <p>Large Language Models (LLMs) hoạt động dựa trên mạng nơ-ron Transformer. Bản chất của quá trình này gồm 3 bước chính:</p>
+                <ol>
+                  <li><strong>Tokenization (Mã hóa)</strong>: Chuyển đổi văn bản tự nhiên thành các chuỗi số (Token). Mỗi model có một bảng từ vựng (Vocabulary) riêng và cách cắt token khác nhau. Ví dụ cụm từ <code>"Xin chào"</code> có thể tách thành <code>["X", "in", " ch", "ào"]</code>.</li>
+                  <li><strong>Attention Mechanism (Cơ chế chú ý)</strong>: Giúp mô hình tính toán mối liên hệ ngữ nghĩa giữa các từ trong câu, biết được từ nào cần "chú ý" nhiều hơn khi xử lý.</li>
+                  <li><strong>Next-Token Prediction (Dự đoán token tiếp theo)</strong>: Bản chất LLM là một máy tính toán xác suất. Nó không thực sự "hiểu" theo cách của con người mà liên tục dự đoán token tiếp theo có khả năng xuất hiện cao nhất dựa trên ngữ cảnh trước đó.</li>
+                </ol>
+
+                <h3>Các tham số cấu hình cốt lõi:</h3>
+                <ul>
+                  <li><strong>Temperature (Nhiệt độ)</strong>: Dao động từ <code>0</code> đến <code>2</code>. Cấu hình bằng <code>0</code> giúp câu trả lời nhất quán và chính xác (Deterministic); <code>1</code> hoặc cao hơn tạo ra câu trả lời sáng tạo, ngẫu nhiên hơn.</li>
+                  <li><strong>Top-p (Nucleus Sampling)</strong>: Giới hạn việc chọn lọc token trong nhóm có tổng xác suất tích lũy bằng <code>p</code> (ví dụ: <code>top-p = 0.9</code> sẽ chỉ chọn các token nằm trong 90% xác suất cao nhất).</li>
+                </ul>
+
+                <div class="new-badge-container">
+                  <span class="new-tech-badge">🆕 SỰ TIẾN HÓA CỦA CONTEXT WINDOW NĂM 2026</span>
+                  <p>Context Window là dung lượng bộ nhớ làm việc tạm thời của AI. Năm 2026, kích thước bộ nhớ <strong>1,000,000+ tokens</strong> trở thành tiêu chuẩn trên các dòng Flash (Gemini 3.5 Flash) giúp xử lý toàn bộ sách, video dài hoặc toàn bộ codebase trong một lần chat mà không lo AI bị "mất trí nhớ".</p>
                 </div>
-            </div>
-        </div>
 
-        <!-- Theory Block -->
-        <div class="block animate-on-scroll">
-            <div class="block-header">
-                <span class="block-icon">📖</span>
-                <span class="block-label theory">Lý thuyết</span>
-            </div>
-            <h3>Kiến trúc Transformer & Cách LLM sinh văn bản</h3>
-
-            <div class="image-showcase">
-                <img src="images/llm_brain_architecture.png" alt="LLM Brain Architecture — Kiến trúc xử lý ngôn ngữ của AI" loading="lazy">
-                <div class="image-caption">Hình 1.1 — Kiến trúc xử lý ngôn ngữ của LLM: từ tokenization → attention → output generation</div>
-            </div>
-
-            <p>Large Language Models (LLMs) là các mô hình AI được huấn luyện trên lượng dữ liệu khổng lồ để hiểu và sinh ngôn ngữ tự nhiên. Dưới đây là các khái niệm cốt lõi:</p>
-
-            <ul>
-                <li><strong>Tokenization</strong> — Chia văn bản thành các "token" (đơn vị nhỏ nhất). Ví dụ: <code>"Xin chào"</code> có thể được chia thành <code>["X", "in", " ch", "ào"]</code>. Mỗi model có tokenizer riêng.</li>
-                <li><strong>Attention Mechanism</strong> — Cơ chế cho phép model "chú ý" đến các phần liên quan trong input. Đây là trái tim của kiến trúc Transformer (Google, 2017).</li>
-                <li><strong>Next-Token Prediction</strong> — LLM hoạt động bằng cách dự đoán token tiếp theo dựa trên tất cả tokens trước đó. Nó KHÔNG "hiểu" — nó "dự đoán" dựa trên pattern.</li>
-                <li><strong>Temperature & Top-p</strong> — Tham số kiểm soát "sự sáng tạo":
-                    <ul>
-                        <li><code>temperature = 0</code>: Output deterministic, luôn chọn token có xác suất cao nhất</li>
-                        <li><code>temperature = 1</code>: Output đa dạng, sáng tạo hơn</li>
-                        <li><code>top-p (nucleus sampling)</code>: Chỉ xét các token có tổng xác suất đạt ngưỡng p</li>
-                    </ul>
-                </li>
-            </ul>
-
-            <div class="callout tip">
-                <span class="callout-icon">💡</span>
-                <div class="callout-content">
-                    <strong>Tại sao điều này quan trọng?</strong>
-                    <p>Hiểu cách LLM hoạt động giúp bạn viết prompt hiệu quả hơn. Khi biết model "dự đoán token tiếp theo", bạn sẽ hiểu tại sao instruction rõ ràng = output tốt hơn (vì nó giảm entropy — giảm số khả năng token tiếp theo).</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Context Window Block -->
-        <div class="block animate-on-scroll">
-            <div class="block-header">
-                <span class="block-icon">📐</span>
-                <span class="block-label theory">Lý thuyết</span>
-                <span class="block-label new">🆕 2026</span>
-            </div>
-            <h3>Sự tiến hóa Context Window — Từ 4K đến 1M+ tokens</h3>
-
-            <p><strong>Context Window</strong> là "bộ nhớ làm việc" của LLM — tổng số tokens mà model có thể xử lý cùng lúc (bao gồm cả input và output). Đây là giới hạn quan trọng nhất bạn cần biết:</p>
-
-            <div class="diagram-box">
-<span class="label">Context Window Evolution:</span>
-
-2022  │ GPT-3.5         │ <span class="accent">4,096 tokens</span>      (~3,000 words)
-2023  │ GPT-4           │ <span class="accent">8,192 tokens</span>      (~6,000 words)
-      │ GPT-4 Turbo     │ <span class="accent">128,000 tokens</span>    (~96,000 words)
-2024  │ Claude 3        │ <span class="accent">200,000 tokens</span>    (~150,000 words)
-      │ Gemini 1.5 Pro  │ <span class="highlight">1,000,000 tokens</span>  (~750,000 words)
-2025  │ GPT-5           │ <span class="accent">128,000+ tokens</span>
-      │ Claude Opus 4   │ <span class="accent">200,000 tokens</span>
-<span class="gold">2026  │ Claude Fable 5   │ 200,000+ tokens</span>
-<span class="gold">      │ GPT-5.5         │ 128,000+ tokens</span>
-<span class="gold">      │ Gemini 3.5 Flash │ 1,000,000+ tokens  ← LARGEST!</span>
-</div>
-        </div>
-
-        <!-- Models Comparison Block -->
-        <div class="block animate-on-scroll" id="models-2026">
-            <div class="block-header">
-                <span class="block-icon">🤖</span>
-                <span class="block-label new">🆕 Frontier Models 06/2026</span>
-            </div>
-            <h3>So sánh Frontier Models — Tháng 6/2026</h3>
-
-            <div class="image-showcase">
-                <img src="images/ai_models_evolution.png" alt="AI Models Evolution 2023-2026" loading="lazy">
-                <div class="image-caption">Hình 1.2 — Sự tiến hóa các AI Models từ 2023 đến 2026</div>
-            </div>
-
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Provider</th>
-                            <th>Model</th>
-                            <th>Reasoning</th>
-                            <th>Coding</th>
-                            <th>Speed</th>
-                            <th>Cost</th>
-                            <th>Context</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Anthropic</strong></td>
-                            <td><strong>Claude Fable 5</strong></td>
-                            <td class="stars">★★★★★</td>
-                            <td class="stars">★★★★★</td>
-                            <td class="stars">★★★☆☆</td>
-                            <td>$$</td>
-                            <td>200K+</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td><strong>Claude Opus 4.8</strong></td>
-                            <td class="stars">★★★★☆</td>
-                            <td class="stars">★★★★★</td>
-                            <td class="stars">★★★★☆</td>
-                            <td>$$</td>
-                            <td>200K</td>
-                        </tr>
-                        <tr>
-                            <td><strong>OpenAI</strong></td>
-                            <td><strong>GPT-5.5</strong></td>
-                            <td class="stars">★★★★★</td>
-                            <td class="stars">★★★★☆</td>
-                            <td class="stars">★★★★☆</td>
-                            <td>$$$</td>
-                            <td>128K+</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td><strong>GPT-5 Pro</strong></td>
-                            <td class="stars">★★★★★</td>
-                            <td class="stars">★★★★☆</td>
-                            <td class="stars">★★☆☆☆</td>
-                            <td>$$$$</td>
-                            <td>128K+</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Google</strong></td>
-                            <td><strong>Gemini 3.5 Flash</strong></td>
-                            <td class="stars">★★★★☆</td>
-                            <td class="stars">★★★★★</td>
-                            <td class="stars">★★★★★</td>
-                            <td>$</td>
-                            <td>1M+</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td><strong>Gemini 3.5 Pro</strong></td>
-                            <td class="stars">★★★★★</td>
-                            <td class="stars">★★★★☆</td>
-                            <td class="stars">★★★☆☆</td>
-                            <td>$$</td>
-                            <td>1M+</td>
-                        </tr>
-                    </tbody>
+                <h3>Bảng So Sánh Frontier Models (Cập nhật 06/2026)</h3>
+                <table class="compare-table">
+                  <thead>
+                    <tr>
+                      <th>Provider</th>
+                      <th>Model</th>
+                      <th>Reasoning</th>
+                      <th>Coding</th>
+                      <th>Speed</th>
+                      <th>Cost</th>
+                      <th>Context Window</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Anthropic</strong></td>
+                      <td>Claude Fable 5</td>
+                      <td>⭐⭐⭐⭐⭐</td>
+                      <td>⭐⭐⭐⭐⭐</td>
+                      <td>⭐⭐⭐☆☆</td>
+                      <td>$$</td>
+                      <td>200K+</td>
+                    </tr>
+                    <tr>
+                      <td><strong>OpenAI</strong></td>
+                      <td>GPT-5.5</td>
+                      <td>⭐⭐⭐⭐⭐</td>
+                      <td>⭐⭐⭐⭐☆</td>
+                      <td>⭐⭐⭐⭐☆</td>
+                      <td>$$$</td>
+                      <td>128K+</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Google</strong></td>
+                      <td>Gemini 3.5 Flash</td>
+                      <td>⭐⭐⭐⭐☆</td>
+                      <td>⭐⭐⭐⭐⭐</td>
+                      <td>⭐⭐⭐⭐⭐</td>
+                      <td>$</td>
+                      <td>1M+</td>
+                    </tr>
+                  </tbody>
                 </table>
+              </div>
             </div>
 
-            <div class="callout new-tag">
-                <span class="callout-icon">🆕</span>
-                <div class="callout-content">
-                    <strong>Reasoning Models vs. Standard Models</strong>
-                    <p><strong>GPT-5 Pro</strong> và <strong>Gemini 3.5 Pro</strong> là "reasoning models" — chúng suy nghĩ sâu hơn (internal chain-of-thought) trước khi trả lời. Dùng cho bài toán logic phức tạp, math, code debugging. Standard models (GPT-5.5, Claude Opus 4.8) phù hợp cho task hàng ngày, nhanh hơn và rẻ hơn.</p>
+            <!-- Tab: Diagram -->
+            <div class="tab-pane" id="s1_l1_pane_diagram">
+              <div class="diagram-visual-container">
+                <div class="card-container">
+                  <div class="card-title"><i class="fas fa-project-diagram"></i> Sơ đồ Next-Token Prediction Flow (SVG)</div>
+                  <div class="mermaid-wrapper">
+                    <img class="workflow-img" src="images/llm_processing.svg" alt="Sơ đồ xử lý ngôn ngữ LLM">
+                  </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Practice Block -->
-        <div class="block animate-on-scroll">
-            <div class="block-header">
-                <span class="block-icon">🛠️</span>
-                <span class="block-label practice">Thực hành</span>
-            </div>
-            <h3>Hands-on: So sánh các Frontier Models</h3>
-            <ul>
-                <li>🔬 Thử nghiệm cùng 1 prompt trên <strong>Claude Opus 4.8, GPT-5.5, Gemini 3.5 Flash</strong> — so sánh chất lượng, tốc độ, chi phí</li>
-                <li>🔢 Đếm token với tokenizer tool — so sánh cách tokenization giữa các model</li>
-                <li>🆕 Thử 1 bài toán logic phức tạp trên <strong>GPT-5.5</strong> (standard) vs. <strong>GPT-5 Pro</strong> (reasoning) — quan sát sự khác biệt về accuracy và latency</li>
-            </ul>
-
-            <div class="code-block">
-                <div class="code-header">
-                    <span class="code-lang">Prompt thử nghiệm</span>
-                    <div class="code-dots"><span></span><span></span><span></span></div>
+                <div class="card-container">
+                  <div class="card-title"><i class="fas fa-image"></i> Ảnh minh họa LLM Architecture &amp; Timeline Evolution</div>
+                  <div class="illustration-wrapper">
+                    <img class="illustration-img" src="images/llm_brain_architecture.png" alt="LLM Brain Illustration">
+                  </div>
+                  <div class="prompt-drawer">
+                    <div class="prompt-drawer-header">
+                      <span>DALL-E / Imagen Prompt (Image 1.1)</span>
+                      <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="prompt-drawer-body" style="display: none;">
+                      A futuristic 3D isometric infographic showing LLM brain architecture. On the left side, input text "Hello AI" enters a sleek glass-textured processor that splits the words into glowing blocks (representing tokenization). In the middle, the blocks flow through a complex glowing network of rings representing the "Self-Attention Mechanism" with vibrant blue, purple, and neon pink light beams connecting them. On the right side, the next-token prediction output emerges as a floating holographic text block. Premium dark mode background, high-tech corporate aesthetic, clean glassmorphism, volumetric lighting, 8k resolution, raytracing, unreal engine 5 render, highly detailed.
+                    </div>
+                  </div>
+                  
+                  <div class="illustration-wrapper" style="margin-top:20px;">
+                    <img class="illustration-img" src="images/ai_models_evolution.png" alt="Context Window Evolution">
+                  </div>
+                  <div class="prompt-drawer">
+                    <div class="prompt-drawer-header">
+                      <span>DALL-E / Imagen Prompt (Image 1.2)</span>
+                      <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="prompt-drawer-body" style="display: none;">
+                      A 3D timeline chart showing AI models context window evolution from 2023 to 2026. Chronological glass pillars representing key milestones: 2023 (GPT-4), 2024 (Claude 3, Gemini 1.5), 2025 (GPT-5, Claude Opus 4), and 2026 (Claude Fable 5, GPT-5.5, Gemini 3.5 Flash). The pillars grow exponentially taller and more complex, glowing with energy. The 2026 pillar is the tallest and brightest, featuring holographic icons of massive context windows (1M+ tokens) and agentic brains. Futuristic dark tech UI background, neon glowing lines connecting the pillars, glassmorphism nodes, 8k, photorealistic, 3D render.
+                    </div>
+                  </div>
                 </div>
-<pre><span class="comment">## Prompt mẫu để test so sánh các model:</span>
-
-<span class="string">"Giải bài toán sau và giải thích chi tiết từng bước:</span>
-<span class="string">Một nhà máy có 3 dây chuyền sản xuất. Dây chuyền A sản xuất</span>
-<span class="string">40% sản phẩm với tỷ lệ lỗi 2%. Dây chuyền B sản xuất 35%</span>
-<span class="string">sản phẩm với tỷ lệ lỗi 3%. Dây chuyền C sản xuất 25% sản</span>
-<span class="string">phẩm với tỷ lệ lỗi 5%.</span>
-<span class="string">Nếu chọn ngẫu nhiên 1 sản phẩm bị lỗi, xác suất nó đến</span>
-<span class="string">từ dây chuyền B là bao nhiêu?"</span>
-
-<span class="comment">→ Test trên: Claude Fable 5, GPT-5.5, Gemini 3.5 Flash</span>
-<span class="comment">→ So sánh: accuracy, reasoning quality, response time</span></pre>
+              </div>
             </div>
-        </div>
 
-        <!-- Exercise Block -->
-        <div class="block animate-on-scroll">
-            <div class="block-header">
-                <span class="block-icon">📝</span>
-                <span class="block-label exercise">Bài tập</span>
-            </div>
-            <h3>Bài tập Lesson 1.1</h3>
-
-            <div class="exercise-item">
-                <span class="exercise-num">1</span>
-                <div class="exercise-text">
-                    Viết 1 đoạn phân tích (300-500 từ): <strong>"Tại sao cùng 1 câu hỏi nhưng model khác nhau cho kết quả khác nhau?"</strong> — So sánh ít nhất 2 models từ bảng Frontier Models 2026.
+            <!-- Tab: Practice -->
+            <div class="tab-pane" id="s1_l1_pane_practice">
+              <div class="practice-container">
+                <h3>Thực hành: Đánh giá &amp; So sánh</h3>
+                <p>Hãy sử dụng cùng một câu hỏi kiểm tra logic để đánh giá độ chính xác và tốc độ phản hồi trên các mô hình: <strong>Claude Fable 5, GPT-5.5 và Gemini 3.5 Flash</strong>.</p>
+                
+                <div class="code-header-bar">
+                  <span>Mẫu Prompt thử nghiệm</span>
+                  <button class="copy-btn" onclick="copyCode(this, 'code-s1-l1')"><i class="far fa-copy"></i> Copy prompt</button>
                 </div>
-            </div>
+                <pre><code class="language-markdown" id="code-s1-l1">Giải bài toán sau và giải thích chi tiết từng bước:
+Một nhà máy có 3 dây chuyền sản xuất. Dây chuyền A sản xuất 40% sản phẩm với tỷ lệ lỗi 2%. Dây chuyền B sản xuất 35% sản phẩm với tỷ lệ lỗi 3%. Dây chuyền C sản xuất 25% sản phẩm với tỷ lệ lỗi 5%.
+Nếu chọn ngẫu nhiên 1 sản phẩm bị lỗi, xác suất nó đến từ dây chuyền B là bao nhiêu?</code></pre>
 
-            <div class="exercise-item">
-                <span class="exercise-num">2</span>
-                <div class="exercise-text">
-                    Lập bảng so sánh 3 models cho 3 task types:<br>
-                    • <strong>Coding</strong> (viết hàm Python)<br>
-                    • <strong>Analysis</strong> (phân tích báo cáo tài chính)<br>
-                    • <strong>Creative Writing</strong> (viết email marketing)<br>
-                    Đánh giá: chất lượng (1-10), tốc độ, chi phí ước tính.
+                <div class="exercise-box">
+                  <h3>📝 Bài tập Lesson 1.1</h3>
+                  <ol>
+                    <li><strong>Phân tích so sánh</strong>: Viết một bài luận ngắn (300-500 từ) giải thích nguyên nhân cùng một prompt nhưng các mô hình lại đưa ra kết quả và cách lập luận khác nhau. Trích dẫn số liệu từ bảng so sánh mô hình 2026.</li>
+                    <li><strong>Lập ma trận Task</strong>: Tạo bảng so sánh hiệu quả thực tế của 3 mô hình trên cho 3 nhóm công việc: Lập trình (Coding), Phân tích số liệu (Analysis), và Viết lách sáng tạo (Creative writing).</li>
+                  </ol>
                 </div>
+              </div>
             </div>
 
-            <div class="exercise-item">
-                <span class="exercise-num">3</span>
-                <div class="exercise-text">
-                    So sánh <strong>Standard model vs. Reasoning model</strong>: Chạy 5 bài toán logic khác nhau, ghi lại accuracy và thời gian phản hồi. Kết luận: khi nào chọn cái nào?
+            <!-- Tab: Podcast -->
+            <div class="tab-pane" id="s1_l1_pane_video">
+              <div class="podcast-card-placeholder">
+                <div class="podcast-icon-large"><i class="fas fa-microphone-lines"></i></div>
+                <h3>NotebookLM Audio Overview Prompt</h3>
+                <p>Copy đoạn prompt bên dưới nạp vào Gamma.app hoặc ChatGPT để phác thảo Slide thuyết trình cho Lesson 1.1:</p>
+                <div class="prompt-code-box">
+                  <p><em>"Hãy tạo mã nguồn Markdown theo chuẩn Marp để trình bày nội dung Slide cho Lesson 1.1: 'LLM hoạt động như thế nào và sự tiến hóa của Context Window trong năm 2026'. Sử dụng cấu trúc tối giản, phân chia màu sắc tương phản cao, Dark mode."</em></p>
                 </div>
+              </div>
             </div>
-        </div>
-    </section>
+          </div>
+        </section>
 
-    <div class="separator"></div>
+        <!-- ==================== SESSION 01 LESSON 02 ==================== -->
+        <section class="lesson-section" id="s1_l2">
+          <div class="lesson-banner">
+            <div class="lesson-subtitle">LESSON 02</div>
+            <h2 class="lesson-title">Lesson 1.2 — Prompt → Context → Harness: Ba Trụ Cột &amp; Sự dịch chuyển 2025-2026</h2>
+          </div>
 
-    <!-- ================================================================== -->
-    <!-- LESSON 1.2 -->
-    <!-- ================================================================== -->
-    <section class="lesson animate-on-scroll" id="lesson-1-2">
-        <div class="lesson-header">
-            <div class="lesson-number">1.2</div>
-            <div class="lesson-title-group">
-                <h2>Prompt → Context → Harness: <span style="color:var(--cyan);">Ba Trụ Cột</span></h2>
-                <div class="lesson-meta">
-                    <span>📖 Lý thuyết + 🛠️ Thực hành + 📝 Bài tập</span>
-                    <span>⏱️ ~45-60 phút</span>
+          <div class="tab-container">
+            <div class="tab-nav">
+              <button class="tab-btn active" data-tab="theory"><i class="fas fa-book"></i> Lý thuyết</button>
+              <button class="tab-btn" data-tab="diagram"><i class="fas fa-project-diagram"></i> Sơ đồ minh họa</button>
+              <button class="tab-btn" data-tab="practice"><i class="fas fa-code"></i> Bài tập</button>
+              <button class="tab-btn" data-tab="video"><i class="fas fa-microphone"></i> NotebookLM Podcast</button>
+            </div>
+
+            <!-- Tab: Theory -->
+            <div class="tab-pane active" id="s1_l2_pane_theory">
+              <div class="theory-content">
+                <h3>Định nghĩa 3 Trụ Cột Kỹ Nghệ Hệ Thống AI</h3>
+                <ul>
+                  <li><strong>Prompt Engineering (Kỹ thuật câu lệnh)</strong>: Thiết kế các câu lệnh đầu vào tối ưu để mô hình hiểu đúng nhiệm vụ. Đây là tầng cốt lõi nhất (nhân).</li>
+                  <li><strong>Context Engineering (Kỹ thuật ngữ cảnh)</strong>: Quản lý, chọn lọc và sắp xếp toàn bộ thông tin được nạp vào Context Window (bao gồm tài liệu hướng dẫn, lịch sử chat, định nghĩa công cụ - tool schemas).</li>
+                  <li><strong>Harness Engineering (Kỹ thuật bao bọc/điều phối)</strong>: Thiết kế hạ tầng phần mềm xung quanh LLM. Bao gồm việc xây dựng pipeline, thiết lập các chốt chặn an toàn (guardrails), và cơ chế gọi hàm tự động (tool use/function calling).</li>
+                </ul>
+
+                <div class="new-badge-container">
+                  <span class="new-tech-badge">🆕 PARADIGM SHIFT 2025-2026</span>
+                  <p>Vào giữa năm 2025, Andrej Karpathy đưa ra nhận định: <em>"Prompt Engineering giờ chỉ là kỹ năng cơ bản (table stakes). Context Engineering mới là thứ tạo ra sự khác biệt lớn nhất cho các hệ thống Agentic AI. Lỗi của các AI Agents 80% đến từ việc nạp sai/thiếu ngữ cảnh (Context Failures) chứ không phải do viết prompt không hay."</em></p>
                 </div>
-            </div>
-        </div>
 
-        <!-- Three Pillars Theory -->
-        <div class="block animate-on-scroll">
-            <div class="block-header">
-                <span class="block-icon">📖</span>
-                <span class="block-label theory">Lý thuyết</span>
-            </div>
-            <h3>Ba trụ cột của AI Engineering</h3>
-
-            <div class="image-showcase">
-                <img src="images/three_pillars_diagram.png" alt="Ba trụ cột: Prompt, Context, Harness Engineering" loading="lazy">
-                <div class="image-caption">Hình 1.3 — Mối quan hệ 3 tầng: Prompt ⊂ Context ⊂ Harness Engineering</div>
-            </div>
-
-            <ul>
-                <li><strong style="color:var(--gold);">Prompt Engineering</strong> — Nghệ thuật viết instruction để LLM hiểu đúng ý bạn. <em>"Viết câu hỏi thông minh"</em></li>
-                <li><strong style="color:var(--cyan);">Context Engineering</strong> — Khoa học quản lý thông tin đầu vào (context window) — quyết định LLM <em>biết gì</em> khi trả lời. <em>"Cung cấp đúng thông tin"</em></li>
-                <li><strong style="color:var(--magenta);">Harness Engineering</strong> — Thiết kế hệ thống bao bọc LLM — orchestration, guardrails, pipelines, tool-use. <em>"Xây dựng hệ thống điều phối"</em></li>
-            </ul>
-
-            <div class="diagram-box">
-<span class="label">Mối quan hệ phụ thuộc: Prompt ⊂ Context ⊂ Harness</span>
-
-┌─────────────────────────────────────────────────┐
-│            <span class="accent">HARNESS ENGINEERING</span>                 │
-│  ┌───────────────────────────────────────────┐  │
-│  │       <span class="highlight">CONTEXT ENGINEERING</span>                │  │
-│  │  ┌─────────────────────────────────────┐  │  │
-│  │  │    <span class="gold">PROMPT ENGINEERING</span>              │  │  │
-│  │  │  "Viết câu hỏi thông minh"         │  │  │
-│  │  └─────────────────────────────────────┘  │  │
-│  │  "Cung cấp đúng thông tin"               │  │
-│  └───────────────────────────────────────────┘  │
-│  "Xây dựng hệ thống điều phối"                  │
-└─────────────────────────────────────────────────┘
-</div>
-
-            <div class="callout insight">
-                <span class="callout-icon">💡</span>
-                <div class="callout-content">
-                    <strong>Analogy dễ hiểu</strong>
-                    <p><strong>Prompt Engineering</strong> giống viết email hay → <strong>Context Engineering</strong> giống chuẩn bị toàn bộ hồ sơ đính kèm → <strong>Harness Engineering</strong> giống xây cả hệ thống email + workflow + approval chain.</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Paradigm Shift Block -->
-        <div class="block animate-on-scroll" id="paradigm-shift">
-            <div class="block-header">
-                <span class="block-icon">🔄</span>
-                <span class="block-label new">🆕 Paradigm Shift 2025-2026</span>
-            </div>
-            <h3>Sự dịch chuyển: Từ Prompt Engineering → Context Engineering</h3>
-
-            <div class="callout new-tag">
-                <span class="callout-icon">🗣️</span>
-                <div class="callout-content">
-                    <strong>Andrej Karpathy (mid-2025) — Định nghĩa kinh điển:</strong>
-                    <p><em>"Prompt Engineering giờ chỉ là 'table stakes' (kỹ năng cơ bản). Context Engineering mới là kỹ năng quyết định. Agent failures phần lớn do context failures — lấy sai document, quá tải context, thiếu tool definitions — không phải do prompt dở."</em></p>
-                </div>
-            </div>
-
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Khía cạnh</th>
-                            <th>🕐 2023 (Cũ)</th>
-                            <th>🆕 2026 (Mới)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Focus</strong></td>
-                            <td>Clever phrasing / personas</td>
-                            <td>Context assembly & system architecture</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Verification</strong></td>
-                            <td>Manual "vibe-check"</td>
-                            <td>Quantitative evaluation on golden datasets</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Workflow</strong></td>
-                            <td>Single long chat history</td>
-                            <td>State management, tool schemas, orchestration</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Logic</strong></td>
-                            <td>Nhồi rules vào prompt</td>
-                            <td>Structured reasoning patterns (ReAct, Reflexion)</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Security</strong></td>
-                            <td>Nhờ prompt "đừng làm điều xấu"</td>
-                            <td>System-level guardrails + human-in-the-loop</td>
-                        </tr>
-                    </tbody>
+                <h3>Bảng So Sánh Tư Duy Phát Triển AI</h3>
+                <table class="compare-table">
+                  <thead>
+                    <tr>
+                      <th>Đặc tính</th>
+                      <th>Cận 2023 - 2024 (Tư duy cũ)</th>
+                      <th>Từ 2025 - 2026 (Tư duy mới)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Trọng tâm</strong></td>
+                      <td>Tìm kiếm câu chữ "thần kỳ", định hình Persona.</td>
+                      <td>Quản lý kiến trúc luồng dữ liệu, lọc nhiễu ngữ cảnh.</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Kiểm thử</strong></td>
+                      <td>Đọc thử thủ công vài lần bằng mắt (Vibe-check).</td>
+                      <td>Đánh giá tự động định lượng trên các tập dữ liệu chuẩn (Golden Datasets).</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Bảo mật</strong></td>
+                      <td>Viết prompt dặn dò AI "không được tiết lộ hệ thống".</td>
+                      <td>Chốt chặn an toàn đa tầng (System-level Guardrails) + Giám sát con người.</td>
+                    </tr>
+                  </tbody>
                 </table>
+              </div>
             </div>
-        </div>
 
-        <!-- Exercise Block 1.2 -->
-        <div class="block animate-on-scroll">
-            <div class="block-header">
-                <span class="block-icon">📝</span>
-                <span class="block-label exercise">Bài tập</span>
-            </div>
-            <h3>Bài tập Lesson 1.2</h3>
-
-            <div class="exercise-item">
-                <span class="exercise-num">1</span>
-                <div class="exercise-text">
-                    Vẽ <strong>sơ đồ tư duy (mindmap)</strong> phân biệt 3 khái niệm Prompt, Context, Harness — kèm ví dụ thực tế sử dụng tools/models 2026.
+            <!-- Tab: Diagram -->
+            <div class="tab-pane" id="s1_l2_pane_diagram">
+              <div class="diagram-visual-container">
+                <div class="card-container">
+                  <div class="card-title"><i class="fas fa-project-diagram"></i> Sơ đồ Mối quan hệ lồng ghép giữa 3 tầng công nghệ (SVG)</div>
+                  <div class="mermaid-wrapper">
+                    <img class="workflow-img" src="images/three_pillars.svg" alt="Sơ đồ 3 trụ cột Prompt Context Harness">
+                  </div>
                 </div>
-            </div>
 
-            <div class="exercise-item">
-                <span class="exercise-num">2</span>
-                <div class="exercise-text">
-                    Viết 1 đoạn phân tích (400-600 từ): <strong>"Tại sao Karpathy nói Context Engineering thay thế Prompt Engineering?"</strong> — Đưa ít nhất 3 ví dụ cụ thể về agent failure do context.
+                <div class="card-container">
+                  <div class="card-title"><i class="fas fa-image"></i> Ảnh minh họa Three Pillars Architecture</div>
+                  <div class="illustration-wrapper">
+                    <img class="illustration-img" src="images/three_pillars_diagram.png" alt="Three Pillars Illustration">
+                  </div>
+                  <div class="prompt-drawer">
+                    <div class="prompt-drawer-header">
+                      <span>DALL-E / Imagen Prompt</span>
+                      <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="prompt-drawer-body" style="display: none;">
+                      A premium 3D concentric nested cylinder diagram illustrating the three pillars of AI Engineering. The innermost cylinder represents "Prompt Engineering" (glowing in warm gold), nested inside a larger middle cylinder representing "Context Engineering" (glowing in neon cyan), which is further nested inside the outermost and largest cylinder representing "Harness Engineering" (glowing in vivid magenta). Clean glassmorphism textures, glowing labels with futuristic typography pointing to each cylinder, high-tech interface grid background, dark room with subtle volumetric lighting, 3D vector style, 8k resolution, modern corporate tech graphic.
+                    </div>
+                  </div>
                 </div>
+              </div>
             </div>
-        </div>
-    </section>
 
-    <div class="separator"></div>
-
-    <!-- ================================================================== -->
-    <!-- LESSON 1.3 -->
-    <!-- ================================================================== -->
-    <section class="lesson animate-on-scroll" id="lesson-1-3">
-        <div class="lesson-header">
-            <div class="lesson-number">1.3</div>
-            <div class="lesson-title-group">
-                <h2>Mental Model: <span style="color:var(--emerald);">LLM = CPU, Context = RAM</span></h2>
-                <div class="lesson-meta">
-                    <span>📖 Lý thuyết + 🛠️ Thực hành + 📝 Bài tập</span>
-                    <span>⏱️ ~45-60 phút</span>
+            <!-- Tab: Practice -->
+            <div class="tab-pane" id="s1_l2_pane_practice">
+              <div class="practice-container">
+                <div class="exercise-box">
+                  <h3>📝 Bài tập Lesson 1.2</h3>
+                  <ol>
+                    <li><strong>Thiết kế sơ đồ tư duy (Mindmap)</strong>: Vẽ một sơ đồ phân tích chi tiết mối quan hệ giữa 3 khái niệm: Prompt - Context - Harness. Đưa ra ví dụ thực tế tương ứng với các công cụ phát triển AI của năm 2026 (như MCP, LangGraph, CrewAI).</li>
+                    <li><strong>Phân tích lỗi Context</strong>: Tìm hiểu và viết một bài báo cáo (400-600 từ) về chủ đề "Các lỗi hệ thống AI Agent do thất bại trong quản lý Context". Đưa ra ít nhất 3 kịch bản thực tế (ví dụ: Agent gọi sai công cụ, Agent bị loãng thông tin do nhồi nhét quá nhiều tài liệu không liên quan).</li>
+                  </ol>
                 </div>
-            </div>
-        </div>
-
-        <!-- Mental Model Theory -->
-        <div class="block animate-on-scroll" id="karpathy-model">
-            <div class="block-header">
-                <span class="block-icon">📖</span>
-                <span class="block-label theory">Lý thuyết</span>
-                <span class="block-label new">🆕 Karpathy Framework</span>
-            </div>
-            <h3>Mô hình Karpathy: LLM là CPU, Context Window là RAM, Bạn là OS</h3>
-
-            <div class="image-showcase">
-                <img src="images/karpathy_mental_model.png" alt="Mô hình Karpathy: LLM = CPU, Context = RAM, Engineer = OS" loading="lazy">
-                <div class="image-caption">Hình 1.4 — Mô hình Karpathy: Engineer (OS) quản lý Context Window (RAM) cho LLM (CPU) xử lý</div>
+              </div>
             </div>
 
-            <p>Andrej Karpathy — cựu Director of AI tại Tesla, co-founder OpenAI — đã đưa ra mô hình mental model đỉnh cao để hiểu vai trò của mỗi thành phần:</p>
-
-            <div class="diagram-box">
-<span class="label">Karpathy Mental Model (2025-2026):</span>
-
-┌──────────────────────────────────────────────────────┐
-│                  YOUR AI SYSTEM                       │
-│                                                       │
-│   ┌──────────┐                                        │
-│   │   <span class="gold">YOU</span>     │ ← <span class="gold">Hệ điều hành (OS)</span>                  │
-│   │ (Engineer)│   Quản lý memory, schedule tasks      │
-│   └────┬─────┘                                        │
-│        │ loads context into                           │
-│        ▼                                              │
-│   ┌──────────────────────────────────────┐            │
-│   │        <span class="highlight">CONTEXT WINDOW (RAM)</span>           │           │
-│   │  ┌──────────┐ ┌──────────┐ ┌──────┐ │           │
-│   │  │System    │ │Retrieved │ │User  │  │           │
-│   │  │Prompt    │ │Documents │ │Query │  │           │
-│   │  └──────────┘ └──────────┘ └──────┘ │           │
-│   │  ┌──────────┐ ┌──────────┐           │           │
-│   │  │Tool      │ │Chat      │           │           │
-│   │  │Schemas   │ │History   │           │           │
-│   │  └──────────┘ └──────────┘           │           │
-│   └──────────────────────────────────────┘            │
-│        │ processes                                     │
-│        ▼                                              │
-│   ┌──────────┐                                        │
-│   │   <span class="accent">LLM</span>    │ ← <span class="accent">CPU</span> (xử lý dựa trên context)       │
-│   │ (Model)  │                                        │
-│   └──────────┘                                        │
-│                                                       │
-└──────────────────────────────────────────────────────┘
-</div>
-
-            <ul>
-                <li><strong style="color:var(--gold);">Bạn (OS)</strong> — Quyết định load gì vào RAM, khi nào load, khi nào xóa. Đây là kỹ năng Context Engineering.</li>
-                <li><strong style="color:var(--cyan);">Context Window (RAM)</strong> — Bộ nhớ làm việc có giới hạn. Chứa: system prompt, documents, tools, chat history, user query.</li>
-                <li><strong style="color:var(--accent-primary);">LLM (CPU)</strong> — Chỉ xử lý dựa trên những gì có trong RAM. Nếu info không có trong context → model không biết.</li>
-            </ul>
-
-            <div class="callout insight">
-                <span class="callout-icon">💡</span>
-                <div class="callout-content">
-                    <strong>Hệ quả quan trọng</strong>
-                    <p><strong>Garbage In, Garbage Out</strong> → trở thành <strong>Context In, Quality Out</strong>. Model chỉ tốt khi context tốt. Vì vậy, việc quản lý context (chọn đúng thông tin, loại bỏ noise, sắp xếp ưu tiên) quan trọng hơn viết prompt hay.</p>
+            <!-- Tab: Podcast -->
+            <div class="tab-pane" id="s1_l2_pane_video">
+              <div class="podcast-card-placeholder">
+                <div class="podcast-icon-large"><i class="fas fa-microphone-lines"></i></div>
+                <h3>NotebookLM Audio Overview Prompt</h3>
+                <p>Sử dụng prompt dưới đây để chuẩn bị bài viết/slide giảng dạy về sự dịch chuyển công nghệ:</p>
+                <div class="prompt-code-box">
+                  <p><em>"Hãy tạo nội dung chi tiết dạng Bullet Points cho các slide thuyết trình về 'Sự chuyển dịch từ Prompt sang Context Engineering &amp; Mô hình tư duy Karpathy' sử dụng kịch bản slide gồm Tiêu đề, Nội dung hiển thị dạng bullet-points (tối đa 4 ý/slide), và Ghi chú dành cho giảng viên."</em></p>
                 </div>
+              </div>
             </div>
-        </div>
+          </div>
+        </section>
 
-        <!-- Steerability Block -->
-        <div class="block animate-on-scroll">
-            <div class="block-header">
-                <span class="block-icon">🎯</span>
-                <span class="block-label theory">Lý thuyết</span>
+        <!-- ==================== SESSION 01 LESSON 03 ==================== -->
+        <section class="lesson-section" id="s1_l3">
+          <div class="lesson-banner">
+            <div class="lesson-subtitle">LESSON 03</div>
+            <h2 class="lesson-title">Lesson 1.3 — Mental Model: LLM là CPU, Context là RAM, Kỹ sư là OS</h2>
+          </div>
+
+          <div class="tab-container">
+            <div class="tab-nav">
+              <button class="tab-btn active" data-tab="theory"><i class="fas fa-book"></i> Lý thuyết</button>
+              <button class="tab-btn" data-tab="diagram"><i class="fas fa-project-diagram"></i> Sơ đồ minh họa</button>
+              <button class="tab-btn" data-tab="practice"><i class="fas fa-code"></i> Thực hành &amp; Bài tập</button>
+              <button class="tab-btn" data-tab="video"><i class="fas fa-microphone"></i> NotebookLM Podcast</button>
             </div>
-            <h3>Steerability: Điều khiển output của LLM</h3>
 
-            <p><strong>Steerability</strong> là khả năng điều khiển output của LLM theo hướng mong muốn. Prompt rõ ràng = steerability cao = output chất lượng.</p>
+            <!-- Tab: Theory -->
+            <div class="tab-pane active" id="s1_l3_pane_theory">
+              <div class="theory-content">
+                <h3>Khung tư duy Karpathy (LLM = CPU, Context = RAM)</h3>
+                <p>Để không bị nhầm lẫn về khả năng của AI, chúng ta cần ánh xạ các thành phần của hệ thống AI sang kiến trúc máy tính truyền thống:</p>
+                <ul>
+                  <li><strong>LLM đóng vai trò là CPU</strong>: Nó là bộ vi xử lý cực mạnh, có khả năng tính toán ngữ nghĩa rất nhanh, nhưng nó <strong>không có bộ nhớ lưu trữ chủ động</strong>. Khi nhận đầu vào, nó xử lý và trả ra kết quả đầu ra rồi ngay lập tức giải phóng bộ nhớ.</li>
+                  <li><strong>Context Window đóng vai trò là RAM</strong>: Đây là bộ nhớ truy xuất ngẫu nhiên tạm thời. Toàn bộ thông tin cần thiết để CPU xử lý (System Prompt, tài liệu, lịch sử chat, các API schema) phải được nạp vào đây. Nếu thông tin không nằm trên RAM, CPU (LLM) hoàn toàn không biết đến sự tồn tại của nó.</li>
+                  <li><strong>Kỹ sư AI đóng vai trò là OS (Hệ điều hành)</strong>: Nhiệm vụ của bạn là quản lý RAM. Bạn phải quyết định nạp cái gì vào RAM, giải phóng RAM khi đầy, và lên lịch trình (Schedule) cho các tác vụ của CPU.</li>
+                </ul>
 
-            <div class="code-block">
-                <div class="code-header">
-                    <span class="code-lang">So sánh Prompt</span>
-                    <div class="code-dots"><span></span><span></span><span></span></div>
+                <h3>Khái niệm Steerability (Khả năng điều hướng)</h3>
+                <p>Steerability là độ nhạy và khả năng tuân thủ định hướng của mô hình trước các chỉ dẫn cụ thể trong prompt. Prompt càng rõ ràng, các ràng buộc đầu ra càng chặt chẽ thì mức độ Steerability càng cao, giảm thiểu tối đa các câu trả lời lan man.</p>
+
+                <div class="new-badge-container">
+                  <span class="new-tech-badge">⚠️ CẬP NHẬT 2026: HIỆNTƯỢNG DOUBLE-REASONING</span>
+                  <p>Với các mô hình suy luận chuyên sâu (Reasoning Models) như GPT-5 Pro và Gemini 3.5 Pro, câu lệnh <code>"Let's think step by step"</code> có thể <strong>không còn hiệu quả hoặc gây phản tác dụng</strong>. Các mô hình này đã tự động chạy luồng suy luận ngầm trước khi trả lời. Nếu ép hiển thị suy luận ở đầu ra, nó sẽ thực hiện hai lần suy luận, gây lãng phí token và thời gian phản hồi (Latency).</p>
                 </div>
-<pre><span class="comment">❌ PROMPT MƠ HỒ (Low Steerability):</span>
-<span class="string">"Viết code"</span>
-<span class="comment">→ Model không biết: ngôn ngữ nào? Task gì? Style nào?</span>
-
-<span class="comment">✅ PROMPT RÕ RÀNG (High Steerability):</span>
-<span class="string">"Viết hàm Python sắp xếp danh sách số nguyên</span>
-<span class="string"> bằng thuật toán merge sort.</span>
-<span class="string"> Yêu cầu: có docstring, type hints, xử lý edge cases</span>
-<span class="string"> (empty list, single element).</span>
-<span class="string"> Output format: chỉ code, không giải thích."</span>
-<span class="comment">→ Model biết chính xác: Python, merge sort, có constraints</span></pre>
+              </div>
             </div>
 
-            <div class="callout new-tag">
-                <span class="callout-icon">🆕</span>
-                <div class="callout-content">
-                    <strong>2026 Update: Reasoning Models không cần "think step by step"</strong>
-                    <p>Với <strong>GPT-5 Pro</strong> và <strong>Gemini 3.5 Pro</strong>, việc thêm "hãy suy nghĩ từng bước" có thể <strong>KHÔNG CẦN THIẾT hoặc thậm chí CÓ HẠI</strong> — vì model đã tự reasoning bên trong. Thêm instruction CoT có thể gây "double-reasoning" và tăng latency. Tuy nhiên, với standard models (GPT-5.5, Claude Opus 4.8), CoT vẫn hiệu quả cho bài toán phức tạp.</p>
+            <!-- Tab: Diagram -->
+            <div class="tab-pane" id="s1_l3_pane_diagram">
+              <div class="diagram-visual-container">
+                <div class="card-container">
+                  <div class="card-title"><i class="fas fa-project-diagram"></i> Sơ đồ Khung tư duy kiến trúc Karpathy (SVG)</div>
+                  <div class="mermaid-wrapper">
+                    <img class="workflow-img" src="images/karpathy_model.svg" alt="Sơ đồ mô hình Karpathy CPU RAM OS">
+                  </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Practice 1.3 -->
-        <div class="block animate-on-scroll">
-            <div class="block-header">
-                <span class="block-icon">🛠️</span>
-                <span class="block-label practice">Thực hành</span>
-            </div>
-            <h3>Hands-on: Mơ hồ vs. Rõ ràng & Standard vs. Reasoning</h3>
-
-            <ul>
-                <li>Thử prompt mơ hồ vs. prompt rõ ràng trên <strong>Claude Fable 5</strong> và <strong>GPT-5.5</strong>, so sánh kết quả</li>
-                <li>🆕 Thử <code>"think step by step"</code> trên reasoning model (GPT-5 Pro) vs. standard model (GPT-5.5) — khi nào nó giúp, khi nào nó hại?</li>
-                <li>Đo thời gian phản hồi (latency) giữa 2 loại prompt trên cùng 1 model</li>
-            </ul>
-        </div>
-
-        <!-- Exercise 1.3 -->
-        <div class="block animate-on-scroll">
-            <div class="block-header">
-                <span class="block-icon">📝</span>
-                <span class="block-label exercise">Bài tập</span>
-            </div>
-            <h3>Bài tập Lesson 1.3</h3>
-
-            <div class="exercise-item">
-                <span class="exercise-num">1</span>
-                <div class="exercise-text">
-                    Cho 5 prompt mơ hồ bên dưới → viết lại thành 5 prompt rõ ràng, test trên 2 models khác nhau, giải thích sự cải thiện:
-                    <ol style="margin-top:8px; color:var(--text-muted); font-size:0.85rem;">
-                        <li>"Giải thích machine learning"</li>
-                        <li>"Tạo website"</li>
-                        <li>"Phân tích dữ liệu này"</li>
-                        <li>"Viết email"</li>
-                        <li>"Tìm lỗi code"</li>
-                    </ol>
+                <div class="card-container">
+                  <div class="card-title"><i class="fas fa-image"></i> Ảnh minh họa Karpathy Mental Model</div>
+                  <div class="illustration-wrapper">
+                    <img class="illustration-img" src="images/karpathy_mental_model.png" alt="Karpathy Model Illustration">
+                  </div>
+                  <div class="prompt-drawer">
+                    <div class="prompt-drawer-header">
+                      <span>DALL-E / Imagen Prompt</span>
+                      <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="prompt-drawer-body" style="display: none;">
+                      A futuristic 3D architectural diagram of the Karpathy AI Mental Model. At the top, a stylized hologram user representation representing the "Operating System (OS)" manages the data flow. Below it, a large horizontal glowing glass block representing the "Context Window (RAM)" is divided into slots labeled: "System Prompt", "Retrieved Docs", "Tool Schemas", and "Chat History". At the bottom, a powerful silicon processor chip representing the "LLM (CPU)" with cyan neural-like pathways running through it, processes the data loaded from the RAM. High-tech glowing circuitry, neon color accents (gold, cyan, magenta), glassmorphism, 8K resolution, Unreal Engine 5 render, isometric view.
+                    </div>
+                  </div>
                 </div>
+              </div>
             </div>
 
-            <div class="exercise-item">
-                <span class="exercise-num">2</span>
-                <div class="exercise-text">
-                    Viết 1 đoạn so sánh (300 từ): <strong>"Standard model vs. Reasoning model — khi nào chọn cái nào?"</strong> — Kèm bảng decision matrix.
+            <!-- Tab: Practice -->
+            <div class="tab-pane" id="s1_l3_pane_practice">
+              <div class="practice-container">
+                <h3>Thực hành: Test độ nhạy và Đo Latency</h3>
+                <p>1. Chuẩn bị 1 bài toán phức tạp và gửi cho <strong>GPT-5.5</strong> và <strong>GPT-5 Pro</strong>.</p>
+                <p>2. Với mỗi model, chạy 2 lần: Lần 1 dùng prompt thông thường; Lần 2 dùng prompt có thêm yêu cầu <code>"Let's think step by step"</code>.</p>
+                <p>3. Ghi lại: Kết quả có chính xác hơn không? Thời gian phản hồi chênh lệch bao nhiêu giây?</p>
+
+                <div class="exercise-box">
+                  <h3>📝 Bài tập Lesson 1.3</h3>
+                  <ol>
+                    <li>
+                      <strong>Viết lại Prompt</strong>: Thực hiện chuyển đổi 5 câu lệnh mơ hồ sau đây thành các câu lệnh có độ Steerability cao (thiết lập rõ vai trò, nhiệm vụ, định dạng đầu ra, và các ràng buộc cụ thể):
+                      <ul>
+                        <li>a) <em>"Tóm tắt bài viết này."</em></li>
+                        <li>b) <em>"Tìm lỗi sai trong đoạn code C++ này."</em></li>
+                        <li>c) <em>"Hãy viết một bài đăng quảng cáo cho sản phẩm cà phê mới."</em></li>
+                      </ul>
+                    </li>
+                    <li><strong>Thiết lập Decision Matrix</strong>: Viết một hướng dẫn ngắn (khoảng 300 từ) kèm bảng tiêu chí quyết định (Decision Matrix): Khi nào dự án của bạn nên chọn Standard Model và khi nào bắt buộc phải nâng cấp lên Reasoning Model.</li>
+                  </ol>
                 </div>
+              </div>
             </div>
-        </div>
-    </section>
 
-    <div class="separator"></div>
-
-    <!-- ================================================================== -->
-    <!-- LESSON 1.4 -->
-    <!-- ================================================================== -->
-    <section class="lesson animate-on-scroll" id="lesson-1-4">
-        <div class="lesson-header">
-            <div class="lesson-number">1.4</div>
-            <div class="lesson-title-group">
-                <h2>Taxonomy of AI Tasks & <span style="color:var(--magenta);">Agentic Workflows 2026</span></h2>
-                <div class="lesson-meta">
-                    <span>📖 Lý thuyết + 🛠️ Thực hành + 📝 Bài tập</span>
-                    <span>⏱️ ~45-60 phút</span>
+            <!-- Tab: Podcast -->
+            <div class="tab-pane" id="s1_l3_pane_video">
+              <div class="podcast-card-placeholder">
+                <div class="podcast-icon-large"><i class="fas fa-microphone-lines"></i></div>
+                <h3>NotebookLM Audio Overview Prompt</h3>
+                <p>Nhập prompt này vào NotebookLM để định hướng cho buổi thảo luận Podcast đối thoại giữa 2 MC ảo:</p>
+                <div class="prompt-code-box">
+                  <p><em>"Hãy tạo một buổi thảo luận Podcast giữa hai người dẫn chương trình (một nam, một nữ) bàn về nội dung của Session 01. Tập trung sâu vào mô hình tư duy của Andrej Karpathy: LLM là CPU, Context là RAM, và Kỹ sư đóng vai trò OS."</em></p>
                 </div>
+              </div>
             </div>
-        </div>
+          </div>
+        </section>
 
-        <!-- Task Taxonomy -->
-        <div class="block animate-on-scroll">
-            <div class="block-header">
-                <span class="block-icon">📖</span>
-                <span class="block-label theory">Lý thuyết</span>
+        <!-- ==================== SESSION 01 LESSON 04 ==================== -->
+        <section class="lesson-section" id="s1_l4">
+          <div class="lesson-banner">
+            <div class="lesson-subtitle">LESSON 04</div>
+            <h2 class="lesson-title">Lesson 1.4 — Phân loại tác vụ (Taxonomy) &amp; Agentic Workflows 2026</h2>
+          </div>
+
+          <div class="tab-container">
+            <div class="tab-nav">
+              <button class="tab-btn active" data-tab="theory"><i class="fas fa-book"></i> Lý thuyết</button>
+              <button class="tab-btn" data-tab="diagram"><i class="fas fa-project-diagram"></i> Sơ đồ minh họa</button>
+              <button class="tab-btn" data-tab="practice"><i class="fas fa-code"></i> Thực hành &amp; Bài tập</button>
+              <button class="tab-btn" data-tab="video"><i class="fas fa-microphone"></i> NotebookLM Podcast</button>
             </div>
-            <h3>Phân loại AI Tasks & Output Formats</h3>
 
-            <div class="image-showcase">
-                <img src="images/task_taxonomy.png" alt="Taxonomy of AI Tasks" loading="lazy">
-                <div class="image-caption">Hình 1.5 — Phân loại 7 loại AI Tasks: Generation, Classification, Extraction, Transformation, Summarization, Reasoning, Code Generation</div>
-            </div>
+            <!-- Tab: Theory -->
+            <div class="tab-pane active" id="s1_l4_pane_theory">
+              <div class="theory-content">
+                <h3>Taxonomy của AI Tasks</h3>
+                <p>Các yêu cầu làm việc với AI trong thực tế luôn nằm trong 7 nhóm tác vụ cơ bản sau:</p>
+                <ol>
+                  <li><strong>Generation (Tạo nội dung)</strong>: Viết bài viết, soạn email, viết kịch bản.</li>
+                  <li><strong>Classification (Phân loại)</strong>: Xác định sắc thái bình luận (Tích cực/Tiêu cực), lọc spam.</li>
+                  <li><strong>Extraction (Trích xuất)</strong>: Lấy thông tin từ CV, hóa đơn, bài báo.</li>
+                  <li><strong>Transformation (Chuyển đổi)</strong>: Dịch thuật, định dạng lại dữ liệu từ XML sang JSON.</li>
+                  <li><strong>Summarization (Tóm tắt)</strong>: Rút gọn văn bản dài, tóm tắt biên bản họp.</li>
+                  <li><strong>Reasoning (Suy luận)</strong>: Giải toán, gỡ lỗi logic thuật toán khó.</li>
+                  <li><strong>Code Generation (Viết mã nguồn)</strong>: Tạo hàm, class hoặc toàn bộ cấu trúc dự án.</li>
+                </ol>
 
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Task Type</th>
-                            <th>Mô tả</th>
-                            <th>Ví dụ</th>
-                            <th>Output Format phổ biến</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Generation</strong></td>
-                            <td>Tạo nội dung mới</td>
-                            <td>Viết bài blog, email, quảng cáo</td>
-                            <td>Plain text, Markdown</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Classification</strong></td>
-                            <td>Phân loại dữ liệu</td>
-                            <td>Sentiment analysis, spam detection</td>
-                            <td>JSON, Label</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Extraction</strong></td>
-                            <td>Trích xuất thông tin</td>
-                            <td>Lấy entities từ văn bản, parse CV</td>
-                            <td>JSON, Table</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Transformation</strong></td>
-                            <td>Chuyển đổi format/style</td>
-                            <td>Dịch thuật, rewrite, format convert</td>
-                            <td>Tùy target format</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Summarization</strong></td>
-                            <td>Tóm tắt nội dung</td>
-                            <td>Tóm tắt bài báo, meeting notes</td>
-                            <td>Markdown, Bullet points</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Reasoning</strong></td>
-                            <td>Suy luận logic/math</td>
-                            <td>Giải toán, debug, phân tích</td>
-                            <td>Step-by-step text</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Code Generation</strong></td>
-                            <td>Viết/sửa code</td>
-                            <td>Implement function, fix bug</td>
-                            <td>Code block</td>
-                        </tr>
-                    </tbody>
+                <div class="new-badge-container">
+                  <span class="new-tech-badge">🆕 XU HƯỚNG AGENTIC WORKFLOWS &amp; GIAO THỨC MCP (2026)</span>
+                  <p>Năm 2026 đánh dấu bước chuyển mình từ việc con người tương tác thủ công với Chatbot sang việc triển khai các <strong>AI Agents tự chủ chạy ngầm (Background Agents)</strong>. AI Agent nhận mục tiêu lớn → Tự phân rã thành nhiệm vụ nhỏ → Tự chọn và gọi các công cụ (Tools) cần thiết thông qua <strong>Model Context Protocol (MCP)</strong> - giao thức mở giúp kết nối bất kỳ AI Model nào với các tài nguyên dữ liệu cục bộ hoặc cloud một cách bảo mật và tức thời.</p>
+                </div>
+
+                <h3>Hướng dẫn chọn mô hình tối ưu theo nhóm Task (06/2026)</h3>
+                <table class="compare-table">
+                  <thead>
+                    <tr>
+                      <th>Nhóm Tác Vụ</th>
+                      <th>Mô Hình Khuyên Dùng</th>
+                      <th>Lý Do Lựa Chọn</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Chat thường ngày / Biên soạn tài liệu</td>
+                      <td><strong>GPT-5.5</strong></td>
+                      <td>Khả năng tổng hợp thông tin cân biến nhất, giọng văn tự nhiên.</td>
+                    </tr>
+                    <tr>
+                      <td>Phát triển phần mềm / Sửa code</td>
+                      <td><strong>Claude Fable 5</strong></td>
+                      <td>Độ tin cậy về cú pháp và logic cấu trúc code tốt nhất hiện tại.</td>
+                    </tr>
+                    <tr>
+                      <td>Xử lý tài liệu siêu dài / Phân tích log</td>
+                      <td><strong>Gemini 3.5 Flash</strong></td>
+                      <td>Context Window 1M+ tokens vượt trội, xử lý dữ liệu lớn giá cực rẻ.</td>
+                    </tr>
+                    <tr>
+                      <td>Hệ thống Agent tự chủ gọi Tool</td>
+                      <td><strong>Claude Opus 4.8</strong></td>
+                      <td>Khả năng tuân thủ định dạng Schema đầu ra chuẩn xác nhất, ít lỗi gọi API.</td>
+                    </tr>
+                  </tbody>
                 </table>
-            </div>
-        </div>
-
-        <!-- Agentic Workflows Block -->
-        <div class="block animate-on-scroll" id="agentic">
-            <div class="block-header">
-                <span class="block-icon">🤖</span>
-                <span class="block-label new">🆕 Xu hướng #1 của 2026</span>
-            </div>
-            <h3>Agentic Workflows — AI tự động hành động</h3>
-
-            <div class="image-showcase">
-                <img src="images/agentic_workflow.png" alt="Agentic AI Workflow 2026" loading="lazy">
-                <div class="image-caption">Hình 1.6 — Agentic Workflow: AI agent tự lập kế hoạch, gọi tools (MCP), thực thi, và báo cáo kết quả</div>
+              </div>
             </div>
 
-            <p>Năm 2026, AI không chỉ "trả lời câu hỏi" — mà <strong>tự hành động</strong>. Đây là xu hướng lớn nhất:</p>
-
-            <ul>
-                <li><strong>Background Agents</strong> — Tasks chạy hàng phút/giờ trong nền, webhook thông báo khi xong. Tools: <strong>Claude Cowork, Gemini Spark</strong></li>
-                <li><strong>Workspace Agents</strong> — Shared agents trong tổ chức, quản lý workflow độc lập (OpenAI Enterprise)</li>
-                <li><strong>Coding Agents</strong> — AI tự viết, test, chạy, và sửa code autonomously</li>
-            </ul>
-
-            <div class="diagram-box">
-<span class="label">Agentic Workflow Architecture (2026):</span>
-
-┌──────────────┐
-│  User Intent  │  "Phân tích doanh thu Q1 2026"
-└──────┬───────┘
-       ▼
-┌──────────────┐     ┌────────────────────┐
-│ Agent Router  │────▶│ Background Agent   │
-│ (Orchestrator)│     │ (async, long tasks)│
-└──────┬───────┘     └────────┬───────────┘
-       │                      │
-       ▼                      ▼
-┌──────────────┐     ┌────────────────────┐
-│ Tool Calls   │     │ Webhook            │
-│ via <span class="highlight">MCP</span>      │     │ Notification       │
-│ (database,   │     │ "Task completed!"  │
-│  search,     │     └────────────────────┘
-│  compute)    │
-└──────────────┘
-</div>
-
-            <div class="callout tip">
-                <span class="callout-icon">🔌</span>
-                <div class="callout-content">
-                    <strong>MCP (Model Context Protocol) — "USB-C for AI"</strong>
-                    <p>MCP là chuẩn open-source (Anthropic) cho phép AI agent kết nối với mọi tools & data sources qua 1 giao thức thống nhất. Thay vì viết custom integration cho từng tool, bạn chỉ cần build 1 MCP server → mọi MCP-compliant agent đều dùng được. Bạn sẽ học chi tiết ở Session 4 & 5.</p>
+            <!-- Tab: Diagram -->
+            <div class="tab-pane" id="s1_l4_pane_diagram">
+              <div class="diagram-visual-container">
+                <div class="card-container">
+                  <div class="card-title"><i class="fas fa-project-diagram"></i> Sơ đồ luồng Agentic Workflow chạy ngầm (SVG)</div>
+                  <div class="mermaid-wrapper">
+                    <img class="workflow-img" src="images/agentic_workflow.svg" alt="Sơ đồ luồng Agentic Workflow">
+                  </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Model Selection Guide -->
-        <div class="block animate-on-scroll">
-            <div class="block-header">
-                <span class="block-icon">🎯</span>
-                <span class="block-label new">🆕 Chọn Model theo Task (06/2026)</span>
-            </div>
-            <h3>Hướng dẫn chọn Model phù hợp</h3>
+                <div class="card-container">
+                  <div class="card-title"><i class="fas fa-image"></i> Ảnh minh họa Taxonomy &amp; Agentic Systems</div>
+                  <div class="illustration-wrapper">
+                    <img class="illustration-img" src="images/task_taxonomy.png" alt="Task Taxonomy Illustration">
+                  </div>
+                  <div class="prompt-drawer">
+                    <div class="prompt-drawer-header">
+                      <span>DALL-E / Imagen Prompt (Image 1.5)</span>
+                      <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="prompt-drawer-body" style="display: none;">
+                      A futuristic 3D infographic showing the taxonomy of 7 AI Tasks: Generation, Classification, Extraction, Transformation, Summarization, Reasoning, and Code Generation. Seven glowing hexagonal glass nodes arranged in a circular dashboard, each node displaying a unique neon micro-icon (e.g., a glowing quill for Generation, a label tag for Classification, database brackets for Extraction). Holographic UI style, dark theme, smooth violet and magenta gradient glows, sharp details, floating glass panels, 8k resolution, futuristic concept art, 3D render.
+                    </div>
+                  </div>
 
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Task Type</th>
-                            <th>Recommended Model</th>
-                            <th>Lý do</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Daily chat / Knowledge work</strong></td>
-                            <td>GPT-5.5</td>
-                            <td>Strongest all-around performer</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Coding / Software Engineering</strong></td>
-                            <td>Claude Fable 5 / Opus 4.8</td>
-                            <td>Top coding performance + agentic reliability</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Reasoning-heavy / Math</strong></td>
-                            <td>Gemini 3.5 Pro / GPT-5 Pro</td>
-                            <td>Deep reasoning capability (internal CoT)</td>
-                        </tr>
-                        <tr>
-                            <td><strong>High-volume / Cost-sensitive</strong></td>
-                            <td>Gemini 3.5 Flash</td>
-                            <td>Best price-performance ratio</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Long document analysis</strong></td>
-                            <td>Gemini 3.5 Flash (1M ctx)</td>
-                            <td>Largest context window available</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Agentic workflows</strong></td>
-                            <td>Claude Opus 4.8 / Gemini Spark</td>
-                            <td>Best agentic reliability + tool use</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Practice 1.4 -->
-        <div class="block animate-on-scroll">
-            <div class="block-header">
-                <span class="block-icon">🛠️</span>
-                <span class="block-label practice">Thực hành</span>
-            </div>
-            <h3>Hands-on: Task Mapping & Agentic Exploration</h3>
-            <ul>
-                <li>Với 1 đoạn văn bản cho trước, viết prompt cho mỗi loại task (tóm tắt, phân loại, trích xuất...), chọn model phù hợp</li>
-                <li>🆕 Thử agentic workflow: dùng <strong>Claude Cowork</strong> hoặc <strong>Gemini Spark</strong> để tự động hoàn thành 1 coding task — quan sát cách agent tự plan, execute, review</li>
-                <li>So sánh kết quả khi chạy cùng task trên Gemini 3.5 Flash ($) vs. Claude Fable 5 ($$) — chi phí vs. chất lượng</li>
-            </ul>
-        </div>
-
-        <!-- Exercise 1.4 -->
-        <div class="block animate-on-scroll">
-            <div class="block-header">
-                <span class="block-icon">📝</span>
-                <span class="block-label exercise">Bài tập</span>
-            </div>
-            <h3>Bài tập Lesson 1.4</h3>
-
-            <div class="exercise-item">
-                <span class="exercise-num">1</span>
-                <div class="exercise-text">
-                    Tạo <strong>bảng mapping toàn diện</strong>: 10 use-case thực tế → task type → model phù hợp (2026) → output format → lý do chọn model. Ví dụ use-cases: phân tích CV, tóm tắt báo cáo, chatbot CSKH, code review, dịch tài liệu...
+                  <div class="illustration-wrapper" style="margin-top:20px;">
+                    <img class="illustration-img" src="images/agentic_workflow.png" alt="Agentic Workflow Illustration">
+                  </div>
+                  <div class="prompt-drawer">
+                    <div class="prompt-drawer-header">
+                      <span>DALL-E / Imagen Prompt (Image 1.6)</span>
+                      <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="prompt-drawer-body" style="display: none;">
+                      A detailed 3D flowchart depicting a 2026 Agentic AI Workflow. Nodes connect sequentially with glowing laser paths: 1. User Intent input node -> 2. Agent Router (central glowing core processor) -> 3. Tool Calls via MCP (Model Context Protocol, visualized as a futuristic glowing connector plug linking to databases and search engines) -> 4. Asynchronous Background Agent -> 5. Webhook Notification showing a successful completion checkmark. Modern dark dashboard interface background, high tech design, metallic and glass textures, neon cyan and deep violet lighting, 8k resolution, photorealistic 3D render.
+                    </div>
+                  </div>
                 </div>
+              </div>
             </div>
 
-            <div class="exercise-item">
-                <span class="exercise-num">2</span>
-                <div class="exercise-text">
-                    Viết 1 đoạn phân tích (300 từ): <strong>"Agentic AI thay đổi cách chúng ta làm việc với AI như thế nào?"</strong> — So sánh chatbot truyền thống vs. agentic workflow.
+            <!-- Tab: Practice -->
+            <div class="tab-pane" id="s1_l4_pane_practice">
+              <div class="practice-container">
+                <div class="exercise-box">
+                  <h3>📝 Bài tập Lesson 1.4</h3>
+                  <ol>
+                    <li><strong>Thiết kế luồng Agentic</strong>: Hãy tự lên kế hoạch thiết kế một AI Agent tự động hóa việc: "Đọc email khách hàng -> Phân loại cảm xúc -> Tra cứu thông tin trên database nội bộ -> Tự động soạn email trả lời phù hợp". Mô tả rõ Agent này cần những công cụ (Tools) nào và bạn sẽ kết nối chúng qua MCP ra sao.</li>
+                    <li><strong>Bảng ánh xạ dự án</strong>: Lập bảng ánh xạ (Mapping) cho 10 công việc thực tế tại cơ quan/trường học của bạn sang 7 nhóm tác vụ AI cốt lõi, chọn model tương ứng và lý do lựa chọn.</li>
+                  </ol>
                 </div>
+              </div>
             </div>
-        </div>
-    </section>
 
-    <div class="separator"></div>
-
-    <!-- ================================================================== -->
-    <!-- QUIZ SECTION -->
-    <!-- ================================================================== -->
-    <section class="lesson animate-on-scroll" id="quiz">
-        <div class="lesson-header">
-            <div class="lesson-number">🧪</div>
-            <div class="lesson-title-group">
-                <h2>Quiz kiểm tra Session 01</h2>
-                <div class="lesson-meta">
-                    <span>5 câu hỏi trắc nghiệm</span>
-                    <span>⏱️ ~10 phút</span>
+            <!-- Tab: Podcast -->
+            <div class="tab-pane" id="s1_l4_pane_video">
+              <div class="podcast-card-placeholder">
+                <div class="podcast-icon-large"><i class="fas fa-microphone-lines"></i></div>
+                <h3>NotebookLM Video/Tiktok Prompt</h3>
+                <p>Nhập prompt này vào NotebookLM để trích xuất ra nội dung kịch bản cho video ngắn 60 giây:</p>
+                <div class="prompt-code-box">
+                  <p><em>"Dựa trên tài liệu Session 01, hãy viết một kịch bản chi tiết cho một Video ngắn (thời lượng 60 giây) đăng tải trên TikTok giới thiệu bài học. Bắt đầu bằng hook giật gân, phân cảnh visual, voiceover và hiệu ứng chữ."</em></p>
                 </div>
+              </div>
             </div>
-        </div>
+          </div>
+        </section>
 
-        <!-- Quiz 1 -->
-        <div class="quiz-card" data-correct="2">
-            <div class="quiz-question">1. Theo mô hình Karpathy (2025), LLM đóng vai trò gì trong hệ thống AI?</div>
-            <div class="quiz-options">
-                <div class="quiz-option" data-index="0">
-                    <span class="radio"></span>
-                    Hệ điều hành (Operating System)
+        <!-- ==================== SESSION 01 QUIZ ==================== -->
+        <section class="lesson-section" id="s1_quiz">
+          <div class="lesson-banner">
+            <div class="lesson-subtitle">ĐÁNH GIÁ NĂNG LỰC</div>
+            <h2 class="lesson-title">Quiz Kiểm Tra Kiến Thức Session 01</h2>
+          </div>
+
+          <div class="quiz-container">
+            
+            <!-- Question 1 -->
+            <div class="quiz-card" id="q1">
+              <div class="quiz-header">
+                <span class="quiz-num">CÂU HỎI 1 / 5</span>
+              </div>
+              <div class="quiz-qtext">Theo mô hình Karpathy (2025-2026), cấu phần nào tương ứng với bộ nhớ RAM của hệ thống AI?</div>
+              <div class="quiz-options">
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>A. Bản thân mô hình LLM.</span>
                 </div>
-                <div class="quiz-option" data-index="1">
-                    <span class="radio"></span>
-                    RAM — Bộ nhớ làm việc
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>B. Người kỹ sư thiết kế hệ thống.</span>
                 </div>
-                <div class="quiz-option" data-index="2">
-                    <span class="radio"></span>
-                    CPU — Bộ xử lý trung tâm
+                <div class="quiz-option" data-correct="true">
+                  <div class="quiz-radio"></div>
+                  <span>C. Cửa sổ ngữ cảnh (Context Window).</span>
                 </div>
-                <div class="quiz-option" data-index="3">
-                    <span class="radio"></span>
-                    Hard Drive — Bộ nhớ lâu dài
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>D. Ổ cứng lưu trữ Vector Database.</span>
                 </div>
+              </div>
+              <div class="quiz-explanation">
+                <div class="quiz-explanation-title"><i class="fas fa-info-circle"></i> Giải thích đáp án</div>
+                LLM đóng vai trò CPU xử lý tính toán, Context Window đóng vai trò là thanh RAM chứa toàn bộ thông tin làm việc tạm thời được nạp vào, còn Engineer đóng vai trò OS quản lý việc nạp/xóa RAM.
+              </div>
             </div>
-            <div class="quiz-feedback correct-feedback">✅ Chính xác! LLM = CPU, Context Window = RAM, Engineer = OS. LLM chỉ xử lý dựa trên những gì có trong context window.</div>
-            <div class="quiz-feedback wrong-feedback">❌ Sai rồi! Theo Karpathy: LLM = CPU (xử lý), Context Window = RAM (bộ nhớ), Bạn (Engineer) = OS (quản lý).</div>
-        </div>
 
-        <!-- Quiz 2 -->
-        <div class="quiz-card" data-correct="1">
-            <div class="quiz-question">2. Model nào có context window lớn nhất tính đến 06/2026?</div>
-            <div class="quiz-options">
-                <div class="quiz-option" data-index="0">
-                    <span class="radio"></span>
-                    Claude Fable 5 (200K+ tokens)
+            <!-- Question 2 -->
+            <div class="quiz-card" id="q2">
+              <div class="quiz-header">
+                <span class="quiz-num">CÂU HỎI 2 / 5</span>
+              </div>
+              <div class="quiz-qtext">Ưu thế lớn nhất của mô hình Gemini 3.5 Flash trong năm 2026 là gì?</div>
+              <div class="quiz-options">
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>A. Tốc độ suy luận chậm nhưng rất sâu sắc.</span>
                 </div>
-                <div class="quiz-option" data-index="1">
-                    <span class="radio"></span>
-                    Gemini 3.5 Flash (1M+ tokens)
+                <div class="quiz-option" data-correct="true">
+                  <div class="quiz-radio"></div>
+                  <span>B. Kích thước Context Window cực lớn (1M+ tokens) với chi phí tối ưu.</span>
                 </div>
-                <div class="quiz-option" data-index="2">
-                    <span class="radio"></span>
-                    GPT-5.5 (128K+ tokens)
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>C. Khả năng viết văn thơ sáng tạo tốt nhất.</span>
                 </div>
-                <div class="quiz-option" data-index="3">
-                    <span class="radio"></span>
-                    GPT-5 Pro (256K tokens)
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>D. Tự động sửa code mà không cần công cụ hỗ trợ.</span>
                 </div>
+              </div>
+              <div class="quiz-explanation">
+                <div class="quiz-explanation-title"><i class="fas fa-info-circle"></i> Giải thích đáp án</div>
+                Gemini 3.5 Flash nổi tiếng với context window siêu khủng lên tới hơn 1 triệu tokens, giúp xử lý các tập tin tài liệu khổng lồ với chi phí API cực thấp.
+              </div>
             </div>
-            <div class="quiz-feedback correct-feedback">✅ Đúng! Gemini 3.5 Flash có context window 1M+ tokens — lớn nhất hiện tại, phù hợp cho phân tích tài liệu dài.</div>
-            <div class="quiz-feedback wrong-feedback">❌ Sai! Gemini 3.5 Flash có context window 1M+ tokens — lớn nhất. Claude Fable 5: 200K+, GPT-5.5: 128K+.</div>
-        </div>
 
-        <!-- Quiz 3 -->
-        <div class="quiz-card" data-correct="2">
-            <div class="quiz-question">3. "Context Engineering" khác "Prompt Engineering" ở điểm nào quan trọng nhất?</div>
-            <div class="quiz-options">
-                <div class="quiz-option" data-index="0">
-                    <span class="radio"></span>
-                    Context Engineering viết prompt dài hơn
+            <!-- Question 3 -->
+            <div class="quiz-card" id="q3">
+              <div class="quiz-header">
+                <span class="quiz-num">CÂU HỎI 3 / 5</span>
+              </div>
+              <div class="quiz-qtext">Khi làm việc với các dòng Reasoning Models như GPT-5 Pro hay Gemini 3.5 Pro, viết câu lệnh "Hãy suy nghĩ từng bước" có tác động thế nào?</div>
+              <div class="quiz-options">
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>A. Luôn luôn bắt buộc để mô hình đưa ra câu trả lời đúng.</span>
                 </div>
-                <div class="quiz-option" data-index="1">
-                    <span class="radio"></span>
-                    Context Engineering chỉ liên quan đến RAG
+                <div class="quiz-option" data-correct="true">
+                  <div class="quiz-radio"></div>
+                  <span>B. Có thể gây ra hiện tượng Double-Reasoning, làm tăng thời gian phản hồi (Latency) không cần thiết.</span>
                 </div>
-                <div class="quiz-option" data-index="2">
-                    <span class="radio"></span>
-                    Context Engineering quản lý toàn bộ thông tin đầu vào, không chỉ câu hỏi
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>C. Giúp mô hình tiết kiệm token đầu ra hơn.</span>
                 </div>
-                <div class="quiz-option" data-index="3">
-                    <span class="radio"></span>
-                    Context Engineering chỉ dùng cho agentic AI
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>D. Làm mô hình bị lỗi hệ thống không phản hồi.</span>
                 </div>
+              </div>
+              <div class="quiz-explanation">
+                <div class="quiz-explanation-title"><i class="fas fa-info-circle"></i> Giải thích đáp án</div>
+                Các mô hình Reasoning đã tích hợp sẵn cơ chế suy luận ngầm bên trong. Việc ép mô hình hiển thị tiếp chuỗi suy nghĩ ở đầu ra sẽ tạo ra hiện tượng suy luận trùng lặp, gây lãng phí thời gian và tiền bạc.
+              </div>
             </div>
-            <div class="quiz-feedback correct-feedback">✅ Chính xác! Context Engineering quản lý toàn bộ "RAM" — system prompt, retrieved docs, tool schemas, chat history — không chỉ câu hỏi của user.</div>
-            <div class="quiz-feedback wrong-feedback">❌ Context Engineering quản lý toàn bộ thông tin đầu vào (system prompt, documents, tools, history) — không chỉ câu hỏi. RAG chỉ là 1 phần.</div>
-        </div>
 
-        <!-- Quiz 4 -->
-        <div class="quiz-card" data-correct="0">
-            <div class="quiz-question">4. MCP (Model Context Protocol) được ví như gì?</div>
-            <div class="quiz-options">
-                <div class="quiz-option" data-index="0">
-                    <span class="radio"></span>
-                    "USB-C for AI" — chuẩn kết nối AI với tools
+            <!-- Question 4 -->
+            <div class="quiz-card" id="q4">
+              <div class="quiz-header">
+                <span class="quiz-num">CÂU HỎI 4 / 5</span>
+              </div>
+              <div class="quiz-qtext">Model Context Protocol (MCP) giải quyết vấn đề cốt lõi nào của AI Agent?</div>
+              <div class="quiz-options">
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>A. Giúp mô hình dịch thuật nhanh hơn.</span>
                 </div>
-                <div class="quiz-option" data-index="1">
-                    <span class="radio"></span>
-                    "Brain for AI" — bộ não xử lý
+                <div class="quiz-option" data-correct="true">
+                  <div class="quiz-radio"></div>
+                  <span>B. Chuẩn hóa giao thức kết nối bảo mật giữa AI Model và các nguồn dữ liệu/công cụ bên ngoài.</span>
                 </div>
-                <div class="quiz-option" data-index="2">
-                    <span class="radio"></span>
-                    "API Gateway" — cổng truy cập API
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>C. Giúp tăng dung lượng Context Window lên vô hạn.</span>
                 </div>
-                <div class="quiz-option" data-index="3">
-                    <span class="radio"></span>
-                    "Database Protocol" — giao thức database
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>D. Thay thế hoàn toàn cho các thư viện lập trình như Python và JavaScript.</span>
                 </div>
+              </div>
+              <div class="quiz-explanation">
+                <div class="quiz-explanation-title"><i class="fas fa-info-circle"></i> Giải thích đáp án</div>
+                MCP hoạt động như một cổng kết nối chuẩn hóa ("USB-C"), giúp AI tương tác trực tiếp và an toàn với hệ thống tệp tin, cơ sở dữ liệu và các API nội bộ mà không cần viết lại mã nguồn tích hợp cho từng mô hình.
+              </div>
             </div>
-            <div class="quiz-feedback correct-feedback">✅ Đúng! MCP là "USB-C for AI" — chuẩn open-source (Anthropic) kết nối AI agents với mọi tools & data sources qua 1 giao thức thống nhất.</div>
-            <div class="quiz-feedback wrong-feedback">❌ MCP được gọi là "USB-C for AI" — chuẩn open-source cho phép kết nối AI với tools/data sources. Build 1 lần → mọi agent đều dùng được.</div>
-        </div>
 
-        <!-- Quiz 5 -->
-        <div class="quiz-card" data-correct="3">
-            <div class="quiz-question">5. Với reasoning models (GPT-5 Pro, Gemini 3.5 Pro), "think step by step" có hiệu quả không?</div>
-            <div class="quiz-options">
-                <div class="quiz-option" data-index="0">
-                    <span class="radio"></span>
-                    Luôn hiệu quả, nên dùng cho mọi model
+            <!-- Question 5 -->
+            <div class="quiz-card" id="q5">
+              <div class="quiz-header">
+                <span class="quiz-num">CÂU HỎI 5 / 5</span>
+              </div>
+              <div class="quiz-qtext">Lỗi hệ thống của AI Agent (Agent Failures) trong thực tế phần lớn xuất phát từ:</div>
+              <div class="quiz-options">
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>A. Do câu lệnh Prompt ban đầu viết chưa đủ hoa mỹ.</span>
                 </div>
-                <div class="quiz-option" data-index="1">
-                    <span class="radio"></span>
-                    Chỉ hiệu quả khi kết hợp với few-shot examples
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>B. Do lỗi từ hệ quản trị cơ sở dữ liệu bị sập.</span>
                 </div>
-                <div class="quiz-option" data-index="2">
-                    <span class="radio"></span>
-                    Chỉ hiệu quả với bài toán toán học
+                <div class="quiz-option" data-correct="true">
+                  <div class="quiz-radio"></div>
+                  <span>C. Do quản lý ngữ cảnh bị thất bại (Context Failures - mất thông tin, tràn bộ nhớ, gọi sai công cụ).</span>
                 </div>
-                <div class="quiz-option" data-index="3">
-                    <span class="radio"></span>
-                    Có thể không cần thiết hoặc thậm chí có hại vì gây "double-reasoning"
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>D. Do mô hình AI bị lỗi phần cứng trong trung tâm dữ liệu.</span>
                 </div>
+              </div>
+              <div class="quiz-explanation">
+                <div class="quiz-explanation-title"><i class="fas fa-info-circle"></i> Giải thích đáp án</div>
+                Theo nghiên cứu thực tế và khẳng định của Karpathy, phần lớn các thất bại của Agent tự vận hành đến từ lỗi quản lý ngữ cảnh (Context Engineering bị lỗi) chứ không phải do câu lệnh Prompt chính.
+              </div>
             </div>
-            <div class="quiz-feedback correct-feedback">✅ Chính xác! Reasoning models đã tự reasoning bên trong (internal CoT). Thêm "think step by step" có thể gây double-reasoning → tăng latency mà không cải thiện accuracy.</div>
-            <div class="quiz-feedback wrong-feedback">❌ Với reasoning models, "think step by step" có thể KHÔNG CẦN hoặc CÓ HẠI vì model đã tự reasoning. Chỉ hiệu quả với standard models cho bài toán phức tạp.</div>
-        </div>
-    </section>
 
-</main>
+          </div>
+        </section>
 
-<!-- Footer -->
-<footer class="footer">
-    <div class="nav-buttons">
-        <a href="../" class="nav-btn prev">← Trang chủ</a>
-        <a href="../session-02/index.html" class="nav-btn next">Session 02: Prompt Engineering → </a>
-    </div>
-    <p>
-        📚 Prompt, Context & Harness Engineering — Phiên bản 06/2026<br>
-        Tạo bởi AI Giảng viên · Cập nhật lần cuối: 26/06/2026
-    </p>
-</footer>
+      </div>
 
-<!-- Scroll to Top -->
-<button class="scroll-top" id="scrollTop">↑</button>
+      <!-- Footer -->
+      <footer class="credits-footer">
+        <p>📚 Session 01 — Nền tảng &amp; Bối cảnh AI 2026 · Rikkei AI Academy</p>
+        <p>Bản quyền thuộc Rikkei Academy AI Coordinator · Cập nhật 06/2026</p>
+      </footer>
+    </main>
+  </div>
 
-<!-- ====================== JAVASCRIPT ====================== -->
-<script>
-    // ===== Progress Bar =====
-    window.addEventListener('scroll', () => {
-        const scrollTop = document.documentElement.scrollTop;
-        const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-        const progress = (scrollTop / scrollHeight) * 100;
-        document.getElementById('progressBar').style.width = progress + '%';
-    });
-
-    // ===== Scroll Animations =====
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
-            }
-        });
-    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
-
-    document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
-
-    // ===== Scroll to Top =====
-    const scrollTopBtn = document.getElementById('scrollTop');
-    window.addEventListener('scroll', () => {
-        scrollTopBtn.classList.toggle('visible', window.scrollY > 500);
-    });
-    scrollTopBtn.addEventListener('click', () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-
-    // ===== TOC Panel =====
-    const tocToggle = document.getElementById('tocToggle');
-    const tocPanel = document.getElementById('tocPanel');
-    tocToggle.addEventListener('click', () => {
-        tocPanel.classList.toggle('open');
-    });
-    document.addEventListener('click', (e) => {
-        if (!tocPanel.contains(e.target) && !tocToggle.contains(e.target)) {
-            tocPanel.classList.remove('open');
-        }
-    });
-    tocPanel.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', () => tocPanel.classList.remove('open'));
-    });
-
-    // ===== Active Nav Link =====
-    const sections = document.querySelectorAll('.lesson');
-    const navLinks = document.querySelectorAll('.nav-links a');
-    window.addEventListener('scroll', () => {
-        let current = '';
-        sections.forEach(section => {
-            const sectionTop = section.offsetTop - 100;
-            if (window.scrollY >= sectionTop) {
-                current = section.getAttribute('id');
-            }
-        });
-        navLinks.forEach(link => {
-            link.classList.remove('active');
-            if (link.getAttribute('href') === '#' + current) {
-                link.classList.add('active');
-            }
-        });
-    });
-
-    // ===== Quiz Logic =====
-    document.querySelectorAll('.quiz-card').forEach(card => {
-        const correctIndex = parseInt(card.dataset.correct);
-        const options = card.querySelectorAll('.quiz-option');
-        const correctFeedback = card.querySelector('.correct-feedback');
-        const wrongFeedback = card.querySelector('.wrong-feedback');
-        let answered = false;
-
-        options.forEach(option => {
-            option.addEventListener('click', () => {
-                if (answered) return;
-                answered = true;
-                const selectedIndex = parseInt(option.dataset.index);
-
-                if (selectedIndex === correctIndex) {
-                    option.classList.add('correct');
-                    correctFeedback.classList.add('show');
-                } else {
-                    option.classList.add('wrong');
-                    options[correctIndex].classList.add('correct');
-                    wrongFeedback.classList.add('show');
-                }
-
-                options.forEach(opt => {
-                    opt.style.pointerEvents = 'none';
-                });
-            });
-        });
-    });
-</script>
-
+  <!-- Prism.js Code Highlighter -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  
+  <!-- Custom Logic JS -->
+  <script src="script.js"></script>
 </body>
 </html>

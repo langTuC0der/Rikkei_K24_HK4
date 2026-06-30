@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 450" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#080c14" />
+      <stop offset="100%" stop-color="#0f0f35" />
+    </linearGradient>
+    <linearGradient id="magenta-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ec4899" />
+      <stop offset="100%" stop-color="#be185d" />
+    </linearGradient>
+    <linearGradient id="cyan-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06b6d4" />
+      <stop offset="100%" stop-color="#0891b2" />
+    </linearGradient>
+    <linearGradient id="gold-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#eab308" />
+      <stop offset="100%" stop-color="#a16207" />
+    </linearGradient>
+    <!-- Glow Filters -->
+    <filter id="glow-magenta" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="100%" height="100%" rx="16" fill="url(#bg-grad)" stroke="#222554" stroke-width="2" />
+
+  <style>
+    .title-text { font-family: 'Inter', sans-serif; font-size: 20px; font-weight: 800; fill: #ffffff; text-anchor: middle; }
+    .label-text { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700; fill: #ffffff; }
+    .desc-text { font-family: 'Inter', sans-serif; font-size: 11px; fill: #9ca3af; }
+    .bold-text { font-weight: 800; }
+  </style>
+
+  <text x="500" y="45" class="title-text">Ba Trụ Cột Kỹ Nghệ Hệ Thống AI (AI Engineering Pillars)</text>
+
+  <!-- Concentric Rings (Concentric Circles representation) -->
+  <!-- Outer Ring: Harness -->
+  <circle cx="300" cy="240" r="150" fill="none" stroke="url(#magenta-grad)" stroke-width="20" filter="url(#glow-magenta)" opacity="0.85" />
+  <!-- Middle Ring: Context -->
+  <circle cx="300" cy="240" r="100" fill="none" stroke="url(#cyan-grad)" stroke-width="20" opacity="0.9" />
+  <!-- Inner Circle: Prompt -->
+  <circle cx="300" cy="240" r="50" fill="url(#gold-grad)" stroke="#fef08a" stroke-width="2" />
+
+  <!-- Labels and Explanations on the Right -->
+  <!-- 1. Harness Engineering -->
+  <g transform="translate(520, 140)">
+    <rect x="-10" y="-12" width="16" height="16" fill="#ec4899" rx="3" />
+    <text x="18" y="2" class="label-text bold-text" fill="#f472b6">HARNESS ENGINEERING (Bao bọc &amp; Điều phối)</text>
+    <text x="18" y="22" class="desc-text">Thiết lập hạ tầng: Đồ thị, Pipelines, Tool Use &amp; Guardrails đa lớp.</text>
+    <text x="18" y="38" class="desc-text">Giám sát và kiểm định chất lượng tự động.</text>
+  </g>
+
+  <!-- 2. Context Engineering -->
+  <g transform="translate(520, 230)">
+    <rect x="-10" y="-12" width="16" height="16" fill="#06b6d4" rx="3" />
+    <text x="18" y="2" class="label-text bold-text" fill="#22d3ee">CONTEXT ENGINEERING (Quản lý RAM ngữ cảnh)</text>
+    <text x="18" y="22" class="desc-text">Kiểm soát, chọn lọc và sắp xếp toàn bộ thông tin nạp vào Context Window.</text>
+    <text x="18" y="38" class="desc-text">Kết nối RAG, MCP, Quản lý bộ nhớ đệm Cache và State.</text>
+  </g>
+
+  <!-- 3. Prompt Engineering -->
+  <g transform="translate(520, 320)">
+    <rect x="-10" y="-12" width="16" height="16" fill="#eab308" rx="3" />
+    <text x="18" y="2" class="label-text bold-text" fill="#fbbf24">PROMPT ENGINEERING (Kỹ thuật câu lệnh lõi)</text>
+    <text x="18" y="22" class="desc-text">Thiết kế System/Task Prompts để LLM hiểu rõ nhiệm vụ cụ thể.</text>
+    <text x="18" y="38" class="desc-text">Cơ sở nền tảng giao tiếp trực tiếp với mô hình.</text>
+  </g>
+
+  <!-- Connecting Lines from circles to labels -->
+  <!-- Line 1: Harness Outer -->
+  <path d="M 300 90 L 500 90 L 500 140" fill="none" stroke="#be185d" stroke-dasharray="4,4" stroke-width="1.5" />
+  <circle cx="300" cy="90" r="4" fill="#be185d" />
+
+  <!-- Line 2: Context Middle -->
+  <path d="M 300 140 L 480 140 L 480 230" fill="none" stroke="#0891b2" stroke-dasharray="4,4" stroke-width="1.5" />
+  <circle cx="300" cy="140" r="4" fill="#0891b2" />
+
+  <!-- Line 3: Prompt Inner -->
+  <path d="M 300 190 L 460 190 L 460 320" fill="none" stroke="#a16207" stroke-dasharray="4,4" stroke-width="1.5" />
+  <circle cx="300" cy="190" r="4" fill="#a16207" />
+</svg>
