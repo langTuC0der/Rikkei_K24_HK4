@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 450" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#080c14" />
+      <stop offset="100%" stop-color="#0f0f35" />
+    </linearGradient>
+    <linearGradient id="blue-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+    <linearGradient id="cyan-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06b6d4" />
+      <stop offset="100%" stop-color="#0891b2" />
+    </linearGradient>
+    <linearGradient id="purple-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a855f7" />
+      <stop offset="100%" stop-color="#7e22ce" />
+    </linearGradient>
+    <linearGradient id="emerald-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+    <!-- Glow Filters -->
+    <filter id="glow-purple" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="100%" height="100%" rx="16" fill="url(#bg-grad)" stroke="#222554" stroke-width="2" />
+
+  <style>
+    .title-text { font-family: 'Inter', sans-serif; font-size: 20px; font-weight: 800; fill: #ffffff; text-anchor: middle; }
+    .label-text { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700; fill: #ffffff; text-anchor: middle; }
+    .desc-text { font-family: 'Inter', sans-serif; font-size: 11px; fill: #9ca3af; text-anchor: middle; }
+    .status-text { font-family: 'JetBrains Mono', monospace; font-size: 11px; fill: #a78bfa; text-anchor: middle; font-weight: 700; }
+  </style>
+
+  <text x="500" y="45" class="title-text">Đồ Thị Tuần Hoàn Agentic (Cyclic Graph - LangGraph Pattern)</text>
+
+  <!-- Node 1: Plan -->
+  <rect x="120" y="160" width="180" height="100" rx="12" fill="url(#blue-grad)" stroke="#38bdf8" stroke-width="2" />
+  <text x="210" y="200" class="label-text">1. PLAN (Think)</text>
+  <text x="210" y="225" class="desc-text" fill="#e0f2fe">Lập kế hoạch giải quyết</text>
+  <text x="210" y="242" class="desc-text" fill="#93c5fd">Tạo/Sửa mã nguồn</text>
+
+  <!-- Arrow: Plan -> Execute -->
+  <path d="M 300 210 L 400 210" fill="none" stroke="#38bdf8" stroke-width="3" />
+  <polygon points="390,205 400,210 390,215" fill="#38bdf8" />
+
+  <!-- Node 2: Execute -->
+  <rect x="410" y="160" width="180" height="100" rx="12" fill="url(#cyan-grad)" stroke="#22d3ee" stroke-width="2" />
+  <text x="500" y="200" class="label-text">2. EXECUTE (Act)</text>
+  <text x="500" y="225" class="desc-text" fill="#ecfeff">Chạy code kiểm thử</text>
+  <text x="500" y="242" class="desc-text" fill="#67e8f9">Gọi công cụ ngoài</text>
+
+  <!-- Arrow: Execute -> Evaluate -->
+  <path d="M 590 210 L 690 210" fill="none" stroke="#22d3ee" stroke-width="3" />
+  <polygon points="680,205 690,210 680,215" fill="#22d3ee" />
+
+  <!-- Node 3: Evaluate -->
+  <rect x="700" y="160" width="180" height="100" rx="12" fill="url(#purple-grad)" stroke="#c084fc" stroke-width="2" filter="url(#glow-purple)" />
+  <text x="790" y="200" class="label-text">3. EVALUATE (Critique)</text>
+  <text x="790" y="225" class="desc-text" fill="#f3e8ff">Kiểm thử &amp; So khớp</text>
+  <text x="790" y="242" class="desc-text" fill="#c084fc">Phát hiện lỗi (Assertion)</text>
+
+  <!-- Feedback Arrow: Evaluate -> Plan (Goes above) -->
+  <path d="M 790 160 Q 500 50 210 160" fill="none" stroke="#f43f5e" stroke-width="3" stroke-dasharray="6,4" />
+  <polygon points="213,150 210,160 220,158" fill="#f43f5e" />
+  <rect x="440" y="70" width="120" height="24" rx="12" fill="#0f172a" stroke="#f43f5e" stroke-width="1.5" />
+  <text x="500" y="86" class="status-text" fill="#f43f5e">FAIL (Sửa Code &amp; Thử lại)</text>
+
+  <!-- Success Path: Evaluate -> End (Goes right/down) -->
+  <path d="M 880 210 L 930 210 L 930 330 L 590 330" fill="none" stroke="#10b981" stroke-width="3" />
+  <polygon points="600,325 590,330 600,335" fill="#10b981" />
+  <text x="790" y="320" class="status-text" fill="#34d399">PASS (Hoàn thành)</text>
+
+  <!-- Node 4: Output -->
+  <rect x="360" y="295" width="220" height="70" rx="10" fill="url(#emerald-grad)" stroke="#34d399" stroke-width="2" />
+  <text x="470" y="330" class="label-text">FINAL OUTPUT</text>
+  <text x="470" y="350" class="desc-text" fill="#ecfdf5">Trả về code chạy thành công</text>
+</svg>

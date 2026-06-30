@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session 05 — Harness Engineering | Rikkei AI Academy</title>
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Prism Code Highlighting Theme -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+  
+  <!-- Mermaid.js -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'dark',
+      securityLevel: 'loose',
+      themeVariables: {
+        background: '#090d16',
+        primaryColor: '#1e293b',
+        primaryTextColor: '#f3f4f6',
+        lineColor: '#8b5cf6',
+        textColor: '#f3f4f6'
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">
+          <i class="fas fa-microchip"></i>
+        </div>
+        <div class="brand-text">Rikkei AI Academy</div>
+      </div>
+
+      <a href="../../index.html" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+        <span>Quay lại cổng chính</span>
+      </a>
+      
+      <!-- Navigation for Session 05 -->
+      <nav class="lesson-navigation" id="s5-nav">
+        <div class="nav-label">Bài học Session 05</div>
+        <button class="lesson-nav-btn active" data-lesson="s5_l1">
+          <i class="fas fa-book-open"></i>
+          <span>Lesson 01 — Pipelines & Graph Orchestration</span>
+        </button>
+        <button class="lesson-nav-btn" data-lesson="s5_l2">
+          <i class="fas fa-tools"></i>
+          <span>Lesson 02 — Tool Use & MCP Integration</span>
+        </button>
+        <button class="lesson-nav-btn" data-lesson="s5_l3">
+          <i class="fas fa-shield-halved"></i>
+          <span>Lesson 03 — Guardrails & Safety Validation</span>
+        </button>
+        <button class="lesson-nav-btn" data-lesson="s5_l4">
+          <i class="fas fa-users-gear"></i>
+          <span>Lesson 04 — Multi-Agent & A2A Protocol</span>
+        </button>
+        <div class="nav-label">Kiểm tra</div>
+        <button class="lesson-nav-btn" data-lesson="s5_quiz">
+          <i class="fas fa-vial"></i>
+          <span>Quiz kiểm tra Session 05</span>
+        </button>
+      </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <header class="header">
+        <div class="header-title">
+          <h1 id="header-session-title">Session 05 — Harness Engineering</h1>
+        </div>
+        <div class="header-meta">
+          <span class="tech-pill">Orchestration & Pipelines</span>
+          <span class="tech-pill">Guardrails & Multi-Agent</span>
+        </div>
+      </header>
+
+      <div class="content-wrapper">
+        
+        <!-- ==================== SESSION 05 LESSON 01 ==================== -->
+        <section class="lesson-section active" id="s5_l1">
+          <div class="lesson-banner">
+            <div class="lesson-subtitle">LESSON 01</div>
+            <h2 class="lesson-title">LLM Pipelines, Chaining & 🆕 Graph-Based Orchestration</h2>
+          </div>
+
+          <div class="tab-container">
+            <div class="tab-nav">
+              <button class="tab-btn active" data-tab="theory"><i class="fas fa-book"></i> Lý thuyết</button>
+              <button class="tab-btn" data-tab="diagram"><i class="fas fa-project-diagram"></i> Sơ đồ minh họa</button>
+              <button class="tab-btn" data-tab="practice"><i class="fas fa-code"></i> Thực hành</button>
+              <button class="tab-btn" data-tab="video"><i class="fas fa-microphone"></i> NotebookLM Podcast</button>
+            </div>
+
+            <!-- Tab: Theory -->
+            <div class="tab-pane active" id="s5_l1_pane_theory">
+              <div class="theory-content">
+                <h3>Các mô hình Chaining (Liên kết chuỗi) cơ bản</h3>
+                <p>Trước khi chuyển sang các hệ thống tự chủ phức tạp, các tác vụ AI thường được thiết kế dưới dạng chuỗi một chiều (DAG - Directed Acyclic Graph):</p>
+                <ul>
+                  <li><strong>Sequential Chain</strong>: Tiến trình đi thẳng một chiều (A → B → C). Ví dụ: Nhận text → Dịch thuật → Định dạng Markdown.</li>
+                  <li><strong>Parallel Chain</strong>: Thực thi song song nhiều LLM. Ví dụ: Đánh giá một CV đồng thời dưới góc nhìn của Senior Dev, HR và Hiring Manager.</li>
+                  <li><strong>Conditional Chain</strong>: Rẽ nhánh dựa trên điều kiện của LLM trước. Ví dụ: Phân loại ý định email → chuyển đến Sales hoặc Support.</li>
+                  <li><strong>Map-Reduce Chain</strong>: Phân chia tài liệu lớn → xử lý song song → gom kết quả để tóm tắt tổng thể.</li>
+                </ul>
+
+                <div class="new-badge-container">
+                  <span class="new-tech-badge">🆕 XU HƯỚNG CÔNG NGHỆ 2026: CYCLIC GRAPH</span>
+                  <p>Trong thực tế, các chuỗi một chiều (DAG) gặp hạn chế lớn khi xảy ra lỗi. Hệ thống cần khả năng <strong>lặp lại, đánh giá và tự sửa sai (Reflexion)</strong>. Sự tiến hóa sang đồ thị tuần hoàn (Cyclic Graph) cho phép tác nhân (Agent) quay lại các bước trước (ví dụ: quay lại Plan nếu Evaluate phát hiện lỗi code).</p>
+                </div>
+
+                <h3>Bảng So Sánh Các Agent Frameworks Trong Năm 2026</h3>
+                <table class="compare-table">
+                  <thead>
+                    <tr>
+                      <th>Hạng mục</th>
+                      <th>Framework</th>
+                      <th>Đặc tính nổi bật</th>
+                      <th>Khi nào nên dùng</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Low-Level</strong></td>
+                      <td>LangGraph</td>
+                      <td>Orchestration dựa trên State và Đồ thị có chu trình. Khả năng kiểm soát cực cao.</td>
+                      <td>Xây dựng hệ thống Agent phức tạp, tùy biến luồng logic chi tiết.</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Low-Level</strong></td>
+                      <td>Pydantic AI</td>
+                      <td>Type-safe agent framework, thiết kế thuần Python với kiểu dữ liệu Pydantic nghiêm ngặt.</td>
+                      <td>Các hệ thống yêu cầu xác thực kiểu dữ liệu chặt chẽ từ đầu vào đến đầu ra.</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Mid-Level</strong></td>
+                      <td>CrewAI</td>
+                      <td>Multi-agent dựa trên vai trò (Role-based), thiết lập rất nhanh.</td>
+                      <td>Xây dựng nhanh các đội nhóm Agent mô phỏng phòng ban doanh nghiệp.</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Enterprise</strong></td>
+                      <td>Google ADK</td>
+                      <td>Đầy đủ tính năng quản trị bảo mật, kiểm duyệt và observability lớp doanh nghiệp.</td>
+                      <td>Môi trường production doanh nghiệp cần kiểm tra vết kiểm toán nghiêm ngặt.</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Enterprise</strong></td>
+                      <td>OpenAI Agents SDK</td>
+                      <td>Cơ chế Handoff nguyên bản, tích hợp sâu vào hệ sinh thái OpenAI.</td>
+                      <td>Các hệ thống thuần OpenAI và sử dụng cơ chế chuyển giao tác nhân mượt mà.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Tab: Diagram -->
+            <div class="tab-pane" id="s5_l1_pane_diagram">
+              <div class="diagram-visual-container">
+                <div class="card-container">
+                  <div class="card-title"><i class="fas fa-project-diagram"></i> Sơ đồ Đồ thị tuần hoàn (SVG)</div>
+                  <div class="mermaid-wrapper">
+                    <img class="workflow-img" src="images/workflow_graph.svg" alt="Sơ đồ đồ thị tuần hoàn LangGraph">
+                  </div>
+                </div>
+
+                <div class="card-container">
+                  <div class="card-title"><i class="fas fa-image"></i> Ảnh minh họa Cyclic Graph Workflow</div>
+                  <div class="illustration-wrapper">
+                    <img class="illustration-img" src="images/cyclic_graph.png" alt="Cyclic Graph Illustration">
+                  </div>
+                  <div class="prompt-drawer">
+                    <div class="prompt-drawer-header">
+                      <span>DALL-E / Imagen Prompt</span>
+                      <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="prompt-drawer-body" style="display: none;">
+                      A futuristic 3D infographic illustrating "Cyclic Graph Agentic workflow" in AI. A circular neon pipeline connecting nodes: "PLAN" glowing in blue, "EXECUTE" glowing in cyan, and "EVALUATE" glowing in purple. A feedback arrow goes from Evaluate back to Plan. Sleek dark mode tech background, 8k, highly detailed.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Practice -->
+            <div class="tab-pane" id="s5_l1_pane_practice">
+              <div class="practice-container">
+                <h3>Thực hành: Triển khai luồng lập trình đồ thị tuần hoàn có sửa sai</h3>
+                <p><strong>Yêu cầu:</strong> Mô phỏng một Graph Agent tự động viết code Python, chạy test, và tự sửa đổi code bằng một vòng lặp tối đa 3 lần nếu có lỗi cú pháp.</p>
+                
+                <div class="code-block-header">
+                  <span class="file-name">cyclic_agent.py</span>
+                  <button class="copy-btn" onclick="copyCode(this, 's5_l1_c1')"><i class="far fa-copy"></i> Copy</button>
+                </div>
+                <div class="code-wrapper">
+                  <pre><code class="language-python" id="s5_l1_c1">class AgentState(dict):
+    pass
+
+def planning_node(state: AgentState):
+    state["attempts"] = state.get("attempts", 0) + 1
+    print(f"\n[Lượt #{state['attempts']}] Lên kế hoạch viết code...")
+    if state["attempts"] == 1:
+        # Lần đầu viết lỗi cú pháp thiếu dấu đóng ngoặc
+        state["code"] = "def test_func(): print('Hello World'"
+    else:
+        # Lần sau đã sửa chữa thành công
+        state["code"] = "def test_func(): print('Hello World')"
+    return state
+
+def execute_node(state: AgentState):
+    print("-> Thực thi code trong môi trường giả lập...")
+    code = state["code"]
+    try:
+        compile(code, "<string>", "exec")
+        state["success"] = True
+        state["error"] = ""
+    except SyntaxError as e:
+        state["success"] = False
+        state["error"] = str(e)
+    return state
+
+def evaluate_node(state: AgentState):
+    if state["success"]:
+        print("🎉 Code chạy thành công! Không có lỗi cú pháp.")
+        return "end"
+    else:
+        print(f"❌ Phát hiện lỗi: {state['error']}.")
+        return "plan"
+
+# Vòng lặp điều phối Graph
+state = AgentState()
+max_iterations = 3
+for _ in range(max_iterations):
+    state = planning_node(state)
+    state = execute_node(state)
+    next_step = evaluate_node(state)
+    if next_step == "end":
+        break
+else:
+    print("❌ Vượt quá số lần thử cho phép. Workflow thất bại.")</code></pre>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Video Prompt -->
+            <div class="tab-pane" id="s5_l1_pane_video">
+              <div class="prompt-box">
+                <div class="card-title"><i class="fas fa-microphone"></i> NotebookLM Podcast Custom Prompt</div>
+                <div class="prompt-text-block">
+                  Hãy thảo luận về sự tiến hóa của hệ thống điều phối tác nhân AI. Bắt đầu từ các luồng một chiều DAG đơn giản và giải thích tại sao năm 2026, các đồ thị tuần hoàn (Cyclic Graphs) thông qua LangGraph lại trở thành tiêu chuẩn vàng để giúp AI tự động đánh giá sản phẩm và tự động sửa chữa sai sót của nó.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== SESSION 05 LESSON 02 ==================== -->
+        <section class="lesson-section" id="s5_l2">
+          <div class="lesson-banner">
+            <div class="lesson-subtitle">LESSON 02</div>
+            <h2 class="lesson-title">Tool Use, Function Calling & 🆕 MCP Integration</h2>
+          </div>
+
+          <div class="tab-container">
+            <div class="tab-nav">
+              <button class="tab-btn active" data-tab="theory"><i class="fas fa-book"></i> Lý thuyết</button>
+              <button class="tab-btn" data-tab="diagram"><i class="fas fa-project-diagram"></i> Sơ đồ minh họa</button>
+              <button class="tab-btn" data-tab="practice"><i class="fas fa-code"></i> Thực hành</button>
+              <button class="tab-btn" data-tab="video"><i class="fas fa-microphone"></i> NotebookLM Podcast</button>
+            </div>
+
+            <!-- Tab: Theory -->
+            <div class="tab-pane active" id="s5_l2_pane_theory">
+              <div class="theory-content">
+                <h3>Cơ chế Gọi công cụ & Function Calling</h3>
+                <p>LLM không trực tiếp chạy các API ngoài. Thay vào đó:</p>
+                <ol>
+                  <li>Ứng dụng khai báo danh sách công cụ (tên, tham số, mô tả) dưới dạng JSON Schema cho LLM.</li>
+                  <li>LLM nhận câu hỏi của user, chọn công cụ phù hợp nhất và trả về yêu cầu gọi hàm cùng các tham số tương ứng (ví dụ: <code>{"name": "get_weather", "arguments": {"city": "Hanoi"}}</code>).</li>
+                  <li>Ứng dụng thực thi hàm ở backend và truyền ngược kết quả cho LLM để tổng hợp câu trả lời cuối cùng.</li>
+                </ol>
+
+                <div class="alert-box note">
+                  <div class="alert-title"><i class="fas fa-info-circle"></i> Nguyên lý viết mô tả công cụ (Tool Description)</div>
+                  AI chọn công cụ 100% dựa vào mô tả. Nếu mô tả mơ hồ, AI sẽ gọi nhầm tool.
+                  <br><strong>Best Practice 2026:</strong> Sử dụng cấu trúc mô tả gồm: <em>Mục đích rõ ràng trong 1 câu</em> + <em>Kiểu dữ liệu chi tiết của tham số</em> + <em>Khi nào nên và KHÔNG NÊN dùng công cụ này</em>.
+                </div>
+
+                <div class="new-badge-container">
+                  <span class="new-tech-badge">🆕 GIAO THỨC DỮ LIỆU CHUẨN HÓA: MCP PROTOCOL</span>
+                  <p><strong>Model Context Protocol (MCP)</strong> được xem là cổng <strong>USB-C dành cho AI</strong>. Thay vì viết code tích hợp riêng lẻ cho từng API (Slack, Jira, Database), ta chỉ cần viết một MCP Server chuẩn hóa. Các MCP Client (như Cursor, Claude Desktop hoặc LangGraph) sẽ kết nối và tự động nhận diện cũng như gọi các công cụ của server một cách an toàn.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Diagram -->
+            <div class="tab-pane" id="s5_l2_pane_diagram">
+              <div class="diagram-visual-container">
+                <div class="card-container">
+                  <div class="card-title"><i class="fas fa-project-diagram"></i> Sơ đồ tích hợp MCP (SVG)</div>
+                  <div class="mermaid-wrapper">
+                    <img class="workflow-img" src="images/workflow_mcp_tool.svg" alt="Sơ đồ Model Context Protocol Tool Use">
+                  </div>
+                </div>
+
+                <div class="card-container">
+                  <div class="card-title"><i class="fas fa-image"></i> Ảnh minh họa Tool Calling</div>
+                  <div class="illustration-wrapper">
+                    <img class="illustration-img" src="images/tool_calling.png" alt="Tool Calling Illustration">
+                  </div>
+                  <div class="prompt-drawer">
+                    <div class="prompt-drawer-header">
+                      <span>DALL-E / Imagen Prompt</span>
+                      <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="prompt-drawer-body" style="display: none;">
+                      A futuristic 3D visualization of AI Tool Calling. The central glowing node is the "AI AGENT". Multiple mechanical or digital arms extend to call external tools labeled in Vietnamese: "CREATE_TASK", "LIST_TASKS", "UPDATE_STATUS". Neon orange and purple styling, dark technology background, 8k.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Practice -->
+            <div class="tab-pane" id="s5_l2_pane_practice">
+              <div class="practice-container">
+                <h3>Thực hành: Dựng MCP Server quản lý tác vụ với FastMCP</h3>
+                <p><strong>Yêu cầu:</strong> Sử dụng thư viện <code>FastMCP</code> để tạo máy chủ công cụ chuẩn hóa, cung cấp hai tool cho AI: Tạo task và Liệt kê task.</p>
+                
+                <div class="code-block-header">
+                  <span class="file-name">mcp_server.py</span>
+                  <button class="copy-btn" onclick="copyCode(this, 's5_l2_c1')"><i class="far fa-copy"></i> Copy</button>
+                </div>
+                <div class="code-wrapper">
+                  <pre><code class="language-python" id="s5_l2_c1"># Cài đặt trước: pip install fastmcp
+from fastmcp import FastMCP
+
+# Khởi tạo MCP Server mang tên "TaskManager"
+mcp = FastMCP("TaskManager")
+
+# Cơ sở dữ liệu giả lập
+db_tasks = []
+
+@mcp.tool()
+def create_project_task(title: str, assignee: str) -> str:
+    """
+    Tạo một công việc mới trong dự án.
+    Chỉ dùng khi người dùng yêu cầu tạo việc, phân công việc hoặc nhắc việc.
+    """
+    task_id = len(db_tasks) + 1
+    new_task = {"id": task_id, "title": title, "assignee": assignee, "status": "Todo"}
+    db_tasks.append(new_task)
+    return f"Thành công: Đã tạo task #{task_id} '{title}' giao cho {assignee}."
+
+@mcp.tool()
+def fetch_all_tasks() -> str:
+    """
+    Lấy danh sách toàn bộ các task công việc trong dự án.
+    """
+    if not db_tasks:
+        return "Không tìm thấy công việc nào."
+    
+    result = []
+    for t in db_tasks:
+        result.append(f"[{t['status']}] #{t['id']}: {t['title']} ({t['assignee']})")
+    return "\n".join(result)
+
+# Khởi chạy server
+if __name__ == "__main__":
+    mcp.run()</code></pre>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Video Prompt -->
+            <div class="tab-pane" id="s5_l2_pane_video">
+              <div class="prompt-box">
+                <div class="card-title"><i class="fas fa-microphone"></i> NotebookLM Podcast Custom Prompt</div>
+                <div class="prompt-text-block">
+                  Hãy tạo một cuộc thảo luận vui vẻ, lấy ví dụ ví von giao thức Model Context Protocol (MCP) giống như sự chuyển dịch từ các loại dây sạc pin độc quyền ngày xưa sang chuẩn sạc đa năng USB-C. Nhấn mạnh việc MCP giúp AI kết nối với mọi hệ thống dữ liệu ngoài dễ dàng ra sao.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== SESSION 05 LESSON 03 ==================== -->
+        <section class="lesson-section" id="s5_l3">
+          <div class="lesson-banner">
+            <div class="lesson-subtitle">LESSON 03</div>
+            <h2 class="lesson-title">Guardrails, Safety & 🆕 Production-Grade Validation</h2>
+          </div>
+
+          <div class="tab-container">
+            <div class="tab-nav">
+              <button class="tab-btn active" data-tab="theory"><i class="fas fa-book"></i> Lý thuyết</button>
+              <button class="tab-btn" data-tab="diagram"><i class="fas fa-project-diagram"></i> Sơ đồ minh họa</button>
+              <button class="tab-btn" data-tab="practice"><i class="fas fa-code"></i> Thực hành</button>
+              <button class="tab-btn" data-tab="video"><i class="fas fa-microphone"></i> NotebookLM Podcast</button>
+            </div>
+
+            <!-- Tab: Theory -->
+            <div class="tab-pane active" id="s5_l3_pane_theory">
+              <div class="theory-content">
+                <h3>Bảo Mật Tác Nhân Với Rào Chắn 3 Lớp</h3>
+                <p>Năm 2026, bảo mật hệ thống AI chuyển hoàn toàn sang tư duy <strong>"Treat all inputs and outputs as untrusted"</strong>. Ta không còn nhồi nhét quy tắc bảo mật vào Prompt nữa mà xây dựng các bộ lọc Guardrails độc lập ở tầng hệ thống:</p>
+
+                <div class="guardrail-grid">
+                  <div class="guardrail-card-item">
+                    <h4>1. Input Guardrails</h4>
+                    <p>Bộ lọc chặn các mã độc Prompt Injection, PII (thông tin cá nhân) rò rỉ, và đặc biệt là <strong>Indirect Prompt Injection</strong> (mã độc ẩn mình trong các file tài liệu tải vào hệ thống thông qua RAG).</p>
+                  </div>
+                  <div class="guardrail-card-item">
+                    <h4>2. Output Guardrails</h4>
+                    <p>Bộ kiểm tra cấu trúc đầu ra (JSON/XML Schema), phát hiện hiện tượng ảo giác thông tin (Hallucination) và lọc PII trước khi gửi về cho khách hàng.</p>
+                  </div>
+                  <div class="guardrail-card-item">
+                    <h4>3. Action Guardrails</h4>
+                    <p>Cô lập môi trường chạy code sinh ra bởi AI (Sandbox Execution), kiểm tra quyền thao tác dữ liệu và thiết lập cơ chế <strong>Human-in-the-loop (Xác nhận thủ công)</strong> đối với các tác vụ nhạy cảm như xóa dữ liệu hoặc chuyển tiền.</p>
+                  </div>
+                </div>
+
+                <div class="new-badge-container">
+                  <span class="new-tech-badge">🆕 GIÁM SÁT HỆ THỐNG VẬN HÀNH: OBSERVABILITY</span>
+                  <p>Hệ thống Harness bắt buộc phải được giám sát thông qua các công cụ như <strong>LangSmith</strong> hoặc <strong>OpenTelemetry</strong>. Ta cần lưu trữ chi tiết vết luồng đi (Trace) của Agent để dễ dàng gỡ lỗi (Debugging) và kiểm soát các cuộc tấn công gián tiếp.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Diagram -->
+            <div class="tab-pane" id="s5_l3_pane_diagram">
+              <div class="diagram-visual-container">
+                <div class="card-container">
+                  <div class="card-title"><i class="fas fa-project-diagram"></i> Sơ đồ Cổng Bảo Vệ Guardrails (SVG)</div>
+                  <div class="mermaid-wrapper">
+                    <img class="workflow-img" src="images/workflow_guardrails.svg" alt="Sơ đồ 3 lớp bảo mật Guardrails">
+                  </div>
+                </div>
+
+                <div class="card-container">
+                  <div class="card-title"><i class="fas fa-image"></i> Ảnh minh họa Guardrails</div>
+                  <div class="illustration-wrapper">
+                    <img class="illustration-img" src="images/guardrails.png" alt="Guardrails Illustration">
+                  </div>
+                  <div class="prompt-drawer">
+                    <div class="prompt-drawer-header">
+                      <span>DALL-E / Imagen Prompt</span>
+                      <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="prompt-drawer-body" style="display: none;">
+                      A futuristic 3D architectural diagram of AI Guardrails. Digital glass walls representing "INPUT GUARDRAILS" glowing in red/green shield, leading to "LLM CORE" in the center, which then flows through "OUTPUT GUARDRAILS" glowing in green shield. Transparent data nodes flow through the gates. Neon cyan and gold accent, dark mode, 8k.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Practice -->
+            <div class="tab-pane" id="s5_l3_pane_practice">
+              <div class="practice-container">
+                <h3>Thực hành: Triển khai chốt chặn đầu ra & xác thực phê duyệt con người</h3>
+                <p><strong>Yêu cầu:</strong> Viết mã Python triển khai hai chức năng bảo mật: Kiểm tra tính hợp lệ của schema đầu ra, và yêu cầu xác thực phê duyệt của con người nếu AI gọi hành động xóa người dùng.</p>
+                
+                <div class="code-block-header">
+                  <span class="file-name">guardrail_system.py</span>
+                  <button class="copy-btn" onclick="copyCode(this, 's5_l3_c1')"><i class="far fa-copy"></i> Copy</button>
+                </div>
+                <div class="code-wrapper">
+                  <pre><code class="language-python" id="s5_l3_c1">import json
+
+def validate_output_schema(raw_text: str) -> dict:
+    """Output Guardrail: Kiểm chứng cấu trúc JSON trả về"""
+    try:
+        data = json.loads(raw_text)
+        required_fields = ["status", "response_message"]
+        
+        # Kiểm tra xem có đầy đủ các trường bắt buộc không
+        if all(field in data for field in required_fields):
+            return {"valid": True, "data": data}
+        return {"valid": False, "error": "Thiếu trường thông tin bắt buộc."}
+    except json.JSONDecodeError:
+        return {"valid": False, "error": "Không phải JSON hợp lệ."}
+
+def execute_action_safely(action_name: str, payload: str) -> bool:
+    """Action Guardrail: Phê duyệt từ con người đối với các hành động nhạy cảm"""
+    sensitive_actions = ["DELETE_USER", "TRANSFER_FUNDS"]
+    
+    if action_name in sensitive_actions:
+        print(f"\n⚠️ CẢNH BÁO BẢO MẬT: Phát hiện hành động nhạy cảm '{action_name}' với tham số '{payload}'.")
+        # Giả lập Human Approval từ CLI
+        user_choice = input("Bạn có phê duyệt hành động này không? (y/n): ")
+        return user_choice.lower() == "y"
+    
+    return True
+
+# Giả lập chạy thử nghiệm
+response_from_llm = '{"status": "SUCCESS", "response_message": "Yêu cầu xóa tài khoản", "action": "DELETE_USER"}'
+result = validate_output_schema(response_from_llm)
+
+if result["valid"]:
+    action = result["data"].get("action")
+    if execute_action_safely(action, "User_ID: 999"):
+        print("✅ Đã phê duyệt và thực thi hành động an toàn.")
+    else:
+        print("❌ Từ chối thực thi: Bị con người bác bỏ hành động xóa.")
+else:
+    print(f"❌ Chặn luồng: Lỗi cấu trúc đầu ra ({result['error']})")</code></pre>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Video Prompt -->
+            <div class="tab-pane" id="s5_l3_pane_video">
+              <div class="prompt-box">
+                <div class="card-title"><i class="fas fa-microphone"></i> NotebookLM Podcast Custom Prompt</div>
+                <div class="prompt-text-block">
+                  Hãy xây dựng một đoạn hội thoại nói về nguy cơ bị hacker chèn mã độc gián tiếp (Indirect Prompt Injection) vào file văn bản khiến chatbot gửi thông tin mật ra ngoài. Giải thích sinh động cách chúng ta dùng cơ chế Action Guardrail có phê duyệt của con người để làm "bảo hiểm cuối cùng" bảo vệ dữ liệu.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== SESSION 05 LESSON 04 ==================== -->
+        <section class="lesson-section" id="s5_l4">
+          <div class="lesson-banner">
+            <div class="lesson-subtitle">LESSON 04</div>
+            <h2 class="lesson-title">Multi-Agent Systems & 🆕 A2A Protocol</h2>
+          </div>
+
+          <div class="tab-container">
+            <div class="tab-nav">
+              <button class="tab-btn active" data-tab="theory"><i class="fas fa-book"></i> Lý thuyết</button>
+              <button class="tab-btn" data-tab="diagram"><i class="fas fa-project-diagram"></i> Sơ đồ minh họa</button>
+              <button class="tab-btn" data-tab="practice"><i class="fas fa-code"></i> Thực hành</button>
+              <button class="tab-btn" data-tab="video"><i class="fas fa-microphone"></i> NotebookLM Podcast</button>
+            </div>
+
+            <!-- Tab: Theory -->
+            <div class="tab-pane active" id="s5_l4_pane_theory">
+              <div class="theory-content">
+                <h3>Thiết Kế Hệ Thống Đa Tác Nhân (Multi-Agent)</h3>
+                <p>Đối với các tác vụ quá rộng lớn, việc sử dụng một Single Agent duy nhất sẽ làm phình to bối cảnh đầu vào và dễ gây nhầm lẫn công cụ (Context Confusion). Giải pháp hiệu quả nhất là chia nhỏ hệ thống thành nhiều Agent chuyên biệt:</p>
+                <ul>
+                  <li><strong>Hub-Spoke (Orchestrator/Router)</strong>: Tác nhân trung tâm điều phối và phân chia việc cho các tác nhân con.</li>
+                  <li><strong>Handoff (Chuyển giao)</strong>: Tác nhân A tự động bàn giao trạng thái và chuyển quyền điều hành cho tác nhân B khi phát hiện nội dung thuộc chuyên môn của tác nhân B.</li>
+                  <li><strong>Debate (Tranh biện)</strong>: Nhiều tác nhân phân tích phản biện chéo nhau (ví dụ: Dev viết code, Security rà soát lỗi bảo mật), sau đó Moderator sẽ tổng hợp kết quả cuối cùng.</li>
+                </ul>
+
+                <div class="new-badge-container">
+                  <span class="new-tech-badge">🆕 GIAO THƯƠNG GIỮA CÁC AGENT: GIAO THỨC A2A</span>
+                  <p>Được đề xuất năm 2026, <strong>giao thức A2A (Agent-to-Agent Protocol)</strong> của Google giúp giải quyết bài toán giao tiếp chéo. Các tác nhân được xây dựng trên nhiều nền tảng và framework khác nhau (LangGraph, Autogen, Google ADK) có thể tự động khám phá năng lực của nhau, chia sẻ lịch sử bối cảnh và ủy quyền thực hiện công việc mà không gặp rào cản kỹ thuật.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Diagram -->
+            <div class="tab-pane" id="s5_l4_pane_diagram">
+              <div class="diagram-visual-container">
+                <div class="card-container">
+                  <div class="card-title"><i class="fas fa-project-diagram"></i> Sơ đồ Phối hợp Multi-Agent (SVG)</div>
+                  <div class="mermaid-wrapper">
+                    <img class="workflow-img" src="images/workflow_multi_agent.svg" alt="Sơ đồ tương tác Multi-Agent qua A2A">
+                  </div>
+                </div>
+
+                <div class="card-container">
+                  <div class="card-title"><i class="fas fa-image"></i> Ảnh minh họa Multi-Agent</div>
+                  <div class="illustration-wrapper">
+                    <img class="illustration-img" src="images/multi_agent_a2a.png" alt="Multi-Agent Illustration">
+                  </div>
+                  <div class="prompt-drawer">
+                    <div class="prompt-drawer-header">
+                      <span>DALL-E / Imagen Prompt</span>
+                      <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="prompt-drawer-body" style="display: none;">
+                      A futuristic 3D rendering of Multi-Agent Collaboration. Three distinct glowing humanoid robots or digital figures representing agents (Research, Writer, Critic) communicating via neon light rays labeled "A2A PROTOCOL". High-tech workspace background, holographic screens, neon blue and pink styling, 8k.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Practice -->
+            <div class="tab-pane" id="s5_l4_pane_practice">
+              <div class="practice-container">
+                <h3>Thực hành: Triển khai cơ chế bàn giao công việc (Handoff Pattern)</h3>
+                <p><strong>Yêu cầu:</strong> Triển khai mô hình bàn giao tác vụ đơn giản. Khi Tác nhân tổng đài nhận được câu hỏi chứa từ khóa lập trình (code, python), nó sẽ thực hiện chuyển quyền điều phối cho Tác nhân Kỹ thuật xử lý.</p>
+                
+                <div class="code-block-header">
+                  <span class="file-name">agent_handoff.py</span>
+                  <button class="copy-btn" onclick="copyCode(this, 's5_l4_c1')"><i class="far fa-copy"></i> Copy</button>
+                </div>
+                <div class="code-wrapper">
+                  <pre><code class="language-python" id="s5_l4_c1">class SpecialistAgent:
+    def __init__(self, name: str, domain: str):
+        self.name = name
+        self.domain = domain
+
+    def process(self, query: str) -> str:
+        return f"[{self.name}] Đã xử lý chuyên môn về '{self.domain}': Thực thi lập luận cho câu hỏi '{query}'."
+
+# Khởi tạo các Agent chuyên gia
+support_agent = SpecialistAgent("CSKH Agent", "Dịch vụ khách hàng và giải đáp chung")
+engineering_agent = SpecialistAgent("Dev Agent", "Lập trình phần mềm và sửa lỗi code")
+
+def route_query_with_handoff(query: str):
+    print(f"\nYêu cầu nhận được: '{query}'")
+    
+    # Logic Routing kiểm tra từ khóa chuyên ngành để thực hiện Handoff
+    if any(keyword in query.lower() for keyword in ["code", "python", "lập trình"]):
+        print(f"-> [CSKH Agent] Phát hiện yêu cầu kỹ thuật chuyên sâu. Chuyển tiếp (Handoff) sang {engineering_agent.name}...")
+        response = engineering_agent.process(query)
+    else:
+        response = support_agent.process(query)
+        
+    print(response)
+
+# Thực thi kiểm thử
+route_query_with_handoff("Tôi muốn đăng ký mua tài khoản premium.")
+route_query_with_handoff("Viết code Python để lọc email rác.")</code></pre>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Video Prompt -->
+            <div class="tab-pane" id="s5_l4_pane_video">
+              <div class="prompt-box">
+                <div class="card-title"><i class="fas fa-microphone"></i> NotebookLM Podcast Custom Prompt</div>
+                <div class="prompt-text-block">
+                  Hãy thảo luận về triết lý phân chia tác vụ trong doanh nghiệp thông qua hệ thống Multi-Agent. Ví dụ sinh động bằng một phòng ban công sở thực tế gồm nhân viên nghiên cứu (Research), nhân viên soạn thảo (Writer) và quản lý rà soát chất lượng (Reviewer) phối hợp nhịp nhàng thông qua giao thức chuẩn A2A như thế nào.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== SESSION 05 QUIZ ==================== -->
+        <section class="lesson-section" id="s5_quiz">
+          <div class="lesson-banner">
+            <div class="lesson-subtitle">ĐÁNH GIÁ NĂNG LỰC</div>
+            <h2 class="lesson-title">Quiz Kiểm Tra Kiến Thức Session 05</h2>
+          </div>
+
+          <div class="quiz-container">
+            
+            <!-- Question 1 -->
+            <div class="quiz-card" id="q1">
+              <div class="quiz-header">
+                <span class="quiz-num">CÂU HỎI 1 / 5</span>
+              </div>
+              <div class="quiz-qtext">Khác biệt cốt lõi giữa đồ thị một chiều (DAG) và đồ thị tuần hoàn (Cyclic Graph) trong điều phối AI Agent là gì?</div>
+              <div class="quiz-options">
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>A. DAG chạy nhanh hơn và tiết kiệm token hơn vì không thể quay ngược lại để tự sửa sai.</span>
+                </div>
+                <div class="quiz-option" data-correct="true">
+                  <div class="quiz-radio"></div>
+                  <span>B. Cyclic Graph cho phép thiết lập các luồng lặp tự đánh giá và sửa lỗi (Reflexion), giúp Agent chạy lại bước trước nếu phát hiện lỗi thực thi.</span>
+                </div>
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>C. DAG chỉ dùng cho Python còn Cyclic Graph dùng cho Node.js.</span>
+                </div>
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>D. Không có sự khác biệt về mặt kiến trúc.</span>
+                </div>
+              </div>
+              <div class="quiz-explanation">
+                <div class="quiz-explanation-title"><i class="fas fa-info-circle"></i> Giải thích đáp án</div>
+                Điểm đột phá của Cyclic Graph (tiêu biểu như LangGraph) là khả năng tạo lập vòng lặp phản hồi (Feedback Loop). AI Agent có thể thực thi công việc, tự kiểm định kết quả (Evaluate) và quay ngược trở lại bước lập kế hoạch (Plan) để sửa đổi nếu kết quả chưa đạt yêu cầu.
+              </div>
+            </div>
+
+            <!-- Question 2 -->
+            <div class="quiz-card" id="q2">
+              <div class="quiz-header">
+                <span class="quiz-num">CÂU HỎI 2 / 5</span>
+              </div>
+              <div class="quiz-qtext">Tại sao mô tả công cụ (Tool Description) đóng vai trò sống còn trong cơ chế Function Calling của LLM?</div>
+              <div class="quiz-options">
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>A. Vì mô tả công cụ được chuyển hóa thành mã thực thi trực tiếp trên máy chủ.</span>
+                </div>
+                <div class="quiz-option" data-correct="true">
+                  <div class="quiz-radio"></div>
+                  <span>B. Vì LLM đọc và phân tích mô tả công cụ trong bối cảnh để quyết định xem có nên chọn công cụ đó cho câu hỏi hiện tại của người dùng hay không.</span>
+                </div>
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>C. Vì mô tả giúp tăng tốc độ tải trang web của ứng dụng AI.</span>
+                </div>
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>D. Vì nhà sản xuất bắt buộc phải viết đầy đủ mô tả thì API mới không bị lỗi.</span>
+                </div>
+              </div>
+              <div class="quiz-explanation">
+                <div class="quiz-explanation-title"><i class="fas fa-info-circle"></i> Giải thích đáp án</div>
+                Trong Function Calling, LLM không trực tiếp tương tác với API mà chỉ nhận vào danh sách các định nghĩa công cụ (bao gồm tên, mô tả và tham số). Nếu phần mô tả không rõ ràng hoặc bị trùng lặp ý nghĩa giữa các tool, LLM sẽ bị nhầm lẫn và đưa ra lựa chọn sai hoặc truyền sai tham số.
+              </div>
+            </div>
+
+            <!-- Question 3 -->
+            <div class="quiz-card" id="q3">
+              <div class="quiz-header">
+                <span class="quiz-num">CÂU HỎI 3 / 5</span>
+              </div>
+              <div class="quiz-qtext">Trong kiến trúc bảo mật Guardrail 3 lớp, nhiệm vụ của Action Guardrail là gì?</div>
+              <div class="quiz-options">
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>A. Kiểm tra xem người dùng có nhập mã độc prompt injection hay không.</span>
+                </div>
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>B. Rà soát xem đầu ra của LLM có bị lỗi định dạng JSON hay không.</span>
+                </div>
+                <div class="quiz-option" data-correct="true">
+                  <div class="quiz-radio"></div>
+                  <span>C. Kiểm tra quyền thực thi, chạy code trong môi trường cách ly (Sandbox) và yêu cầu phê duyệt thủ công (Human Approval) đối với các hành động nhạy cảm.</span>
+                </div>
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>D. Đếm số lượng token tiêu thụ của API.</span>
+                </div>
+              </div>
+              <div class="quiz-explanation">
+                <div class="quiz-explanation-title"><i class="fas fa-info-circle"></i> Giải thích đáp án</div>
+                Action Guardrail hoạt động ở tầng thực thi hành động (sau khi LLM đã phản hồi). Lớp này bảo vệ hệ thống bằng cách cô lập môi trường thực thi (Sandbox) và tạo chốt chặn phê duyệt của con người đối với các hành động có tác động lớn đến tài nguyên hoặc tài khoản.
+              </div>
+            </div>
+
+            <!-- Question 4 -->
+            <div class="quiz-card" id="q4">
+              <div class="quiz-header">
+                <span class="quiz-num">CÂU HỎI 4 / 5</span>
+              </div>
+              <div class="quiz-qtext">Lợi ích chính của việc phân rã hệ thống thành cấu trúc Multi-Agent so với sử dụng một Single Agent duy nhất là gì?</div>
+              <div class="quiz-options">
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>A. Giảm thiểu chi phí API tối đa vì nhiều Agent gọi song song.</span>
+                </div>
+                <div class="quiz-option" data-correct="true">
+                  <div class="quiz-radio"></div>
+                  <span>B. Giúp cô lập bối cảnh (Isolate Principle), tránh hiện tượng hỗn loạn bối cảnh (Context Confusion) và giảm tải số lượng token nạp vào cho mỗi Agent run.</span>
+                </div>
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>C. Giúp AI giao tiếp dễ dàng hơn với người dùng qua nhiều kênh.</span>
+                </div>
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>D. Đảm bảo code chạy không bao giờ bị crash.</span>
+                </div>
+              </div>
+              <div class="quiz-explanation">
+                <div class="quiz-explanation-title"><i class="fas fa-info-circle"></i> Giải thích đáp án</div>
+                Khi gom tất cả nhiệm vụ và hàng chục công cụ vào một Agent duy nhất, cửa sổ bối cảnh sẽ bị phình to và LLM rất dễ bị nhầm lẫn chỉ dẫn (Context Confusion / Context Clash). Việc chia nhỏ thành các sub-agent chuyên biệt giúp mỗi tác nhân chỉ tập trung vào một bối cảnh tối giản nhất, tăng độ chính xác của hệ thống.
+              </div>
+            </div>
+
+            <!-- Question 5 -->
+            <div class="quiz-card" id="q5">
+              <div class="quiz-header">
+                <span class="quiz-num">CÂU HỎI 5 / 5</span>
+              </div>
+              <div class="quiz-qtext">Giao thức Agent-to-Agent (A2A) được thiết kế nhằm mục đích gì trong năm 2026?</div>
+              <div class="quiz-options">
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>A. Giúp các lập trình viên trò chuyện trực tuyến với nhau về dự án AI.</span>
+                </div>
+                <div class="quiz-option" data-correct="true">
+                  <div class="quiz-radio"></div>
+                  <span>B. Chuẩn hóa giao tiếp, định danh và chia sẻ trạng thái bối cảnh giữa các AI Agents được xây dựng trên các framework khác nhau.</span>
+                </div>
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>C. Tự động chuyển đổi mã nguồn Python sang TypeScript.</span>
+                </div>
+                <div class="quiz-option" data-correct="false">
+                  <div class="quiz-radio"></div>
+                  <span>D. Đồng bộ hóa lịch sử trò chuyện lên Google Cloud.</span>
+                </div>
+              </div>
+              <div class="quiz-explanation">
+                <div class="quiz-explanation-title"><i class="fas fa-info-circle"></i> Giải thích đáp án</div>
+                A2A là giao thức mở bổ sung cho MCP. Trong khi MCP giải quyết kết nối giữa Agent và Công cụ, A2A chuẩn hóa cách thức các Agent độc lập (thậm chí thuộc các hệ sinh thái khác nhau) giao tiếp, khám phá năng lực của nhau và bàn giao công việc mà không làm mất thông tin trạng thái.
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Footer -->
+      <footer class="credits-footer">
+        <p>📚 Session 05 — Harness Engineering · Rikkei AI Academy</p>
+        <p>Bản quyền thuộc Rikkei Academy AI Coordinator · Cập nhật 06/2026</p>
+      </footer>
+    </main>
+  </div>
+
+  <!-- Prism.js Code Highlighter -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  
+  <!-- Custom Logic JS -->
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 450" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#080c14" />
+      <stop offset="100%" stop-color="#0f0f35" />
+    </linearGradient>
+    <linearGradient id="orange-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ea580c" />
+      <stop offset="100%" stop-color="#c2410c" />
+    </linearGradient>
+    <linearGradient id="purple-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a855f7" />
+      <stop offset="100%" stop-color="#7e22ce" />
+    </linearGradient>
+    <linearGradient id="card-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1e4f" />
+      <stop offset="100%" stop-color="#16163f" />
+    </linearGradient>
+    <!-- Glow Filter -->
+    <filter id="glow-orange" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="100%" height="100%" rx="16" fill="url(#bg-grad)" stroke="#222554" stroke-width="2" />
+
+  <style>
+    .title-text { font-family: 'Inter', sans-serif; font-size: 20px; font-weight: 800; fill: #ffffff; text-anchor: middle; }
+    .label-text { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700; fill: #ffffff; text-anchor: middle; }
+    .desc-text { font-family: 'Inter', sans-serif; font-size: 11px; fill: #9ca3af; text-anchor: middle; }
+    .protocol-text { font-family: 'JetBrains Mono', monospace; font-size: 11px; fill: #fb923c; text-anchor: middle; font-weight: 700; }
+  </style>
+
+  <text x="500" y="45" class="title-text">Kiến Trúc Tích Hợp Công Cụ Qua Giao Thức MCP</text>
+
+  <!-- Left Side: AI Agent -->
+  <rect x="100" y="140" width="220" height="150" rx="14" fill="url(#card-grad)" stroke="#a855f7" stroke-width="2.5" />
+  <text x="210" y="190" class="label-text" fill="#d8b4fe">AI AGENT</text>
+  <text x="210" y="210" class="desc-text" fill="#f3e8ff">Đọc mô tả công cụ</text>
+  <text x="210" y="230" class="desc-text" fill="#f3e8ff">Nhận diện Ý định (Intent)</text>
+  <text x="210" y="250" class="desc-text" fill="#a78bfa">Trả về JSON parameters</text>
+
+  <!-- Center Arrow (Giao thức MCP) -->
+  <path d="M 320 200 L 520 200" fill="none" stroke="#ea580c" stroke-width="3" filter="url(#glow-orange)" />
+  <polygon points="510,195 520,200 510,205" fill="#ea580c" />
+  <path d="M 520 230 L 320 230" fill="none" stroke="#ea580c" stroke-width="3" stroke-dasharray="5,3" />
+  <polygon points="330,225 320,230 330,235" fill="#ea580c" />
+  
+  <rect x="350" y="145" width="140" height="30" rx="6" fill="#0f172a" stroke="#ea580c" stroke-width="1.5" />
+  <text x="420" y="164" class="protocol-text">MCP Giao Thức</text>
+
+  <!-- Right Side: MCP Server (FastMCP) -->
+  <rect x="520" y="100" width="380" height="260" rx="14" fill="url(#card-grad)" stroke="#ea580c" stroke-width="2.5" />
+  <text x="710" y="135" class="label-text" fill="#ffedd5">MCP SERVER (FastMCP)</text>
+  <text x="710" y="155" class="desc-text" fill="#ffedd5">Quản lý và thực thi API động</text>
+
+  <!-- Sub Tools inside MCP Server -->
+  <rect x="550" y="180" width="320" height="60" rx="8" fill="#0f172a" stroke="#475569" />
+  <text x="710" y="205" class="label-text" font-size="12">add_new_task(title, assignee)</text>
+  <text x="710" y="225" class="desc-text" fill="#94a3b8">Khai báo tool tạo task và giao việc</text>
+
+  <rect x="550" y="260" width="320" height="60" rx="8" fill="#0f172a" stroke="#475569" />
+  <text x="710" y="285" class="label-text" font-size="12">list_all_tasks()</text>
+  <text x="710" y="305" class="desc-text" fill="#94a3b8">Khai báo tool truy vấn danh sách tác vụ</text>
+</svg>
